@@ -1,0 +1,334 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:59 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_eq.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_eq.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_eq.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_eq.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_eq.c
+      1          
+      2          #include "include.h"
+      3          
+      4          #pragma constseg="EQ_CONST"
+      5                                              //pop     rock    jazz    classic country drc
+
+   \                                 In segment EQ_CONST, align 1
+      6          IAR_CONST u16 tbl_eqpower_music[6] = {0x6fff, 0x6fff, 0x6fff, 0x5fff, 0x6fff, 0x7fff};
+   \                     tbl_eqpower_music:
+   \   000000   FF6FFF6F     DW 28671, 28671, 28671, 24575, 28671, 32767
+   \            FF6FFF5F
+   \            FF6FFF7F
+
+   \                                 In segment EQ_CONST, align 1
+      7          IAR_CONST u8  tbl_eq_music[5][123] = {
+   \                     tbl_eq_music:
+   \   000000   FFFF3FEF     DB 255, 255, 63, 239, 30, 64, 15, 75, 63, 80, 150, 128, 174, 105, 127
+   \            1E400F4B
+   \            3F509680
+   \            AE697F  
+   \   00000F   FF95C06C     DB 255, 149, 192, 108, 12, 64, 229, 39, 63, 241, 204, 128, 13, 51, 127
+   \            0C40E527
+   \            3FF1CC80
+   \            0D337F  
+   \   00001E   ACCBC0FF     DB 172, 203, 192, 255, 255, 63, 120, 186, 62, 171, 74, 129, 83, 181
+   \            FF3F78BA
+   \            3EAB4A81
+   \            53B5    
+   \   00002C   7E8645C1     DB 126, 134, 69, 193, 38, 206, 63, 31, 77, 62, 49, 249, 129, 205, 6
+   \            26CE3F1F
+   \            4D3E31F9
+   \            81CD06  
+   \   00003B   7EB7E4C1     DB 126, 183, 228, 193, 217, 88, 63, 75, 29, 61, 169, 218, 131, 85, 37
+   \            D9583F4B
+   \            1D3DA9DA
+   \            835525  
+   \   00004A   7CD989C3     DB 124, 217, 137, 195, 4, 222, 62, 116, 254, 58, 158, 95, 135, 96, 160
+   \            04DE3E74
+   \            FE3A9E5F
+   \            8760A0  
+   \   000059   788523C6     DB 120, 133, 35, 198, 0, 187, 65, 185, 231, 33, 13, 96, 214, 241, 159
+   \            00BB41B9
+   \            E7210D60
+   \            D6F19F  
+   \   000068   29445DDC     DB 41, 68, 93, 220, 213, 254, 70, 80, 248, 2, 148, 37, 48, 106, 218
+   \            D5FE4650
+   \            F8029425
+   \            306ADA  
+   \   000077   CFD708F6     DB 207, 215, 8, 246, 255, 255, 63, 117, 235, 63, 208, 76, 63, 9, 200
+   \            FFFF3F75
+   \            EB3FD04C
+   \            3F09C8  
+   \   000086   80F5377F     DB 128, 245, 55, 127, 184, 199, 192, 255, 255, 63, 85, 40, 63, 239, 216
+   \            B8C7C0FF
+   \            FF3F5528
+   \            3FEFD8  
+   \   000095   800F277F     DB 128, 15, 39, 127, 169, 215, 192, 152, 37, 64, 244, 183, 62, 150, 39
+   \            A9D7C098
+   \            2540F4B7
+   \            3E9627  
+   \   0000A4   8168D87E     DB 129, 104, 216, 126, 112, 34, 193, 201, 100, 64, 144, 66, 62, 53, 109
+   \            7022C1C9
+   \            64409042
+   \            3E356D  
+   \   0000B3   81C9927E     DB 129, 201, 146, 126, 164, 88, 193, 184, 172, 63, 127, 41, 61, 212
+   \            A458C1B8
+   \            AC3F7F29
+   \            3DD4    
+   \   0000C1   7A832A85     DB 122, 131, 42, 133, 124, 197, 41, 195, 53, 111, 63, 210, 16, 59, 183
+   \            7CC529C3
+   \            356F3FD2
+   \            103BB7  
+   \   0000D0   BD864742     DB 189, 134, 71, 66, 121, 246, 127, 197, 207, 59, 71, 8, 8, 32, 228
+   \            79F67FC5
+   \            CF3B4708
+   \            0820E4  
+   \   0000DF   DBD41A24     DB 219, 212, 26, 36, 43, 37, 188, 216, 234, 194, 78, 85, 195, 254, 165
+   \            2B25BCD8
+   \            EAC24E55
+   \            C3FEA5  
+   \   0000EE   76325989     DB 118, 50, 89, 137, 205, 190, 121, 242, 255, 255, 63, 255, 255, 63
+   \            CDBE79F2
+   \            FFFF3FFF
+   \            FF3F    
+   \   0000FC   E04D3F6F     DB 224, 77, 63, 111, 178, 128, 143, 77, 127, 30, 178, 192, 255, 255, 63
+   \            B2808F4D
+   \            7F1EB2C0
+   \            FFFF3F  
+   \   00010B   55283FEF     DB 85, 40, 63, 239, 216, 128, 15, 39, 127, 169, 215, 192, 255, 255, 63
+   \            D8800F27
+   \            7FA9D7C0
+   \            FFFF3F  
+   \   00011A   78BA3EAB     DB 120, 186, 62, 171, 74, 129, 83, 181, 126, 134, 69, 193, 201, 100, 64
+   \            4A8153B5
+   \            7E8645C1
+   \            C96440  
+   \   000129   90423E35     DB 144, 66, 62, 53, 109, 129, 201, 146, 126, 164, 88, 193, 222, 168, 64
+   \            6D81C992
+   \            7EA458C1
+   \            DEA840  
+   \   000138   AE153D16     DB 174, 21, 61, 22, 147, 130, 232, 108, 125, 113, 65, 194, 51, 39, 65
+   \            9382E86C
+   \            7D7141C2
+   \            332741  
+   \   000147   5DE73A38     DB 93, 231, 58, 56, 51, 133, 198, 204, 122, 109, 241, 195, 217, 87, 69
+   \            3385C6CC
+   \            7A6DF1C3
+   \            D95745  
+   \   000156   B9C020EB     DB 185, 192, 32, 235, 88, 213, 19, 167, 42, 107, 231, 217, 234, 194, 78
+   \            58D513A7
+   \            2A6BE7D9
+   \            EAC24E  
+   \   000165   55C3FEA5     DB 85, 195, 254, 165, 118, 50, 89, 137, 205, 190, 121, 242, 255, 255
+   \            76325989
+   \            CDBE79F2
+   \            FFFF    
+   \   000173   3FFFFF3F     DB 63, 255, 255, 63, 224, 77, 63, 111, 178, 128, 143, 77, 127, 30, 178
+   \            E04D3F6F
+   \            B2808F4D
+   \            7F1EB2  
+   \   000182   C01C6740     DB 192, 28, 103, 64, 121, 16, 63, 173, 137, 128, 81, 118, 127, 103, 136
+   \            79103FAD
+   \            89805176
+   \            7F6788  
+   \   000191   C0D59B40     DB 192, 213, 155, 64, 2, 150, 62, 79, 211, 128, 175, 44, 127, 37, 206
+   \            02963E4F
+   \            D380AF2C
+   \            7F25CE  
+   \   0001A0   C0C96440     DB 192, 201, 100, 64, 144, 66, 62, 53, 109, 129, 201, 146, 126, 164, 88
+   \            90423E35
+   \            6D81C992
+   \            7EA458  
+   \   0001AF   C1FFFF3F     DB 193, 255, 255, 63, 87, 44, 61, 238, 36, 131, 16, 219, 124, 167, 211
+   \            572C3DEE
+   \            248310DB
+   \            7CA7D3  
+   \   0001BE   C2FFFF3F     DB 194, 255, 255, 63, 65, 19, 59, 252, 43, 134, 2, 212, 121, 189, 236
+   \            41133BFC
+   \            2B8602D4
+   \            79BDEC  
+   \   0001CD   C49C8243     DB 196, 156, 130, 67, 66, 96, 33, 78, 218, 213, 176, 37, 42, 30, 29
+   \            4260214E
+   \            DAD5B025
+   \            2A1E1D  
+   \   0001DC   DBD5FE46     DB 219, 213, 254, 70, 80, 248, 2, 148, 37, 48, 106, 218, 207, 215, 8
+   \            50F80294
+   \            25306ADA
+   \            CFD708  
+   \   0001EB   F6FFFF3F     DB 246, 255, 255, 63, 117, 235, 63, 208, 76, 63, 9, 200, 128, 245, 55
+   \            75EB3FD0
+   \            4C3F09C8
+   \            80F537  
+   \   0001FA   7FB8C7C0     DB 127, 184, 199, 192, 255, 255, 63, 85, 40, 63, 239, 216, 128, 15, 39
+   \            FFFF3F55
+   \            283FEFD8
+   \            800F27  
+   \   000209   7FA9D7C0     DB 127, 169, 215, 192, 255, 255, 63, 120, 186, 62, 171, 74, 129, 83
+   \            FFFF3F78
+   \            BA3EAB4A
+   \            8153    
+   \   000217   B57E8645     DB 181, 126, 134, 69, 193, 254, 49, 64, 204, 75, 62, 189, 150, 129, 65
+   \            C1FE3140
+   \            CC4B3EBD
+   \            968141  
+   \   000226   697E3382     DB 105, 126, 51, 130, 193, 177, 83, 64, 201, 37, 61, 251, 215, 130, 3
+   \            C1B15340
+   \            C9253DFB
+   \            D78203  
+   \   000235   287D8286     DB 40, 125, 130, 134, 194, 255, 255, 63, 65, 19, 59, 252, 43, 134, 2
+   \            C2FFFF3F
+   \            41133BFC
+   \            2B8602  
+   \   000244   D479BDEC     DB 212, 121, 189, 236, 196, 207, 59, 71, 8, 8, 32, 228, 219, 212, 26
+   \            C4CF3B47
+   \            080820E4
+   \            DBD41A  
+   \   000253   242B25BC     DB 36, 43, 37, 188, 216, 234, 194, 78, 85, 195, 254, 165, 118, 50, 89
+   \            D8EAC24E
+   \            55C3FEA5
+   \            763259  
+   \   000262   89CDBE79     DB 137, 205, 190, 121, 242
+   \            F2      
+      8             {0xff, 0xff, 0x3f, 0xef, 0x1e, 0x40, 0x0f, 0x4b, 0x3f, 0x50, 0x96, 0x80, 0xae, 0x69, 0x7f,
+      9              0xff, 0x95, 0xc0, 0x6c, 0x0c, 0x40, 0xe5, 0x27, 0x3f, 0xf1, 0xcc, 0x80, 0x0d, 0x33, 0x7f,
+     10              0xac, 0xcb, 0xc0, 0xff, 0xff, 0x3f, 0x78, 0xba, 0x3e, 0xab, 0x4a, 0x81, 0x53, 0xb5, 0x7e,
+     11              0x86, 0x45, 0xc1, 0x26, 0xce, 0x3f, 0x1f, 0x4d, 0x3e, 0x31, 0xf9, 0x81, 0xcd, 0x06, 0x7e,
+     12              0xb7, 0xe4, 0xc1, 0xd9, 0x58, 0x3f, 0x4b, 0x1d, 0x3d, 0xa9, 0xda, 0x83, 0x55, 0x25, 0x7c,
+     13              0xd9, 0x89, 0xc3, 0x04, 0xde, 0x3e, 0x74, 0xfe, 0x3a, 0x9e, 0x5f, 0x87, 0x60, 0xa0, 0x78,
+     14              0x85, 0x23, 0xc6, 0x00, 0xbb, 0x41, 0xb9, 0xe7, 0x21, 0x0d, 0x60, 0xd6, 0xf1, 0x9f, 0x29,
+     15              0x44, 0x5d, 0xdc, 0xd5, 0xfe, 0x46, 0x50, 0xf8, 0x02, 0x94, 0x25, 0x30, 0x6a, 0xda, 0xcf,
+     16              0xd7, 0x08, 0xf6}, //pop
+     17             {0xff, 0xff, 0x3f, 0x75, 0xeb, 0x3f, 0xd0, 0x4c, 0x3f, 0x09, 0xc8, 0x80, 0xf5, 0x37, 0x7f,
+     18              0xb8, 0xc7, 0xc0, 0xff, 0xff, 0x3f, 0x55, 0x28, 0x3f, 0xef, 0xd8, 0x80, 0x0f, 0x27, 0x7f,
+     19              0xa9, 0xd7, 0xc0, 0x98, 0x25, 0x40, 0xf4, 0xb7, 0x3e, 0x96, 0x27, 0x81, 0x68, 0xd8, 0x7e,
+     20              0x70, 0x22, 0xc1, 0xc9, 0x64, 0x40, 0x90, 0x42, 0x3e, 0x35, 0x6d, 0x81, 0xc9, 0x92, 0x7e,
+     21              0xa4, 0x58, 0xc1, 0xb8, 0xac, 0x3f, 0x7f, 0x29, 0x3d, 0xd4, 0x7a, 0x83, 0x2a, 0x85, 0x7c,
+     22              0xc5, 0x29, 0xc3, 0x35, 0x6f, 0x3f, 0xd2, 0x10, 0x3b, 0xb7, 0xbd, 0x86, 0x47, 0x42, 0x79,
+     23              0xf6, 0x7f, 0xc5, 0xcf, 0x3b, 0x47, 0x08, 0x08, 0x20, 0xe4, 0xdb, 0xd4, 0x1a, 0x24, 0x2b,
+     24              0x25, 0xbc, 0xd8, 0xea, 0xc2, 0x4e, 0x55, 0xc3, 0xfe, 0xa5, 0x76, 0x32, 0x59, 0x89, 0xcd,
+     25              0xbe, 0x79, 0xf2}, //rock
+     26             {0xff, 0xff, 0x3f, 0xff, 0xff, 0x3f, 0xe0, 0x4d, 0x3f, 0x6f, 0xb2, 0x80, 0x8f, 0x4d, 0x7f,
+     27              0x1e, 0xb2, 0xc0, 0xff, 0xff, 0x3f, 0x55, 0x28, 0x3f, 0xef, 0xd8, 0x80, 0x0f, 0x27, 0x7f,
+     28              0xa9, 0xd7, 0xc0, 0xff, 0xff, 0x3f, 0x78, 0xba, 0x3e, 0xab, 0x4a, 0x81, 0x53, 0xb5, 0x7e,
+     29              0x86, 0x45, 0xc1, 0xc9, 0x64, 0x40, 0x90, 0x42, 0x3e, 0x35, 0x6d, 0x81, 0xc9, 0x92, 0x7e,
+     30              0xa4, 0x58, 0xc1, 0xde, 0xa8, 0x40, 0xae, 0x15, 0x3d, 0x16, 0x93, 0x82, 0xe8, 0x6c, 0x7d,
+     31              0x71, 0x41, 0xc2, 0x33, 0x27, 0x41, 0x5d, 0xe7, 0x3a, 0x38, 0x33, 0x85, 0xc6, 0xcc, 0x7a,
+     32              0x6d, 0xf1, 0xc3, 0xd9, 0x57, 0x45, 0xb9, 0xc0, 0x20, 0xeb, 0x58, 0xd5, 0x13, 0xa7, 0x2a,
+     33              0x6b, 0xe7, 0xd9, 0xea, 0xc2, 0x4e, 0x55, 0xc3, 0xfe, 0xa5, 0x76, 0x32, 0x59, 0x89, 0xcd,
+     34              0xbe, 0x79, 0xf2}, //jazz
+     35             {0xff, 0xff, 0x3f, 0xff, 0xff, 0x3f, 0xe0, 0x4d, 0x3f, 0x6f, 0xb2, 0x80, 0x8f, 0x4d, 0x7f,
+     36              0x1e, 0xb2, 0xc0, 0x1c, 0x67, 0x40, 0x79, 0x10, 0x3f, 0xad, 0x89, 0x80, 0x51, 0x76, 0x7f,
+     37              0x67, 0x88, 0xc0, 0xd5, 0x9b, 0x40, 0x02, 0x96, 0x3e, 0x4f, 0xd3, 0x80, 0xaf, 0x2c, 0x7f,
+     38              0x25, 0xce, 0xc0, 0xc9, 0x64, 0x40, 0x90, 0x42, 0x3e, 0x35, 0x6d, 0x81, 0xc9, 0x92, 0x7e,
+     39              0xa4, 0x58, 0xc1, 0xff, 0xff, 0x3f, 0x57, 0x2c, 0x3d, 0xee, 0x24, 0x83, 0x10, 0xdb, 0x7c,
+     40              0xa7, 0xd3, 0xc2, 0xff, 0xff, 0x3f, 0x41, 0x13, 0x3b, 0xfc, 0x2b, 0x86, 0x02, 0xd4, 0x79,
+     41              0xbd, 0xec, 0xc4, 0x9c, 0x82, 0x43, 0x42, 0x60, 0x21, 0x4e, 0xda, 0xd5, 0xb0, 0x25, 0x2a,
+     42              0x1e, 0x1d, 0xdb, 0xd5, 0xfe, 0x46, 0x50, 0xf8, 0x02, 0x94, 0x25, 0x30, 0x6a, 0xda, 0xcf,
+     43              0xd7, 0x08, 0xf6}, //classic
+     44             {0xff, 0xff, 0x3f, 0x75, 0xeb, 0x3f, 0xd0, 0x4c, 0x3f, 0x09, 0xc8, 0x80, 0xf5, 0x37, 0x7f,
+     45              0xb8, 0xc7, 0xc0, 0xff, 0xff, 0x3f, 0x55, 0x28, 0x3f, 0xef, 0xd8, 0x80, 0x0f, 0x27, 0x7f,
+     46              0xa9, 0xd7, 0xc0, 0xff, 0xff, 0x3f, 0x78, 0xba, 0x3e, 0xab, 0x4a, 0x81, 0x53, 0xb5, 0x7e,
+     47              0x86, 0x45, 0xc1, 0xfe, 0x31, 0x40, 0xcc, 0x4b, 0x3e, 0xbd, 0x96, 0x81, 0x41, 0x69, 0x7e,
+     48              0x33, 0x82, 0xc1, 0xb1, 0x53, 0x40, 0xc9, 0x25, 0x3d, 0xfb, 0xd7, 0x82, 0x03, 0x28, 0x7d,
+     49              0x82, 0x86, 0xc2, 0xff, 0xff, 0x3f, 0x41, 0x13, 0x3b, 0xfc, 0x2b, 0x86, 0x02, 0xd4, 0x79,
+     50              0xbd, 0xec, 0xc4, 0xcf, 0x3b, 0x47, 0x08, 0x08, 0x20, 0xe4, 0xdb, 0xd4, 0x1a, 0x24, 0x2b,
+     51              0x25, 0xbc, 0xd8, 0xea, 0xc2, 0x4e, 0x55, 0xc3, 0xfe, 0xa5, 0x76, 0x32, 0x59, 0x89, 0xcd,
+     52              0xbe, 0x79, 0xf2}  //country
+     53          };
+     54          
+
+   \                                 In segment EQ_CONST, align 1
+     55          IAR_CONST u8  tbl_drc[45] = {
+   \                     tbl_drc:
+   \   000000   0000006A     DB 0, 0, 0, 106, 4, 1, 130, 0, 0, 106, 4, 1, 10, 2, 0, 151, 173, 252
+   \            04018200
+   \            006A0401
+   \            0A020097
+   \            ADFC    
+   \   000012   FFFF032D     DB 255, 255, 3, 45, 91, 249, 255, 255, 1, 195, 8, 246, 255, 255, 3, 177
+   \            5BF9FFFF
+   \            01C308F6
+   \            FFFF03B1
+   \   000022   6CE50000     DB 108, 229, 0, 0, 244, 254, 248, 7, 17, 120, 0
+   \            F4FEF807
+   \            117800  
+     56              0x00, 0x00, 0x00, // reserve
+     57              0x6a, 0x04, 0x01, // at_comexp
+     58              0x82, 0x00, 0x00, // rt_comexp
+     59              0x6a, 0x04, 0x01, // at_lim
+     60              0x0a, 0x02, 0x00, // rt_lim
+     61              0x97, 0xad, 0xfc, // LT
+     62              0xff, 0xff, 0x03, // LS
+     63              0x2d, 0x5b, 0xf9, // CT
+     64              0xff, 0xff, 0x01, // CS
+     65              0xc3, 0x08, 0xf6, // ET
+     66              0xff, 0xff, 0x03, // ES
+     67              0xb1, 0x6c, 0xe5, // NT
+     68              0x00, 0x00, 0xf4, // NS
+     69              0xfe, 0xf8, 0x07, // Gain
+     70              0x11, 0x78, 0x00  // tav
+     71          };
+     72          #pragma constseg=default
+
+
+   Segment part sizes:
+
+     Function/Label    Bytes
+     --------------    -----
+     tbl_eqpower_music   12
+     tbl_eq_music       615
+     tbl_drc             45
+
+ 
+ 672 bytes in segment EQ_CONST
+ 
+ 672 bytes of CODE memory
+
+Errors: none
+Warnings: none

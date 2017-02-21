@@ -1,0 +1,710 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:01 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_spi.c                                         #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_spi.c                                         #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_spi.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_spi.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_spi.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_spi.c
+      4           * Author    : Hanny
+      5           * Function  : 用户的SPI操作，主要用于跟读与磁带复读等功能
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "user_spi.h"
+      9          
+     10          struct {
+     11              u16 start_addr;
+     12              u16 data_len;
+     13          
+     14              u16 cur_addr;
+     15              u16 end_addr;                       //这个是整个数据区的结束，可以loop回
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     16          } spimsc_ctl;
+   \                     spimsc_ctl:
+   \   000000                DS 8
+     17          
+     18          //设置开始
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     19          void spi_music_init(void)
+   \                     spi_music_init:
+     20          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     21              spimsc_ctl.start_addr = 0;
+   \   000000   90....       MOV     DPTR,#spimsc_ctl
+   \   000003   12....       LCALL   ?Subroutine0 & 0xFFFF
+     22              spimsc_ctl.data_len = 0;
+     23              spimsc_ctl.cur_addr = 0;
+     24              spimsc_ctl.end_addr = spi_get_datalen();
+   \                     ??CrossCallReturnLabel_0:
+   \   000006                ; Setup parameters for call to function spi_get_datalen
+   \   000006   90....       MOV     DPTR,#(spi_get_datalen & 0xffff)
+   \   000009   74..         MOV     A,#((spi_get_datalen >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000E   90....       MOV     DPTR,#(spimsc_ctl + 6)
+   \   000011   EA           MOV     A,R2
+   \   000012   F0           MOVX    @DPTR,A
+   \   000013   A3           INC     DPTR
+   \   000014   EB           MOV     A,R3
+   \   000015   F0           MOVX    @DPTR,A
+     25          }
+   \   000016   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E4           CLR     A
+   \   000001   F0           MOVX    @DPTR,A
+   \   000002   A3           INC     DPTR
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000007   F0           MOVX    @DPTR,A
+   \   000008   A3           INC     DPTR
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   A3           INC     DPTR
+   \   00000F   F0           MOVX    @DPTR,A
+   \   000010   22           RET
+     26          
+     27          //设置开始
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     28          bool spi_music_open(u16 start_addr, u16 data_len)
+   \                     spi_music_open:
+     29          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     30              if (start_addr >= spimsc_ctl.end_addr) {
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 6)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F8           MOV     R0,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   F9           MOV     R1,A
+   \   000008   C3           CLR     C
+   \   000009   EA           MOV     A,R2
+   \   00000A   98           SUBB    A,R0
+   \   00000B   EB           MOV     A,R3
+   \   00000C   99           SUBB    A,R1
+   \   00000D   90....       MOV     DPTR,#spimsc_ctl
+   \   000010   4006         JC      ??spi_music_open_0
+     31                  spimsc_ctl.start_addr = 0;
+   \   000012   12....       LCALL   ?Subroutine0 & 0xFFFF
+     32                  spimsc_ctl.data_len = 0;
+     33                  spimsc_ctl.cur_addr = 0;
+     34                  return false;
+   \                     ??CrossCallReturnLabel_1:
+   \   000015   C3           CLR     C
+   \   000016   8016         SJMP    ??spi_music_open_1
+     35              }
+     36              spimsc_ctl.start_addr = start_addr;
+   \                     ??spi_music_open_0:
+   \   000018   EA           MOV     A,R2
+   \   000019   F0           MOVX    @DPTR,A
+   \   00001A   A3           INC     DPTR
+   \   00001B   EB           MOV     A,R3
+   \   00001C   F0           MOVX    @DPTR,A
+     37              spimsc_ctl.data_len = data_len;
+   \   00001D   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000020   EC           MOV     A,R4
+   \   000021   F0           MOVX    @DPTR,A
+   \   000022   A3           INC     DPTR
+   \   000023   ED           MOV     A,R5
+   \   000024   F0           MOVX    @DPTR,A
+     38              spimsc_ctl.cur_addr = start_addr;
+   \   000025   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000028   EA           MOV     A,R2
+   \   000029   F0           MOVX    @DPTR,A
+   \   00002A   A3           INC     DPTR
+   \   00002B   EB           MOV     A,R3
+   \   00002C   F0           MOVX    @DPTR,A
+     39              return true;
+   \   00002D   D3           SETB    C
+   \                     ??spi_music_open_1:
+   \   00002E   02....       LJMP    ?BRET
+     40          }
+     41          
+     42          //设置结束
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     43          void spi_music_set_end(void)
+   \                     spi_music_set_end:
+     44          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     45              spimsc_ctl.cur_addr = spimsc_ctl.start_addr + spimsc_ctl.data_len;
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F8           MOV     R0,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   F9           MOV     R1,A
+   \   000008   7583..       MOV     DPH,#((spimsc_ctl >> 8) & 0xff)
+   \   00000B   7582..       MOV     DPL,#(spimsc_ctl & 0xff)
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   28           ADD     A,R0
+   \   000010   F8           MOV     R0,A
+   \   000011   A3           INC     DPTR
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   39           ADDC    A,R1
+   \   000014   F9           MOV     R1,A
+   \   000015   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000018   E8           MOV     A,R0
+   \   000019   F0           MOVX    @DPTR,A
+   \   00001A   A3           INC     DPTR
+   \   00001B   E9           MOV     A,R1
+   \   00001C   F0           MOVX    @DPTR,A
+     46          }
+   \   00001D   02....       LJMP    ?BRET
+     47          
+     48          //SPI Flash音乐文件读接口，每次读取一个512Byte
+     49          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     50          __near_func bool spi_music_read(void *buf)
+   \                     spi_music_read:
+     51          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     52              //printf("spird: %04x\n", spimsc_ctl.cur_addr);
+     53              if (spimsc_ctl.data_len == 0) {
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   7002         JNZ     ??spi_music_read_0
+   \   000006   A3           INC     DPTR
+   \   000007   E0           MOVX    A,@DPTR
+   \                     ??spi_music_read_0:
+   \   000008   7002         JNZ     ??spi_music_read_1
+     54                  return false;
+   \                     ??spi_music_read_2:
+   \   00000A   C3           CLR     C
+   \   00000B   22           RET
+     55              }
+     56              if (!spi_read_data(buf, spimsc_ctl.cur_addr)) {
+   \                     ??spi_music_read_1:
+   \   00000C                ; Setup parameters for call to function spi_read_data
+   \   00000C   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   00000F   E0           MOVX    A,@DPTR
+   \   000010   FC           MOV     R4,A
+   \   000011   A3           INC     DPTR
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   FD           MOV     R5,A
+   \   000014   12....       LCALL   spi_read_data
+   \   000017   50F1         JNC     ??spi_music_read_2
+     57                  return false;
+     58              }
+     59              spimsc_ctl.data_len -= 2;
+   \   000019   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   24FE         ADD     A,#-0x2
+   \   00001F   F0           MOVX    @DPTR,A
+   \   000020   A3           INC     DPTR
+   \   000021   E0           MOVX    A,@DPTR
+   \   000022   34FF         ADDC    A,#-0x1
+   \   000024   F0           MOVX    @DPTR,A
+     60              spimsc_ctl.cur_addr += 2;
+   \   000025   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000028   E0           MOVX    A,@DPTR
+   \   000029   2402         ADD     A,#0x2
+   \   00002B   F0           MOVX    @DPTR,A
+   \   00002C   A3           INC     DPTR
+   \   00002D   E0           MOVX    A,@DPTR
+   \   00002E   3400         ADDC    A,#0x0
+   \   000030   F0           MOVX    @DPTR,A
+     61              if (spimsc_ctl.cur_addr >= spimsc_ctl.end_addr) {
+   \   000031   90....       MOV     DPTR,#(spimsc_ctl + 6)
+   \   000034   E0           MOVX    A,@DPTR
+   \   000035   F8           MOV     R0,A
+   \   000036   A3           INC     DPTR
+   \   000037   E0           MOVX    A,@DPTR
+   \   000038   F9           MOV     R1,A
+   \   000039   7583..       MOV     DPH,#(((spimsc_ctl + 4) >> 8) & 0xff)
+   \   00003C   7582..       MOV     DPL,#((spimsc_ctl + 4) & 0xff)
+   \   00003F   C3           CLR     C
+   \   000040   E0           MOVX    A,@DPTR
+   \   000041   98           SUBB    A,R0
+   \   000042   A3           INC     DPTR
+   \   000043   E0           MOVX    A,@DPTR
+   \   000044   99           SUBB    A,R1
+   \   000045   4007         JC      ??spi_music_read_3
+     62                  spimsc_ctl.cur_addr = 0;                        //写到结束，循环回0
+   \   000047   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   00004A   E4           CLR     A
+   \   00004B   F0           MOVX    @DPTR,A
+   \   00004C   A3           INC     DPTR
+   \   00004D   F0           MOVX    @DPTR,A
+     63              }
+     64              return true;
+   \                     ??spi_music_read_3:
+   \   00004E   D3           SETB    C
+   \   00004F   22           RET
+     65          }
+     66          
+     67          //SPI Flash音乐seek接口
+     68          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     69          __near_func bool spi_music_seek(u8 mode, u32 offset)
+   \                     spi_music_seek:
+     70          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 4
+   \   000004                ; Auto size: 0
+   \   000004   8A..         MOV     ?V0 + 0,R2
+   \   000006   8B..         MOV     ?V0 + 1,R3
+     71              if (mode == F_SEEK_ORG) {
+   \   000008   E9           MOV     A,R1
+   \   000009   7015         JNZ     ??spi_music_seek_0
+     72                  spimsc_ctl.cur_addr = spimsc_ctl.start_addr + (u16)offset;
+   \   00000B   90....       MOV     DPTR,#spimsc_ctl
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   25..         ADD     A,?V0 + 0
+   \   000011   F8           MOV     R0,A
+   \   000012   A3           INC     DPTR
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   35..         ADDC    A,?V0 + 1
+   \   000016   F9           MOV     R1,A
+   \   000017   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   00001A   E8           MOV     A,R0
+   \   00001B   F0           MOVX    @DPTR,A
+   \   00001C   A3           INC     DPTR
+   \   00001D   E9           MOV     A,R1
+   \   00001E   800B         SJMP    ??spi_music_seek_1
+     73              } else {
+     74                  spimsc_ctl.cur_addr += (u16)offset;
+   \                     ??spi_music_seek_0:
+   \   000020   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   25..         ADD     A,?V0 + 0
+   \   000026   F0           MOVX    @DPTR,A
+   \   000027   A3           INC     DPTR
+   \   000028   E0           MOVX    A,@DPTR
+   \   000029   35..         ADDC    A,?V0 + 1
+   \                     ??spi_music_seek_1:
+   \   00002B   F0           MOVX    @DPTR,A
+     75              }
+     76              return true;
+   \   00002C   D3           SETB    C
+   \   00002D   D0..         POP     ?V0 + 1
+   \   00002F   D0..         POP     ?V0 + 0
+   \   000031   22           RET
+     77          }
+     78          
+     79          #pragma location="SPI_WRITE_API"
+
+   \                                 In segment SPI_WRITE_API, align 1, keep-with-next
+     80          bool spi_music_write(void *buf)
+   \                     spi_music_write:
+     81          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+     82              //printf("spiwr: %04x\n", spimsc_ctl.cur_addr);
+     83              if ((spimsc_ctl.cur_addr & REC_SPI_ERASE_BLOCK_MASK) == 0) {
+   \   00000A   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   00000D   E0           MOVX    A,@DPTR
+   \   00000E   FA           MOV     R2,A
+   \   00000F   A3           INC     DPTR
+   \   000010   E0           MOVX    A,@DPTR
+   \   000011   FB           MOV     R3,A
+   \   000012   EA           MOV     A,R2
+   \   000013   540F         ANL     A,#0xf
+   \   000015   700D         JNZ     ??spi_music_write_0
+     84                  if (!spi_erase_data(spimsc_ctl.cur_addr)) {
+   \   000017                ; Setup parameters for call to function spi_erase_data
+   \   000017   90....       MOV     DPTR,#(spi_erase_data & 0xffff)
+   \   00001A   74..         MOV     A,#((spi_erase_data >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00001F   4003         JC      ??spi_music_write_0
+     85                      return false;
+   \                     ??spi_music_write_1:
+   \   000021   C3           CLR     C
+   \   000022   8072         SJMP    ??spi_music_write_2
+     86                  }
+     87              }
+     88              if (!spi_write_data(buf, spimsc_ctl.cur_addr)) {
+   \                     ??spi_music_write_0:
+   \   000024                ; Setup parameters for call to function spi_write_data
+   \   000024   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000027   E0           MOVX    A,@DPTR
+   \   000028   FC           MOV     R4,A
+   \   000029   A3           INC     DPTR
+   \   00002A   E0           MOVX    A,@DPTR
+   \   00002B   FD           MOV     R5,A
+   \   00002C   EE           MOV     A,R6
+   \   00002D   FA           MOV     R2,A
+   \   00002E   EF           MOV     A,R7
+   \   00002F   FB           MOV     R3,A
+   \   000030   90....       MOV     DPTR,#(spi_write_data & 0xffff)
+   \   000033   74..         MOV     A,#((spi_write_data >> 16) & 0xff)
+   \   000035   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000038   50E7         JNC     ??spi_music_write_1
+     89                  return false;
+     90              }
+     91          
+     92              //控制写入的数据总长度
+     93              spimsc_ctl.data_len += 2;
+   \   00003A   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   00003D   12....       LCALL   ?Subroutine1
+     94              if (spimsc_ctl.data_len >= spimsc_ctl.end_addr) {
+   \                     ??CrossCallReturnLabel_2:
+   \   000040   90....       MOV     DPTR,#(spimsc_ctl + 6)
+   \   000043   E0           MOVX    A,@DPTR
+   \   000044   F8           MOV     R0,A
+   \   000045   A3           INC     DPTR
+   \   000046   E0           MOVX    A,@DPTR
+   \   000047   F9           MOV     R1,A
+   \   000048   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   00004B   C3           CLR     C
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   98           SUBB    A,R0
+   \   00004E   A3           INC     DPTR
+   \   00004F   E0           MOVX    A,@DPTR
+   \   000050   99           SUBB    A,R1
+   \   000051   402A         JC      ??spi_music_write_3
+     95                  //总长度过长，截取开头的一个BLOCK数据
+     96          
+     97                  spimsc_ctl.data_len -= REC_SPI_ERASE_BLOCK;
+   \   000053   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000056   E0           MOVX    A,@DPTR
+   \   000057   24F0         ADD     A,#-0x10
+   \   000059   F0           MOVX    @DPTR,A
+   \   00005A   A3           INC     DPTR
+   \   00005B   E0           MOVX    A,@DPTR
+   \   00005C   34FF         ADDC    A,#-0x1
+   \   00005E   F0           MOVX    @DPTR,A
+     98                  spimsc_ctl.start_addr += REC_SPI_ERASE_BLOCK;
+   \   00005F   90....       MOV     DPTR,#spimsc_ctl
+   \   000062   E0           MOVX    A,@DPTR
+   \   000063   2410         ADD     A,#0x10
+   \   000065   F0           MOVX    @DPTR,A
+   \   000066   A3           INC     DPTR
+   \   000067   E0           MOVX    A,@DPTR
+   \   000068   3400         ADDC    A,#0x0
+   \   00006A   F0           MOVX    @DPTR,A
+     99                 // printf("len:%d\n",spimsc_ctl.data_len);
+    100                  if (spimsc_ctl.start_addr >= spimsc_ctl.end_addr) {
+   \   00006B   90....       MOV     DPTR,#spimsc_ctl
+   \   00006E   C3           CLR     C
+   \   00006F   E0           MOVX    A,@DPTR
+   \   000070   98           SUBB    A,R0
+   \   000071   A3           INC     DPTR
+   \   000072   E0           MOVX    A,@DPTR
+   \   000073   99           SUBB    A,R1
+   \   000074   4007         JC      ??spi_music_write_3
+    101                      spimsc_ctl.start_addr = 0;                  //写到结束，循环回0
+   \   000076   90....       MOV     DPTR,#spimsc_ctl
+   \   000079   E4           CLR     A
+   \   00007A   F0           MOVX    @DPTR,A
+   \   00007B   A3           INC     DPTR
+   \   00007C   F0           MOVX    @DPTR,A
+    102                  }
+    103              }
+    104          
+    105              //控制当前的写Buffer指针
+    106              spimsc_ctl.cur_addr += 2;
+   \                     ??spi_music_write_3:
+   \   00007D   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000080   12....       LCALL   ?Subroutine1
+    107              if (spimsc_ctl.cur_addr >= spimsc_ctl.end_addr) {
+   \                     ??CrossCallReturnLabel_3:
+   \   000083   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000086   C3           CLR     C
+   \   000087   E0           MOVX    A,@DPTR
+   \   000088   98           SUBB    A,R0
+   \   000089   A3           INC     DPTR
+   \   00008A   E0           MOVX    A,@DPTR
+   \   00008B   99           SUBB    A,R1
+   \   00008C   4007         JC      ??spi_music_write_4
+    108                  spimsc_ctl.cur_addr = 0;                        //写到结束，循环回0
+   \   00008E   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000091   E4           CLR     A
+   \   000092   F0           MOVX    @DPTR,A
+   \   000093   A3           INC     DPTR
+   \   000094   F0           MOVX    @DPTR,A
+    109              }
+    110             // printf("spiwr:%d\n", spimsc_ctl.cur_addr);
+    111              return true;
+   \                     ??spi_music_write_4:
+   \   000095   D3           SETB    C
+   \                     ??spi_music_write_2:
+   \   000096   D0E0         POP     A
+   \   000098   FF           MOV     R7,A
+   \   000099   D0E0         POP     A
+   \   00009B   FE           MOV     R6,A
+   \   00009C   02....       LJMP    ?BRET
+    112          }
+
+   \                                 In segment SPI_WRITE_API, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   2402         ADD     A,#0x2
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   A3           INC     DPTR
+   \   000005   E0           MOVX    A,@DPTR
+   \   000006   3400         ADDC    A,#0x0
+   \   000008   F0           MOVX    @DPTR,A
+   \   000009   22           RET
+    113          
+    114          //对齐当前位置，设为新的录音起始位置
+    115          #pragma location="TASK_TOMCAT_INIT"
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+    116          void spi_record_start(void)
+   \                     spi_record_start:
+    117          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    118              u16 repeat_addr;
+    119              repeat_addr = ((spimsc_ctl.cur_addr + REC_SPI_ERASE_BLOCK_MASK) >> REC_SPI_ERASE_BIT) << REC_SPI_ERASE_BIT;
+    120              spi_music_open(repeat_addr, 0);
+   \   000000                ; Setup parameters for call to function spi_music_open
+   \   000000   7C00         MOV     R4,#0x0
+   \   000002   7D00         MOV     R5,#0x0
+   \   000004   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   240F         ADD     A,#0xf
+   \   00000A   F8           MOV     R0,A
+   \   00000B   A3           INC     DPTR
+   \   00000C   E0           MOVX    A,@DPTR
+   \   00000D   3400         ADDC    A,#0x0
+   \   00000F   F9           MOV     R1,A
+   \   000010   74F0         MOV     A,#-0x10
+   \   000012   58           ANL     A,R0
+   \   000013   FA           MOV     R2,A
+   \   000014   74FF         MOV     A,#-0x1
+   \   000016   59           ANL     A,R1
+   \   000017   FB           MOV     R3,A
+   \   000018   90....       MOV     DPTR,#(spi_music_open & 0xffff)
+   \   00001B   74..         MOV     A,#((spi_music_open >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    121          }
+   \   000020   02....       LJMP    ?BRET
+    122          
+    123          //获取MUSIC的起台
+    124          #pragma location="TASK_TOMCAT_INIT"
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+    125          u16 spi_music_start(void)
+   \                     spi_music_start:
+    126          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    127              return spimsc_ctl.start_addr;
+   \   000000   90....       MOV     DPTR,#spimsc_ctl
+   \   000003   80..         SJMP    ?Subroutine3
+    128          }
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_4:
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   FA           MOV     R2,A
+   \   000002   A3           INC     DPTR
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   FB           MOV     R3,A
+   \   000005   22           RET
+    129          
+    130          //获取MUSIC的当前
+    131          #pragma location="TASK_TOMCAT_INIT"
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+    132          u16 spi_music_addr(void)
+   \                     spi_music_addr:
+    133          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    134              return spimsc_ctl.cur_addr;
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 4)
+   \   000003   80..         SJMP    ?Subroutine3
+    135          }
+    136          
+    137          //获取MUSIC的长度
+    138          #pragma location="TASK_TOMCAT_INIT"
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+    139          u16 spi_music_len(void)
+   \                     spi_music_len:
+    140          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    141              return spimsc_ctl.data_len;
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 2)
+   \   000003                REQUIRE ?Subroutine3
+   \   000003                ; // Fall through to label ?Subroutine3
+    142          }
+    143          
+    144          #pragma location="TASK_TOMCAT_INIT"
+
+   \                                 In segment TASK_TOMCAT_INIT, align 1, keep-with-next
+    145          u16 spi_music_end(void)
+   \                     spi_music_end:
+    146          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    147              return spimsc_ctl.end_addr;
+   \   000000   90....       MOV     DPTR,#(spimsc_ctl + 6)
+   \   000003   80..         SJMP    ?Subroutine3
+    148          }
+    149          
+    150          //初始化第music_num首歌
+    151          #pragma location="MUSIC_SEG"
+
+   \                                 In segment MUSIC_SEG, align 1, keep-with-next
+    152          bool music_init_spi(u16 data_start, u16 data_len)
+   \                     music_init_spi:
+    153          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    154          #if DEBUG_TASK_TAPE
+    155              printf("music_init_spi\n");
+    156          #endif
+    157              if (!spi_music_open(data_start, data_len)) {
+   \   000000                ; Setup parameters for call to function spi_music_open
+   \   000000   90....       MOV     DPTR,#(spi_music_open & 0xffff)
+   \   000003   74..         MOV     A,#((spi_music_open >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   4003         JC      ??music_init_spi_0
+    158                  return false;
+   \   00000A   C3           CLR     C
+   \   00000B   8008         SJMP    ??music_init_spi_1
+    159              }
+    160          #if DEBUG_TASK_TAPE
+    161              printf("mp3_init\n");
+    162          #endif
+    163              return mp3_init_spi();
+   \                     ??music_init_spi_0:
+   \   00000D                ; Setup parameters for call to function mp3_init_spi
+   \   00000D   90....       MOV     DPTR,#(mp3_init_spi & 0xffff)
+   \   000010   74..         MOV     A,#((mp3_init_spi >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??music_init_spi_1:
+   \   000015   02....       LJMP    ?BRET
+    164          }
+
+   Maximum stack usage in bytes:
+
+     Function             EXT_STACK PSTACK XSTACK
+     --------             --------- ------ ------
+     music_init_spi              0      0      0
+       -> spi_music_open         0      0      0
+       -> mp3_init_spi           0      0      0
+     spi_music_addr              0      0      0
+     spi_music_end               0      0      0
+     spi_music_init              0      0      0
+       -> spi_get_datalen        0      0      0
+     spi_music_len               0      0      0
+     spi_music_open              0      0      0
+     spi_music_read              2      0      0
+       -> spi_read_data          0      0      0
+     spi_music_seek              4      0      0
+     spi_music_set_end           2      0      0
+     spi_music_start             0      0      0
+     spi_music_write             2      0      0
+       -> spi_erase_data         4      0      0
+       -> spi_write_data         4      0      0
+     spi_record_start            0      0      0
+       -> spi_music_open         0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label    Bytes
+     --------------    -----
+     spimsc_ctl           8
+     spi_music_init      25
+     ?Subroutine0        17
+     spi_music_open      49
+     spi_music_set_end   32
+     spi_music_read      80
+     spi_music_seek      50
+     spi_music_write    159
+     ?Subroutine1        10
+     spi_record_start    35
+     spi_music_start      5
+     ?Subroutine3         6
+     ?Subroutine2         6
+     spi_music_addr       5
+     spi_music_len        3
+     spi_music_end        5
+     music_init_spi      24
+
+ 
+ 123 bytes in segment BANKED_CODE
+ 130 bytes in segment FAT_COM_SEG
+  24 bytes in segment MUSIC_SEG
+ 169 bytes in segment SPI_WRITE_API
+  65 bytes in segment TASK_TOMCAT_INIT
+   8 bytes in segment XDATA_Z
+ 
+ 511 bytes of CODE  memory
+   8 bytes of XDATA memory
+
+Errors: none
+Warnings: none

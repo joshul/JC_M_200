@@ -1,0 +1,175 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:52 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\lcd_display.c                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\lcd_display.c                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\lcd_display.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\lcd_display.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\lcd_display.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : lcd_display.h
+      4           * Author    : Hanny
+      5           * Function  : LCD显示函数
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          
+     10          //获取字符宽度
+     11          #pragma location="DISP_SEG_1"
+     12          u8 char_width(u8 ch)
+     13          {
+     14              if (ch & 0x80)     //若为双字节字符
+     15              {
+     16          #if(FONT_SEL == SMALL_FONT)
+     17                  return(13);
+     18          #else
+     19                  return(15);
+     20          #endif
+     21              }
+     22          #if(FONT_SEL == SMALL_FONT)
+     23                  return(7);
+     24          #else
+     25                  return(8);
+     26          #endif
+     27              //return(ch_width[ch]);//由于改为了宋体显示，字符宽度都是固定的，故屏蔽此项
+     28          }
+     29          
+     30          //获取unicode字符宽度
+     31          #pragma location="DISP_SEG_1"
+     32          u8 char_unicode_width(u8 *str)
+     33          {
+     34              u8 width = 0;
+     35              if (*str & BIT(7) || *(str+1) != 0)
+     36              {
+     37          #if(FONT_SEL == SMALL_FONT)
+     38                  width += 13;
+     39          #else
+     40                  width += 15;
+     41          #endif
+     42              }
+     43              else
+     44              {
+     45          #if(FONT_SEL == SMALL_FONT)
+     46                  width += 7;
+     47          #else
+     48                  width += 8;
+     49          #endif
+     50                  //width += char_width(*str);
+     51              }
+     52              return width;
+     53          }
+     54          
+     55          
+     56          #pragma location="DISP_SEG_1"
+     57          u16 name_width(char *str, u8 name_encode_flag_pos)
+     58          {
+     59              u16 width=0;
+     60              if (str[name_encode_flag_pos] & FB_GBK) {   //FILE_NAME_FLAG
+     61                  while (1)
+     62                  {
+     63                      width += char_width(*str);
+     64                      // printf("width%d\n",width);
+     65                      if (*str == 0)
+     66                      {
+     67                          break;
+     68                      }
+     69                      if (*str & 0x80)
+     70                      {
+     71                          str++;
+     72                      }
+     73                      str++;
+     74                  }
+     75              } else {
+     76                  while (1)
+     77                  {
+     78                      if (*str == 0 && *(str+1) == 0)
+     79                      {
+     80                          break;
+     81                      }
+     82                      else if (*str & BIT(7) || *(str+1) != 0)
+     83                      {
+     84          #if(FONT_SEL == SMALL_FONT)
+     85                          width += 13;
+     86          #else
+     87                          width += 15;
+     88          #endif
+     89                      }
+     90                      else
+     91                      {
+     92          #if(FONT_SEL == SMALL_FONT)
+     93                          width += 7;
+     94          #else
+     95                          width += 8;
+     96          #endif
+     97                          //width += char_width(*str);
+     98                      }
+     99                      str += 2;
+    100          
+    101                  }
+    102              }
+    103              //    printf("width%d\n", width);
+    104              return(width);
+    105          }
+    106          
+    107          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,473 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_io.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_io.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_io.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_io.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_io.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_io.c
+      4           * Author    : Hanny
+      5           * Function  : 用户的IO设置
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xb0
+   \   unsigned char volatile __sfr P3
+   \                     P3:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbd
+   \   unsigned char volatile __sfr P3DIR
+   \                     P3DIR:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "user_fm.h"
+     10          
+     11          //用户IO初始化
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     12          void user_io_init(void)
+   \                     user_io_init:
+     13          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     14          #if LED_GREEN_BLINK
+     15              LED_GREEN_INIT();
+     16          #endif
+     17          
+     18          #if LED_BLUE_BLINK
+     19              LED_BLUE_INIT();
+     20          #endif
+     21          
+     22          #if (LED_POWER_BLINK && INTERNAL_CHARGE_EN)
+     23              LED_POWER_INIT();
+     24          #endif
+     25          /*#if(USE_P35_USBPOW_CTL == 1)
+     26              PIE1 |= BIT(6);                 //USB模块供电
+     27              P3DIR |= BIT(5);
+     28              irtcc_write_cfg(LCD_MAP_WCMD, BIT(6));
+     29          #elif(!USE_P35_USBPOW_CTL)   */
+     30              //PIE1 &= ~BIT(6);                //MUTE脚,设为数字输出
+     31          //#endif
+     32          
+     33          /*#if USB_GPIO_EN
+     34              USB_DPDM_GPIO_EN();
+     35              USBCON1 &= ~(BIT(7)|BIT(5)|BIT(4));        //关掉DP/DM上下拉，DM的100k上拉可不关
+     36          #endif
+     37          
+     38          #if SOFT_POWER_ON_OFF
+     39              SOFT_POWER_CTL_INIT();
+     40              SOFT_POWER_CHK_INIT();
+     41          #endif
+     42          
+     43              MUSIC_MUTE();
+     44              OPA_CTL_INIT();
+     45          
+     46          #if(USE_P35_USBPOW_CTL == 1)
+     47              PIE1 |= BIT(3);                 //USB模块供电
+     48              P3DIR |= BIT(5);
+     49              irtcc_write_cfg(LCD_MAP_WCMD, BIT(6));
+     50          #elif(!USE_P35_USBPOW_CTL)
+     51              PIE1 &= ~BIT(3);                //MUTE脚,设为数字输出
+     52          #endif
+     53          
+     54          #if TASK_FM_EN                      //FM IO初始化
+     55              fm_io_init();
+     56          #endif
+     57          
+     58          #if MP3BT_DECT_EN && !MP3BT_DECT_REUSE_EN
+     59              MP3BT_DECT_INIT();              //开机MP3-BT检测
+     60          #endif
+     61          
+     62          #if LINEIN_DETECT_EN
+     63              LINEIN_DETECT_INIT();           //LINEIN检测
+     64          #endif*/
+     65          
+     66          #if EAR_DETECT_EN
+     67              EAR_DETECT_INIT();              //耳机检测
+     68          #endif
+     69          
+     70          #if(SD_PORT_SEL == 0)   //单独IO检测SD
+     71              SD_DETECT_INIT();
+     72              PMUXCON0 |= BIT(0);
+     73          #elif(SD_PORT_SEL == 1)         //SD CLK复用检测脚初始化
+     74              PMUXCON0 |= BIT(0);
+     75              P2DIR |= BIT(1) | BIT(0);
+     76              P2PU |= BIT(1) | BIT(0);
+     77          #elif (SD_PORT_SEL == 2) //单独IO检测SD
+     78               SD_DETECT_INIT();
+     79               PMUXCON0 &= ~BIT(0);
+     80          #elif (SD_PORT_SEL == 3)        //SD CLK复用检测脚初始化
+     81              PMUXCON0 &= ~BIT(0);
+   \   000000   90783F       MOV     DPTR,#0x783f
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   C2E0         CLR     0xE0 /* A   */.0
+   \   000006   F0           MOVX    @DPTR,A
+     82              P3DIR |= BIT(0);
+   \   000007   43BD01       ORL     0xbd,#0x1
+     83              P3PU |= BIT(0);
+   \   00000A   907843       MOV     DPTR,#0x7843
+   \   00000D   E0           MOVX    A,@DPTR
+   \   00000E   D2E0         SETB    0xE0 /* A   */.0
+   \   000010   F0           MOVX    @DPTR,A
+     84          #endif
+     85          //SD 独立检测脚初始化
+     86          #if SDCMD_REUSE_EARDET || SDCMD_REUSE_LINEIN_DET
+     87              SD_CMD_DIR_IN();
+     88              SD_CMD_PU_10K();
+     89          #endif
+     90          
+     91          #if SDCMD_REUSE_EARDET || SDCMD_REUSE_LINEIN_DET || SDCLK_REUSE_ADKEY ||SD_CMD_REUSE_SD_DETECT
+     92              sd_port_reuse();
+     93          #endif
+     94          
+     95          #if DYNAMIC_PAUSE_MUTE_EN
+     96              dynamic_pause_mute(1);
+     97          #endif
+     98          
+     99              DCIN_INIT();
+    100              NFC_DETECT_INIT();//NFC检测初始化
+   \   000011   43BD10       ORL     0xbd,#0x10
+    101          #if SDCLK_REUSE_ADKEY
+    102              SD_CLK_DIR_IN();
+    103          #endif
+    104          
+    105             /* BTLDO_DIR_INIT();
+    106              USBPOW_INIT();*/
+    107              
+    108              USER_OTHER_INIT();
+   \   000014                ; Setup parameters for call to function lqfp48_pmu_init
+   \   000014   90....       MOV     DPTR,#(lqfp48_pmu_init & 0xffff)
+   \   000017   74..         MOV     A,#((lqfp48_pmu_init >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    109          
+    110          }
+   \   00001C   02....       LJMP    ?BRET
+    111          
+    112          //USB检测函蕐
+    113          //usb_connected(void);    //DP/DM因潮湿而误检测为PC，用这个函数更好.(DP/DM都开了120K上拉，需要两个同时受潮接地才会误判为PC)
+    114          //usb_connected_1(void);  //修正三星充电器DP/DM短接且为1V左右，引起误检测为PC的问题。(仅DM受潮接地即可误判为PC)
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    115          __near_func void usb_detect(void)
+   \                     usb_detect:
+    116          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    117              u8 usb_conn = usb_connected();
+    118          
+    119          #if TASK_USBDEV_EN
+    120              if (USB_CONNECTED_PC == usb_conn) {
+    121                  if (device_insert(DEVICE_PC)) {
+    122                      //printf("PC IN\n");
+    123                  }
+    124              } else {
+    125                  if (device_remove(DEVICE_PC)) {
+    126                      //printf("PC OUT\n");
+    127                  }
+    128              }
+    129          #endif
+    130          
+    131              if (USB_CONNECTED_UDISK == usb_conn) {
+   \   000000                ; Setup parameters for call to function usb_connected
+   \   000000   12....       LCALL   usb_connected
+   \   000003   E9           MOV     A,R1
+   \   000004   6402         XRL     A,#0x2
+   \   000006   7009         JNZ     ??usb_detect_0
+    132                  if (device_insert(DEVICE_UDISK)) {
+   \   000008                ; Setup parameters for call to function device_insert
+   \   000008   7901         MOV     R1,#0x1
+   \   00000A   12....       LCALL   device_insert
+   \   00000D   500F         JNC     ??usb_detect_1
+    133                      task_ctl.dev_change = 1;
+   \                     ??usb_detect_2:
+   \   00000F   80..         SJMP    ?Subroutine0
+    134                      //printf("UDISK IN\n");
+    135                  }
+    136              } else {
+    137                  if (usb_remove_check()) {
+   \                     ??usb_detect_0:
+   \   000011                ; Setup parameters for call to function usb_remove_check
+   \   000011   12....       LCALL   usb_remove_check
+   \   000014   E9           MOV     A,R1
+   \   000015   6007         JZ      ??usb_detect_1
+    138                      //通信错误才检测拔出..
+    139                      if (device_remove(DEVICE_UDISK)) {
+   \   000017                ; Setup parameters for call to function device_remove
+   \   000017   7901         MOV     R1,#0x1
+   \   000019   12....       LCALL   device_remove
+   \   00001C   40F1         JC      ??usb_detect_2
+    140                          task_ctl.dev_change = 1;
+    141                          //printf("UDISK OUT\n");
+    142                      }
+    143                  }
+    144              }
+    145          }
+   \                     ??usb_detect_1:
+   \   00001E   22           RET
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   7401         MOV     A,#0x1
+   \   000002   90....       MOV     DPTR,#(task_ctl + 3)
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   22           RET
+    146          
+    147          //检测SD卡是否在线
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    148          __near_func void sd_detect(void)
+   \                     sd_detect:
+    149          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    150          #if SD_CMD_REUSE_SD_DETECT
+    151              if(IS_SD_DETECT_BUSY()) {
+    152                  return;
+    153              }
+    154          #elif (SD_PORT_SEL == 1) || (SD_PORT_SEL == 3)  //默认复用SDCLK检测SD卡插入。
+    155              if(IS_SD_CHK_BUSY()) {  //复用检测
+   \   000000   907843       MOV     DPTR,#0x7843
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000006   5012         JNC     ??sd_detect_0
+    156                  return;             //上拉未打开，处于CLK输出模式
+    157              }
+    158          #endif
+    159              if (IS_SD_IN()) {
+   \   000008   A2B0         MOV     C,0xb0.0
+   \   00000A   7900         MOV     R1,#0x0
+   \   00000C   4007         JC      ??sd_detect_1
+    160                  if (device_insert(DEVICE_SDMMC)) {
+   \   00000E                ; Setup parameters for call to function device_insert
+   \   00000E   12....       LCALL   device_insert
+   \   000011   5007         JNC     ??sd_detect_0
+    161                      task_ctl.dev_change = 1;
+   \                     ??sd_detect_2:
+   \   000013   80..         SJMP    ?Subroutine0
+    162                      //printf("SD IN\n");
+    163                  }
+    164              }
+    165              else {
+    166                  if (device_remove(DEVICE_SDMMC)) {
+   \                     ??sd_detect_1:
+   \   000015                ; Setup parameters for call to function device_remove
+   \   000015   12....       LCALL   device_remove
+   \   000018   40F9         JC      ??sd_detect_2
+   \                     ??sd_detect_0:
+   \   00001A   22           RET
+    167                      task_ctl.dev_change = 1;
+    168                      //printf("SD OUT\n");
+    169                  }
+    170              }
+    171          }
+    172          
+    173          #if LINEIN_DETECT_EN
+    174          //检测LineIn
+    175          __near_func void linein_detect(void)
+    176          {
+    177          #if SDCMD_REUSE_LINEIN_DET || LINEIN_DETECT_REUSE_IICCLK
+    178              if (IS_LINEIN_DETECT_BUSY()) {
+    179                  return;
+    180              }
+    181          #endif
+    182              LINEIN_DETECT_INIT();
+    183              if (IS_LINEIN_IN()) {
+    184                  LINEIN_DETECT_END();
+    185                  if (device_insert(DEVICE_LINEIN)) {
+    186                  }
+    187              } else {
+    188                  LINEIN_DETECT_END();
+    189                  if (device_remove(DEVICE_LINEIN)) {
+    190                  }
+    191              }
+    192          }
+    193          #endif
+    194          
+    195          #if EAR_DETECT_EN
+    196          //检测耳机是否插入
+    197          __near_func void earphone_detect(void)
+    198          {
+    199          #if SDCMD_REUSE_EARDET
+    200              if (IS_EAR_DETECT_BUSY()) {
+    201                  return;
+    202              }
+    203          #endif
+    204          
+    205              if(EAR_IS_IN()) {
+    206                  if(device_insert(DEVICE_EAR)) {
+    207                  }
+    208              } else {
+    209                  if(device_remove(DEVICE_EAR)) {
+    210                  }
+    211              }
+    212              if (device_is_online(DEVICE_EAR)) {
+    213                  SPEAKER_MUTE();
+    214              } else {
+    215                  if(!sys_ctl.spk_mute)
+    216                  {
+    217                      SPEAKER_UNMUTE();
+    218                  }
+    219              }
+    220          }
+    221          #endif
+    222          
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    223          __near_func sd_port_reuse_hook(u8 type)
+   \                     sd_port_reuse_hook:
+    224          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    225          #if SDCMD_REUSE_EARDET || SDCMD_REUSE_LINEIN_DET || SD_CMD_REUSE_SD_DETECT
+    226              if (type == 0 || type == 1) {
+    227                  SD_CMD_PU_500R();           //SDCMD复用检测时，开500R上拉通信
+    228              } else {
+    229                  SD_CMD_PU_10K();            //空闲时，开10K上拉用于检测
+    230              }
+    231          #endif
+    232          
+    233          #if SDCLK_REUSE_ADKEY
+    234              bool ie_ea = IE_EA;
+    235              IE_EA = 0;
+    236              if (type == 0 || type == 1) {
+    237                  SD_CLK_DIR_OUT();           //CLK用于时钟输出
+    238              } else {
+    239                  SD_CLK_DIR_IN();            //CLK用于ADKEY检测
+    240                  SD_CLK_PU_DIS();            //关上拉
+    241                  adc_key_kick();
+    242              }
+    243              IE_EA = ie_ea;
+    244          #endif
+    245          }
+   \   000000   22           RET
+    246          
+    247          
+    248          
+    249          #if WKO_OUTPUT_EN
+    250          bool volatile wko_set_kick = false;
+    251          bool volatile wko_set_sta = false;
+    252          __near_func u8 irtcc_read_cfg_near(u8 cmd)
+    253          {
+    254              u8 irtcc_cfg;
+    255              IRTCON |= 0x01;                  //irtcc communicate en
+    256              irtcc_write(cmd);
+    257              irtcc_cfg = irtcc_read();
+    258              IRTCON &= ~(0x01);
+    259              return irtcc_cfg;
+    260          }
+    261          
+    262          __near_func void irtcc_write_cfg_near(u8 cmd,u8 irtcc_cfg)
+    263          {
+    264              IRTCON |= 0x01;
+    265              irtcc_write(cmd);
+    266              irtcc_write(irtcc_cfg);
+    267              IRTCON &= ~(0x01);
+    268          }
+    269          
+    270          __near_func wko_state_set(void)   //1ms中断中调用
+    271          {
+    272              if(wko_set_kick &&(!(IRTCON&0x01))){
+    273                   wko_set_kick = false;
+    274                   u8 wko_sfr = irtcc_read_cfg_near(READ_WKO);
+    275                   wko_sfr |= BIT(2)|BIT(3);  ////in&out en
+    276                   if(wko_set_sta){
+    277                      irtcc_write_cfg_near(WRITE_WKO, wko_sfr|0x80);  //WKO设置为高
+    278                   }else{
+    279                      irtcc_write_cfg_near(WRITE_WKO, wko_sfr&0x7F);  //WKO设置为低
+    280                   }
+    281              }
+    282          }
+    283          #endif
+    284          
+    285          
+
+   Maximum stack usage in bytes:
+
+     Function              EXT_STACK PSTACK XSTACK
+     --------              --------- ------ ------
+     sd_detect                    0      0      0
+       -> device_insert           0      0      0
+       -> device_remove           0      0      0
+     sd_port_reuse_hook           0      0      0
+     usb_detect                   0      0      0
+       -> usb_connected           0      0      0
+       -> device_insert           0      0      0
+       -> usb_remove_check        0      0      0
+       -> device_remove           0      0      0
+     user_io_init                 0      0      0
+       -> lqfp48_pmu_init         0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     P3                    1
+     P3DIR                 1
+     user_io_init         31
+     usb_detect           31
+     ?Subroutine0          7
+     sd_detect            27
+     sd_port_reuse_hook    1
+
+ 
+ 31 bytes in segment BANKED_CODE
+ 66 bytes in segment NEAR_CODE
+  2 bytes in segment SFR_AN
+ 
+ 97 bytes of CODE memory
+  0 bytes of DATA memory (+ 2 bytes shared)
+
+Errors: none
+Warnings: none

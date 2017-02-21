@@ -1,0 +1,157 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_bt_test.c      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_bt_test.c      #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_bt_test.lst  #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_bt_test.r51   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_bt_test.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_bt_test.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙任务 - 测试盒任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          
+      9          #pragma location="TASK_BT_TEST_SEG"
+     10          void tasksub_bt_test_enter(void)
+     11          {
+     12              task_ctl.work_sub = TASK_BT_TEST;
+     13          
+     14              dac_dynamic(DYNAMIC_NO);                    //测试盒任务，不需要动态降噪
+     15          
+     16              btdec_play();                               //开始播放
+     17          }
+     18          
+     19          #pragma location="TASK_BT_TEST_SEG"
+     20          void tasksub_bt_test_exit(void)
+     21          {
+     22              dac_dynamic(BT_DYNAMIC_NOISE);              //结束响铃，开启动态降噪
+     23              task_bt_sta_update();
+     24          }
+     25          
+     26          #pragma location="TASK_BT_TEST_SEG"
+     27          void tasksub_bt_test_event(void)
+     28          {
+     29              WATCHDOG_CLR();
+     30              comm_event();
+     31          
+     32              if (!bt_testmode()) {
+     33                  task_ctl.work_sub = TASK_BT_NULL;
+     34              }
+     35          }
+     36          
+     37          #pragma location="TASK_BT_TEST_SEG"
+     38          void tasksub_bt_test_loop(void)
+     39          {
+     40              u8 msg;
+     41              u8 work_sta = task_ctl.work_sta;    //TASK_BT / TASK_BT_HID
+     42          
+     43              while (task_ctl.work_sta == work_sta && task_ctl.work_sub == TASK_BT_TEST) {
+     44                  tasksub_bt_test_event();
+     45                  while (msg = get_msg()) {
+     46                      task_bt_test_deal_msg(msg);
+     47                  }
+     48                  task_bt_display();
+     49              }
+     50          }
+     51          
+     52          #pragma location="TASK_BT_TEST_SEG"
+     53          void tasksb_bt_test_play(void)
+     54          {
+     55              bt_test_vendor(0x44);
+     56          }
+     57          
+     58          #pragma location="TASK_BT_TEST_SEG"
+     59          void tasksb_bt_test_prev(void)
+     60          {
+     61              bt_test_vendor(0x4c);
+     62          }
+     63          
+     64          #pragma location="TASK_BT_TEST_SEG"
+     65          void tasksb_bt_test_next(void)
+     66          {
+     67              bt_test_vendor(0x4b);
+     68          }
+     69          
+     70          #pragma location="TASK_BT_TEST_SEG"
+     71          void tasksb_bt_test_voldown(void)
+     72          {
+     73              bt_test_vendor(0x42);
+     74          }
+     75          
+     76          #pragma location="TASK_BT_TEST_SEG"
+     77          void tasksb_bt_test_volup(void)
+     78          {
+     79              bt_test_vendor(0x41);
+     80          }
+     81          
+     82          #pragma location="TASK_BT_TEST_SEG"
+     83          void tasksb_bt_test_hsf(void)
+     84          {
+     85              bt_test_vendor(0x88);
+     86          }
+     87          
+     88          #pragma location="TASK_BT_TEST_SEG"
+     89          void tasksub_bt_test(void)
+     90          {
+     91              //printf("tasksub_bt_test\n");
+     92              tasksub_bt_test_enter();
+     93              tasksub_bt_test_loop();
+     94              tasksub_bt_test_exit();
+     95              //printf("tasksub_bt_test exit\n");
+     96          }
+     97          
+     98          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

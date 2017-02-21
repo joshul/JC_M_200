@@ -1,0 +1,255 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:54 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\msgbox.c                                    #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\msgbox.c                                    #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\msgbox.lst                                   #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\msgbox.r51                                    #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\msgbox.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : msgbox.c
+      4           * Author    : Hanny
+      5           * Function  : 对话框控件，用于处于UI中用到的对话框功能
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "task.h"
+     10          //list box controller
+     11          IAR_XDATA_A struct {
+     12              u8 disp_index;                      //当前显示的选择项，用于判断是否需要刷新
+     13              u8 index;                           //当前的选择项
+     14              u8 m_icon;                          //是否显示对话框的图标
+     15              u8 m_res;                           //文字模式或资源
+     16              u8 m_title;                         //是否需要显示列表框标题
+     17              u8 m_yesno;                         //是否需要显示两个按键
+     18              u8 m_ok;                            //是否需要OK键
+     19              u8 ok_flag;                         //是否按下确定键
+     20              u8 show_time;                       //显示时间
+     21              string msg;                         //消息内容
+     22          } t_msg @ "OCX_XDATA";
+     23          
+     24          #pragma location="MSG_BOX_SEG"
+     25          void msgbox_event(void)
+     26          {
+     27              if (!comm_event()) {
+     28                  t_msg.ok_flag = 0xff;
+     29              }
+     30              if (t_msg.show_time && ocx_show_cnt >= t_msg.show_time) {
+     31                  t_msg.ok_flag = 0xff;
+     32              }
+     33          }
+     34          
+     35          //列表控件处理消息
+     36          #pragma location="MSG_BOX_SEG"
+     37          void msgbox_deal_msg(void)
+     38          {
+     39              u8 msg = get_msg();
+     40              if(msg >= 0x6d && msg < 0x7e) { //重要的系统消息保留下来等待退出后处理
+     41                  put_msg(msg);
+     42                  return;
+     43              }
+     44              switch(msg) {
+     45                  //确定
+     46              case KU_OK:
+     47                  t_msg.ok_flag = 1;
+     48                  break;
+     49          
+     50          #if THEME_SELECT==THEME_LCD_DEFAULT
+     51              case KL_PLAY_POWER:
+     52                  task_ctl.work_sta = TASK_EXIT;
+     53                  break;
+     54          
+     55                  //取消
+     56              case KU_PLAY_POWER:
+     57          #else
+     58              case KU_BACK:
+     59          #endif
+     60                  t_msg.ok_flag = 0xff;
+     61                  break;
+     62          
+     63                  //上一项，下一项
+     64              case KU_PREV:
+     65                  if (t_msg.m_yesno) {
+     66                      ocx_show_cnt = 0;
+     67                      t_msg.index = 1;
+     68                  }
+     69                  break;
+     70              case KU_NEXT:
+     71                  if (t_msg.m_yesno) {
+     72                      ocx_show_cnt = 0;
+     73                      t_msg.index = 0;
+     74                  }
+     75                  break;
+     76          
+     77                  //调用公共消息函数
+     78              default:
+     79                  deal_msg(msg);
+     80                  break;
+     81              }
+     82          }
+     83          
+     84          //列表显示接口
+     85          #pragma location="MSG_BOX_SEG"
+     86          void msgbox_display(void)
+     87          {
+     88             // char *msg_ptr;
+     89              if (t_msg.index == t_msg.disp_index) {
+     90                  return;
+     91              }
+     92          #if MSGBOX_SIMPLE
+     93              if (!t_msg.m_yesno && !t_msg.m_ok) {
+     94                  //快速消息框
+     95                  line_update_clear(0);
+     96                  disp_menu(t_msg.msg, 0, 0, 0, ME_LINES|ME_MSG);//
+     97                  line_update_clear(4);
+     98                  line_update(6);
+     99                  return;
+    100              }
+    101          #endif
+    102              t_msg.disp_index = t_msg.index;
+    103              line_clear();
+    104              if (t_msg.m_title) {
+    105                  //标题栏模式
+    106              } else {
+    107                  //无标题栏模式
+    108                  disp_menu(STR_MSG_TITLE, 0, 0, 0, ME_CENTER);
+    109              }
+    110              line_update_clear(0);
+    111             /* disp_menu(t_msg.msg, 0, 0, 0);
+    112               line_update_clear(2);
+    113              if(t_msg.msg==STR_FACTORY_CONFIRM)
+    114              {
+    115                disp_menu(t_msg.msg+1, 2, 0, 0);
+    116              }
+    117              line_update_clear(4);*/
+    118              disp_menu(t_msg.msg, 0, 0, 0, ME_LINES|ME_MSG);//
+    119              line_update_clear(4);
+    120              if (t_msg.m_yesno) {
+    121                  disp_menu(STR_MSG_OK, 25, 0, 0, 0);
+    122                  disp_menu(STR_MSG_CANCEL, 79, 0, 0, 0);
+    123          #if(FONT_SEL == SMALL_FONT)
+    124                  disp_invert((t_msg.index == 1) ? 22 : 76,        //反色选取
+    125                      0,
+    126                      (sys_ctl.lang_id == 0 || t_msg.index == 1) ? 30 : 42,
+    127                      2
+    128                  );
+    129          #else
+    130                  disp_invert((t_msg.index == 1) ? 22 : 76,        //反色选取
+    131                      0,
+    132                      (sys_ctl.lang_id == 0 || t_msg.index == 1) ? 37 : 49,
+    133                      2
+    134                  );
+    135          #endif
+    136              } else {
+    137                  disp_menu(STR_MSG_OK, 52, 0, 0, 0);
+    138          #if(FONT_SEL == SMALL_FONT)
+    139                  disp_invert(49, 0, 30, 2);
+    140          #else
+    141                  disp_invert(49, 0, 35, 2);
+    142          #endif
+    143              }
+    144              line_update(6);
+    145          }
+    146          //mode模式选择;  param: 内容参数
+    147          //返回确定或取消
+    148          #pragma location="MSG_BOX_SEG"
+    149          bool msgbox(u16 param, u8 mode, u8 show_time)
+    150          {
+    151              t_msg.disp_index = 0xFF;
+    152              t_msg.index = 0;                                //默认选择否
+    153              t_msg.m_title = (mode & MB_TITLE) ? 1 : 0;
+    154              t_msg.m_res = (mode & MB_RES) ? 1 : 0;
+    155              t_msg.m_yesno = (mode & MB_YESNO) ? 1 : 0;
+    156              t_msg.m_ok = (mode & MB_OK) ? 1 : 0;
+    157              t_msg.ok_flag = 0;
+    158              t_msg.show_time = show_time;
+    159          
+    160          #pragma diag_remark=Pe1053
+    161              //暂时忽略Pe1053这个警告，指针类型大转小
+    162              t_msg.msg = (string)param;
+    163          #pragma diag_warning=Pe1053
+    164              if (!t_msg.m_yesno) {
+    165                  t_msg.index = 1;                //只有确认可选
+    166              }
+    167          
+    168              ocx_show_cnt = 0;
+    169              while (!t_msg.ok_flag) {
+    170                  msgbox_event();
+    171                  msgbox_deal_msg();
+    172                  msgbox_display();
+    173          #if ALARM_EN
+    174                  if (task_ctl.work_sta == TASK_USBDEV || task_ctl.work_sta == TASK_ALARM) {
+    175          #else
+    176                  if (task_ctl.work_sta == TASK_USBDEV) {
+    177          #endif
+    178                      t_msg.ok_flag = 0xfe;
+    179                  }
+    180              }
+    181          
+    182              if (t_msg.ok_flag == 1 && t_msg.index == 1) {
+    183                  return true;                    //按下确定键，并且选择了确定按钮
+    184              }
+    185              return false;
+    186          }
+    187          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

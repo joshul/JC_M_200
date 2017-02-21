@@ -1,0 +1,1080 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:55 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_aux_eq.c                                      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_aux_eq.c                                      #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_aux_eq.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_aux_eq.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_aux_eq.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_aux_eq.c
+      4           * Author    : Hanny
+      5           * Function  : 音源输入任务流程
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xba
+   \   unsigned char volatile __sfr P0DIR
+   \                     P0DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xe8
+   \   unsigned char volatile __sfr AUCON5
+   \                     AUCON5:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xed
+   \   unsigned char volatile __sfr AUCON10
+   \                     AUCON10:
+   \   000000                DS 1
+      8          #include "user_tas5711.h"
+      9          #include "task_CS8416.h"
+     10          
+     11          #if TASK_AUX_EQ_EN || IIS_EN
+     12          #include "task.h"
+     13          #include "task_aux_eq.h"
+     14          
+
+   \                                 In segment AUX_EQ_XDATA, align 1, root
+     15          IAR_XDATA_A type_task_auxeq t_auxeq @ "AUX_EQ_XDATA";
+   \                     t_auxeq:
+   \   000000                DS 4
+     16          
+     17          #include SET_USER_PATH(CFG_UI_AUX_EQ_DIR, /ui/ui_aux_eq.c)
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_aux_eq_display(void)
+   \                     task_aux_eq_display:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function ledseg_ocx_event
+   \   000000   90....       MOV     DPTR,#(ledseg_ocx_event & 0xffff)
+   \   000003   74..         MOV     A,#((ledseg_ocx_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   90....       MOV     DPTR,#(ledseg_ocx + 2)
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_aux_eq_display>_0`:
+   \   00000F   00           DB        0
+   \   000010   00           DB        0
+   \   000011   ....         DW        ??task_aux_eq_display_0
+   \   000013   ....         DW        ??task_aux_eq_display_1
+   \                     ??task_aux_eq_display_1:
+   \   000015                ; Setup parameters for call to function ledseg_disp
+   \   000015   790E         MOV     R1,#0xe
+   \   000017   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   00001A   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   00001C   8005         SJMP    ??task_aux_eq_display_2
+   \                     ??task_aux_eq_display_0:
+   \   00001E                ; Setup parameters for call to function ledseg_ocx_display
+   \   00001E   90....       MOV     DPTR,#(ledseg_ocx_display & 0xffff)
+   \   000021   74..         MOV     A,#((ledseg_ocx_display >> 16) & 0xff)
+   \                     ??task_aux_eq_display_2:
+   \   000023                REQUIRE ?Subroutine3
+   \   000023                ; // Fall through to label ?Subroutine3
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_aux_eq_deal_msg(u8)
+   \                     task_aux_eq_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_aux_eq_deal_msg>_0`:
+   \   000004   00           DB        0
+   \   000005   0B           DB        11
+   \   000006   04           DB        4
+   \   000007   ....         DW        ??task_aux_eq_deal_msg_0
+   \   000009   05           DB        5
+   \   00000A   ....         DW        ??task_aux_eq_deal_msg_1
+   \   00000C   82           DB        130
+   \   00000D   ....         DW        ??task_aux_eq_deal_msg_2
+   \   00000F   86           DB        134
+   \   000010   ....         DW        ??task_aux_eq_deal_msg_3
+   \   000012   92           DB        146
+   \   000013   ....         DW        ??task_aux_eq_deal_msg_2
+   \   000015   A4           DB        164
+   \   000016   ....         DW        ??task_aux_eq_deal_msg_0
+   \   000018   A5           DB        165
+   \   000019   ....         DW        ??task_aux_eq_deal_msg_1
+   \   00001B   E4           DB        228
+   \   00001C   ....         DW        ??task_aux_eq_deal_msg_0
+   \   00001E   E5           DB        229
+   \   00001F   ....         DW        ??task_aux_eq_deal_msg_1
+   \   000021   F1           DB        241
+   \   000022   ....         DW        ??task_aux_eq_deal_msg_0
+   \   000024   F3           DB        243
+   \   000025   ....         DW        ??task_aux_eq_deal_msg_1
+   \   000027   ....         DW        ??task_aux_eq_deal_msg_4
+   \                     ??task_aux_eq_deal_msg_2:
+   \   000029                ; Setup parameters for call to function auxeq_mute_control
+   \   000029   90....       MOV     DPTR,#(auxeq_mute_control & 0xffff)
+   \   00002C   74..         MOV     A,#((auxeq_mute_control >> 16) & 0xff)
+   \                     ??task_aux_eq_deal_msg_5:
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000031   8026         SJMP    ??task_aux_eq_deal_msg_6
+   \                     ??task_aux_eq_deal_msg_0:
+   \   000033                ; Setup parameters for call to function auxeq_vol_down
+   \   000033   90....       MOV     DPTR,#(auxeq_vol_down & 0xffff)
+   \   000036   74..         MOV     A,#((auxeq_vol_down >> 16) & 0xff)
+   \   000038   80F4         SJMP    ??task_aux_eq_deal_msg_5
+   \                     ??task_aux_eq_deal_msg_1:
+   \   00003A                ; Setup parameters for call to function auxeq_vol_up
+   \   00003A   90....       MOV     DPTR,#(auxeq_vol_up & 0xffff)
+   \   00003D   74..         MOV     A,#((auxeq_vol_up >> 16) & 0xff)
+   \   00003F   80ED         SJMP    ??task_aux_eq_deal_msg_5
+   \                     ??task_aux_eq_deal_msg_3:
+   \   000041                ; Setup parameters for call to function user_set_eq
+   \   000041   90....       MOV     DPTR,#(sys_ctl + 3)
+   \   000044   E0           MOVX    A,@DPTR
+   \   000045   04           INC     A
+   \   000046   F9           MOV     R1,A
+   \   000047   90....       MOV     DPTR,#(user_set_eq & 0xffff)
+   \   00004A   74..         MOV     A,#((user_set_eq >> 16) & 0xff)
+   \   00004C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00004F                ; Setup parameters for call to function ledseg_ocx_show_eq
+   \   00004F   90....       MOV     DPTR,#(ledseg_ocx_show_eq & 0xffff)
+   \   000052   74..         MOV     A,#((ledseg_ocx_show_eq >> 16) & 0xff)
+   \   000054   80D8         SJMP    ??task_aux_eq_deal_msg_5
+   \                     ??task_aux_eq_deal_msg_4:
+   \   000056                ; Setup parameters for call to function deal_msg
+   \   000056   12....       LCALL   deal_msg & 0xFFFF
+   \                     ??task_aux_eq_deal_msg_6:
+   \   000059   02....       LJMP    ?BRET
+     18          
+     19          #pragma location="AUX_PROC"
+
+   \                                 In segment AUX_PROC, align 1, keep-with-next
+     20          __near_func void task_aux_eq_process(void)
+   \                     task_aux_eq_process:
+     21          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     22              if (AUCON5 >= 130) {
+   \   000000   E5E8         MOV     A,0xe8
+   \   000002   C3           CLR     C
+   \   000003   9482         SUBB    A,#-0x7e
+   \   000005   4003         JC      ??task_aux_eq_process_0
+     23                  FIFO_SPEED = 0;
+   \   000007   E4           CLR     A
+   \   000008   8009         SJMP    ??task_aux_eq_process_1
+     24              } else {
+     25                  if (AUCON5 <= 64) {
+   \                     ??task_aux_eq_process_0:
+   \   00000A   E5E8         MOV     A,0xe8
+   \   00000C   C3           CLR     C
+   \   00000D   9441         SUBB    A,#0x41
+   \   00000F   5006         JNC     ??task_aux_eq_process_2
+     26                      FIFO_SPEED = (u8)-1;
+   \   000011   74FF         MOV     A,#-0x1
+   \                     ??task_aux_eq_process_1:
+   \   000013   90789B       MOV     DPTR,#0x789b
+   \   000016   F0           MOVX    @DPTR,A
+     27                  }
+     28              }
+     29          
+     30              if (!t_auxeq.pos) {
+   \                     ??task_aux_eq_process_2:
+   \   000017   90....       MOV     DPTR,#(t_auxeq + 1)
+   \   00001A   E0           MOVX    A,@DPTR
+   \   00001B   700B         JNZ     ??task_aux_eq_process_3
+     31                  t_auxeq.aux_input = (u16)adc_buf;
+   \   00001D   90....       MOV     DPTR,#(t_auxeq + 2)
+   \   000020   74..         MOV     A,#(adc_buf & 0xff)
+   \   000022   F0           MOVX    @DPTR,A
+   \   000023   A3           INC     DPTR
+   \   000024   74..         MOV     A,#((adc_buf >> 8) & 0xff)
+   \   000026   8014         SJMP    ??task_aux_eq_process_4
+     32              } else {
+     33                  t_auxeq.aux_input = (u16)adc_buf + AUX_EQ_SAMPLES * adc_ch;
+   \                     ??task_aux_eq_process_3:
+   \   000028   90....       MOV     DPTR,#adc_ch
+   \   00002B   E0           MOVX    A,@DPTR
+   \   00002C   F9           MOV     R1,A
+   \   00002D   E4           CLR     A
+   \   00002E   24..         ADD     A,#(adc_buf & 0xff)
+   \   000030   E9           MOV     A,R1
+   \   000031   34..         ADDC    A,#((adc_buf >> 8) & 0xff)
+   \   000033   F9           MOV     R1,A
+   \   000034   90....       MOV     DPTR,#(t_auxeq + 2)
+   \   000037   74..         MOV     A,#(adc_buf & 0xff)
+   \   000039   F0           MOVX    @DPTR,A
+   \   00003A   A3           INC     DPTR
+   \   00003B   E9           MOV     A,R1
+   \                     ??task_aux_eq_process_4:
+   \   00003C   F0           MOVX    @DPTR,A
+     34              }
+     35              dac_direct_out(t_auxeq.aux_input, AUX_EQ_SAMPLES/2, adc_ch);
+   \   00003D                ; Setup parameters for call to function dac_direct_out
+   \   00003D   90....       MOV     DPTR,#adc_ch
+   \   000040   E0           MOVX    A,@DPTR
+   \   000041   F9           MOV     R1,A
+   \   000042   7C80         MOV     R4,#-0x80
+   \   000044   7D00         MOV     R5,#0x0
+   \   000046   90....       MOV     DPTR,#(t_auxeq + 2)
+   \   000049   E0           MOVX    A,@DPTR
+   \   00004A   FA           MOV     R2,A
+   \   00004B   A3           INC     DPTR
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   FB           MOV     R3,A
+   \   00004E   12....       LCALL   dac_direct_out
+     36              t_auxeq.pos ^= 1;
+   \   000051   90....       MOV     DPTR,#(t_auxeq + 1)
+   \   000054   E0           MOVX    A,@DPTR
+   \   000055   6401         XRL     A,#0x1
+   \   000057   F0           MOVX    @DPTR,A
+     37          }
+   \   000058   22           RET
+     38          
+     39          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+     40          void aux_eq_continue(void)
+   \                     aux_eq_continue:
+     41          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     42              adc_stop();
+   \   000000                ; Setup parameters for call to function adc_stop
+   \   000000   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   000003   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     43          	auxeq_load_code(0x70);
+   \   000008                ; Setup parameters for call to function auxeq_load_code
+   \   000008   7A70         MOV     R2,#0x70
+   \   00000A   7B00         MOV     R3,#0x0
+   \   00000C   90....       MOV     DPTR,#(auxeq_load_code & 0xffff)
+   \   00000F   74..         MOV     A,#((auxeq_load_code >> 16) & 0xff)
+   \   000011   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     44              t_auxeq.pos = 0;
+   \   000014   E4           CLR     A
+   \   000015   90....       MOV     DPTR,#(t_auxeq + 1)
+   \   000018   F0           MOVX    @DPTR,A
+     45              t_auxeq.mute = 0;
+   \   000019   90....       MOV     DPTR,#t_auxeq
+   \   00001C   12....       LCALL   ?Subroutine1
+     46              sys_ctl.sleep_cnt = 0xffff;
+     47              pcm_init(S_SPR_48000);
+   \                     ??CrossCallReturnLabel_3:
+   \   00001F                ; Setup parameters for call to function pcm_init
+   \   00001F   7909         MOV     R1,#0x9
+   \   000021   90....       MOV     DPTR,#(pcm_init & 0xffff)
+   \   000024   74..         MOV     A,#((pcm_init >> 16) & 0xff)
+   \   000026   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     48          #if IIS_EN && FM_VOUT_THROUGH_MCU
+     49              if(task_ctl.work_sta == TASK_FM)
+   \   000029   90....       MOV     DPTR,#task_ctl
+   \   00002C   E0           MOVX    A,@DPTR
+   \   00002D   6409         XRL     A,#0x9
+   \   00002F   7004         JNZ     ??aux_eq_continue_0
+     50                  adc_init(SEL_FM_IIS);
+   \   000031                ; Setup parameters for call to function adc_init
+   \   000031   7909         MOV     R1,#0x9
+   \   000033   8002         SJMP    ??aux_eq_continue_1
+     51              else
+     52          #endif
+     53                  adc_init(SEL_AUX_EQ);
+   \                     ??aux_eq_continue_0:
+   \   000035                ; Setup parameters for call to function adc_init
+   \   000035   7906         MOV     R1,#0x6
+   \                     ??aux_eq_continue_1:
+   \   000037   90....       MOV     DPTR,#(adc_init & 0xffff)
+   \   00003A   74..         MOV     A,#((adc_init >> 16) & 0xff)
+   \   00003C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     54              adc_start();
+   \   00003F                ; Setup parameters for call to function adc_start
+   \   00003F   90....       MOV     DPTR,#(adc_start & 0xffff)
+   \   000042   74..         MOV     A,#((adc_start >> 16) & 0xff)
+   \   000044   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     55              pcm_play();
+   \   000047                ; Setup parameters for call to function pcm_play
+   \   000047   90....       MOV     DPTR,#(pcm_play & 0xffff)
+   \   00004A   74..         MOV     A,#((pcm_play >> 16) & 0xff)
+   \   00004C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     56              if (!sys_ctl.volume) {
+   \   00004F   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000052   E0           MOVX    A,@DPTR
+   \   000053   700E         JNZ     ??aux_eq_continue_2
+     57                  t_auxeq.mute = 1;
+   \   000055   7401         MOV     A,#0x1
+   \   000057   90....       MOV     DPTR,#t_auxeq
+   \   00005A   F0           MOVX    @DPTR,A
+     58                  sys_mute();
+   \   00005B                ; Setup parameters for call to function sys_mute
+   \   00005B   90....       MOV     DPTR,#(sys_mute & 0xffff)
+   \   00005E   74..         MOV     A,#((sys_mute >> 16) & 0xff)
+   \   000060   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     59              }
+     60          }
+   \                     ??aux_eq_continue_2:
+   \   000063   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(sys_ctl + 21)
+   \   000004   74FF         MOV     A,#-0x1
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   A3           INC     DPTR
+   \   000008   F0           MOVX    @DPTR,A
+   \   000009   22           RET
+     61          
+     62          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+     63          void mp3res_play_auxeqmode(u8 music_name)
+   \                     mp3res_play_auxeqmode:
+     64          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+     65              adc_stop();
+   \   000005                ; Setup parameters for call to function adc_stop
+   \   000005   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   000008   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     66              mp3_res_play_wait(music_name);
+   \   00000D                ; Setup parameters for call to function mp3_res_play_wait
+   \   00000D   EE           MOV     A,R6
+   \   00000E   F9           MOV     R1,A
+   \   00000F   90....       MOV     DPTR,#(mp3_res_play_wait & 0xffff)
+   \   000012   74..         MOV     A,#((mp3_res_play_wait >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     67              aux_eq_continue();
+   \   000017                ; Setup parameters for call to function aux_eq_continue
+   \   000017   90....       MOV     DPTR,#(aux_eq_continue & 0xffff)
+   \   00001A   74..         MOV     A,#((aux_eq_continue >> 16) & 0xff)
+   \   00001C                REQUIRE ?Subroutine2
+   \   00001C                ; // Fall through to label ?Subroutine2
+     68          }
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   D0E0         POP     A
+   \   000005   FE           MOV     R6,A
+   \   000006   02....       LJMP    ?BRET
+     69          
+     70          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+     71          void auxeq_play_vol_music(void)
+   \                     auxeq_play_vol_music:
+     72          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     73              if(!sys_ctl.vol_maxmin_music_play){
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 44)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   7013         JNZ     ??auxeq_play_vol_music_0
+     74                  sys_ctl.vol_maxmin_music_play = 1;
+   \   000006   7401         MOV     A,#0x1
+   \   000008   F0           MOVX    @DPTR,A
+     75                  adc_stop();
+   \   000009                ; Setup parameters for call to function adc_stop
+   \   000009   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   00000C   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   00000E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     76                  sys_unmute();
+   \   000011                ; Setup parameters for call to function sys_unmute
+   \   000011   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   000014   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   000016   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     77              }
+     78              mp3_res_play_wait(RES_MP3_VOL_MAXMIN);
+   \                     ??auxeq_play_vol_music_0:
+   \   000019                ; Setup parameters for call to function mp3_res_play_wait
+   \   000019   791C         MOV     R1,#0x1c
+   \   00001B   90....       MOV     DPTR,#(mp3_res_play_wait & 0xffff)
+   \   00001E   74..         MOV     A,#((mp3_res_play_wait >> 16) & 0xff)
+   \   000020   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     79              flush_msg();
+   \   000023                ; Setup parameters for call to function flush_msg
+   \   000023   12....       LCALL   flush_msg & 0xFFFF
+     80          }
+   \   000026   02....       LJMP    ?BRET
+     81          
+     82          //AUX EQ控制MUTE
+     83          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+     84          void auxeq_mute_control(void)
+   \                     auxeq_mute_control:
+     85          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     86              if (t_auxeq.mute && sys_ctl.volume) {
+   \   000000   90....       MOV     DPTR,#t_auxeq
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   600B         JZ      ??auxeq_mute_control_0
+   \   000006   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   6005         JZ      ??auxeq_mute_control_0
+     87                  t_auxeq.mute = 0;
+   \   00000C   12....       LCALL   ?Subroutine0
+     88                  sys_ctl.sleep_cnt = 0xffff;
+     89                  sys_unmute();
+   \                     ??CrossCallReturnLabel_0:
+   \   00000F   8014         SJMP    ??auxeq_mute_control_1
+     90              } else {
+     91                  t_auxeq.mute = 1;
+   \                     ??auxeq_mute_control_0:
+   \   000011   7401         MOV     A,#0x1
+   \   000013   90....       MOV     DPTR,#t_auxeq
+   \   000016   F0           MOVX    @DPTR,A
+     92                  sys_ctl.sleep_cnt = STANDBY_TIME;
+   \   000017   90....       MOV     DPTR,#(sys_ctl + 21)
+   \   00001A   7464         MOV     A,#0x64
+   \   00001C   F0           MOVX    @DPTR,A
+   \   00001D   A3           INC     DPTR
+   \   00001E   E4           CLR     A
+   \   00001F   F0           MOVX    @DPTR,A
+     93                  sys_mute();
+   \   000020                ; Setup parameters for call to function sys_mute
+   \   000020   90....       MOV     DPTR,#(sys_mute & 0xffff)
+   \   000023   74..         MOV     A,#((sys_mute >> 16) & 0xff)
+   \                     ??auxeq_mute_control_1:
+   \   000025   02....       LJMP    ?Subroutine3
+     94              }
+     95          }
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E4           CLR     A
+   \   000001   90....       MOV     DPTR,#t_auxeq
+   \                     ??Subroutine0_0:
+   \   000004   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_4:
+   \   000007                ; Setup parameters for call to function sys_unmute
+   \   000007                ; Setup parameters for call to function sys_unmute
+   \   000007                ; Setup parameters for call to function sys_unmute
+   \   000007   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   00000A   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   00000C   22           RET
+     96          
+     97          //AUX EQ减小音量
+     98          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+     99          void auxeq_vol_down(void)
+   \                     auxeq_vol_down:
+    100          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    101              user_set_volume(user_volume_dec(sys_ctl.volume));
+   \   000000                ; Setup parameters for call to function user_set_volume
+   \   000000                ; Setup parameters for call to function user_volume_dec
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F9           MOV     R1,A
+   \   000005   90....       MOV     DPTR,#(user_volume_dec & 0xffff)
+   \   000008   74..         MOV     A,#((user_volume_dec >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000D   90....       MOV     DPTR,#(user_set_volume & 0xffff)
+   \   000010   74..         MOV     A,#((user_set_volume >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    102              show_volume();
+   \   000015                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   000015   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   000018   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \   00001A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    103          #if WARNING_VOL_MAXMIN
+    104              if(!sys_ctl.volume){
+    105                  auxeq_play_vol_music();
+    106                  return;
+    107              }
+    108          #endif
+    109              if (t_auxeq.mute && sys_ctl.volume) {
+   \   00001D   90....       MOV     DPTR,#t_auxeq
+   \   000020   E0           MOVX    A,@DPTR
+   \   000021   600C         JZ      ??auxeq_vol_down_0
+   \   000023   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000026   E0           MOVX    A,@DPTR
+   \   000027   6006         JZ      ??auxeq_vol_down_0
+    110                  t_auxeq.mute = 0;
+   \   000029   12....       LCALL   ?Subroutine0
+    111                  sys_ctl.sleep_cnt = 0xffff;
+    112                  sys_unmute();
+   \                     ??CrossCallReturnLabel_1:
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    113              }
+    114          }
+   \                     ??auxeq_vol_down_0:
+   \   00002F   02....       LJMP    ?BRET
+    115          
+    116          //AUX EQ增加音量
+    117          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+    118          void auxeq_vol_up(void)
+   \                     auxeq_vol_up:
+    119          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    120              user_set_volume(user_volume_inc(sys_ctl.volume));
+   \   000000                ; Setup parameters for call to function user_set_volume
+   \   000000                ; Setup parameters for call to function user_volume_inc
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F9           MOV     R1,A
+   \   000005   90....       MOV     DPTR,#(user_volume_inc & 0xffff)
+   \   000008   74..         MOV     A,#((user_volume_inc >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000D   90....       MOV     DPTR,#(user_set_volume & 0xffff)
+   \   000010   74..         MOV     A,#((user_set_volume >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    121              show_volume();
+   \   000015                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   000015   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   000018   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \   00001A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    122          #if WARNING_VOL_MAXMIN
+    123              if(sys_ctl.volume == VOLUME_MAX){
+    124                  auxeq_play_vol_music();
+    125                  return;
+    126              }
+    127          #endif
+    128              if (t_auxeq.mute) {
+   \   00001D   90....       MOV     DPTR,#t_auxeq
+   \   000020   E0           MOVX    A,@DPTR
+   \   000021   6007         JZ      ??auxeq_vol_up_0
+    129                  t_auxeq.mute = 0;
+   \   000023   E4           CLR     A
+   \   000024   12....       LCALL   ??Subroutine0_0
+    130                  sys_ctl.sleep_cnt = 0xffff;
+    131                  sys_unmute();
+   \                     ??CrossCallReturnLabel_2:
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    132              }
+    133          }
+   \                     ??auxeq_vol_up_0:
+   \   00002A   02....       LJMP    ?BRET
+    134          
+    135          //任务事务处理
+    136          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+    137          void task_aux_eq_event(void)
+   \                     task_aux_eq_event:
+    138          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    139              comm_event();                           //调用公共事件
+   \   000000                ; Setup parameters for call to function comm_event
+   \   000000   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000003   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000005   02....       LJMP    ?Subroutine3
+    140          #if LINEIN_DETECT_EN
+    141              if (!device_activate(DEVICE_LINEIN)) {
+    142                  task_ctl.work_sta = TASK_EXIT;
+    143              }
+    144          #endif
+    145          #if AUX_AUTO_STANDBY_EN || IR_HARD_POWERDOWN_EN
+    146              if((((!sys_ctl.sleep_cnt) && BT_IS_SLEEP) || sys_ctl.ir_power_flag) && !sys_ctl.lowpower_flag){
+    147                  task_hold();
+    148                  sys_ctl.sleep_cnt = 0xffff;
+    149                  sys_unmute();
+    150                  aux_eq_continue();
+    151              }
+    152          #endif
+    153          #if WARNING_LOWPOWER
+    154              if(sys_ctl.lowpower_warning_flag == 1){
+    155                  sys_ctl.lowpower_warning_flag = 2;
+    156                  mp3res_play_auxeqmode(RES_MP3_PLEASE_CHARGE);
+    157              }
+    158          #endif
+    159          }
+    160          
+    161          //任务初始化
+    162          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+    163          void task_aux_eq_enter(void)
+   \                     task_aux_eq_enter:
+    164          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    165          #if LINEIN_DETECT_EN
+    166          #if IIS_EN
+    167              if(task_ctl.work_sta != TASK_FM)
+    168          #endif
+    169              if (!device_activate(DEVICE_LINEIN)) {      //检查linein
+    170                  msgbox(STR_NO_CONNECTED_AUX, NULL, MSGBOX_TIME);
+    171                  task_ctl.work_sta = TASK_EXIT;          //设备无效，返回主菜单
+    172                  return;
+    173              }
+    174          #endif
+    175              memset(&t_auxeq, 0, sizeof(t_auxeq));
+   \   000000                ; Setup parameters for call to function my_memset
+   \   000000   7C04         MOV     R4,#0x4
+   \   000002   7D00         MOV     R5,#0x0
+   \   000004   7900         MOV     R1,#0x0
+   \   000006   7A..         MOV     R2,#(t_auxeq & 0xff)
+   \   000008   7B..         MOV     R3,#((t_auxeq >> 8) & 0xff)
+   \   00000A   12....       LCALL   my_memset & 0xFFFF
+    176              led_aux_play();
+   \   00000D                ; Setup parameters for call to function led_aux_play
+   \   00000D   90....       MOV     DPTR,#(led_aux_play & 0xffff)
+   \   000010   74..         MOV     A,#((led_aux_play >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    177              draw_wait();
+   \   000015                ; Setup parameters for call to function draw_wait
+   \   000015   90....       MOV     DPTR,#(draw_wait & 0xffff)
+   \   000018   74..         MOV     A,#((draw_wait >> 16) & 0xff)
+   \   00001A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    178              set_sys_clk(SYS_24M);
+   \   00001D                ; Setup parameters for call to function set_sys_clk
+   \   00001D   7901         MOV     R1,#0x1
+   \   00001F   90....       MOV     DPTR,#(set_sys_clk & 0xffff)
+   \   000022   74..         MOV     A,#((set_sys_clk >> 16) & 0xff)
+   \   000024   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    179          #if (DEBUG_UART_SEL && ((AUX_CHANNEL_SEL & 0x07) == CHANNEL_01))
+    180              uart_disable();
+   \   000027                ; Setup parameters for call to function uart_disable
+   \   000027   90....       MOV     DPTR,#(uart_disable & 0xffff)
+   \   00002A   74..         MOV     A,#((uart_disable >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    181              P0DIR |= BIT(1);
+   \   00002F   43BA02       ORL     0xba,#0x2
+    182          #endif
+    183          
+    184          /*#if MP3BT_DECT_EN
+    185              work_sta_interrupt = TASK_NULL;
+    186          #endif*/
+    187              user_change_volume(sys_ctl.volume);//数字音量
+   \   000032                ; Setup parameters for call to function user_change_volume
+   \   000032   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000035   E0           MOVX    A,@DPTR
+   \   000036   F9           MOV     R1,A
+   \   000037   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   00003A   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   00003C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    188              dac_enable();
+   \   00003F                ; Setup parameters for call to function dac_enable
+   \   00003F   90....       MOV     DPTR,#(dac_enable & 0xffff)
+   \   000042   74..         MOV     A,#((dac_enable >> 16) & 0xff)
+   \   000044   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    189              
+    190          #if WARNING_TASK_AUX
+    191              if ((work_sta_interrupt == TASK_NULL)&&(task_ctl.work_sta == TASK_AUX)) {
+    192                  mp3_res_play_wait(RES_MP3_AUX_MODE);
+    193              }
+    194          #endif
+    195          
+    196              work_sta_interrupt = TASK_NULL;
+   \   000047   E4           CLR     A
+   \   000048   90....       MOV     DPTR,#work_sta_interrupt
+   \   00004B   F0           MOVX    @DPTR,A
+    197          	auxeq_load_code(0x70);
+   \   00004C                ; Setup parameters for call to function auxeq_load_code
+   \   00004C   7A70         MOV     R2,#0x70
+   \   00004E   FB           MOV     R3,A
+   \   00004F   90....       MOV     DPTR,#(auxeq_load_code & 0xffff)
+   \   000052   74..         MOV     A,#((auxeq_load_code >> 16) & 0xff)
+   \   000054   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    198              pcm_init(S_SPR_48000);
+   \   000057                ; Setup parameters for call to function pcm_init
+   \   000057   7909         MOV     R1,#0x9
+   \   000059   90....       MOV     DPTR,#(pcm_init & 0xffff)
+   \   00005C   74..         MOV     A,#((pcm_init >> 16) & 0xff)
+   \   00005E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    199              AUCON10 |= BIT(7);
+   \   000061   43ED80       ORL     0xed,#0x80
+    200              FIFO_SPEED = 0;
+   \   000064   E4           CLR     A
+   \   000065   90789B       MOV     DPTR,#0x789b
+   \   000068   F0           MOVX    @DPTR,A
+    201          #if IIS_EN
+    202              if(task_ctl.work_sta == TASK_AUX) {
+   \   000069   90....       MOV     DPTR,#task_ctl
+   \   00006C   E0           MOVX    A,@DPTR
+   \   00006D   6402         XRL     A,#0x2
+   \   00006F   700F         JNZ     ??task_aux_eq_enter_0
+    203                  adc_ch = ((FM_CHANNEL_SEL & 0x80) >> 7) + 1;
+   \   000071   7402         MOV     A,#0x2
+   \   000073   90....       MOV     DPTR,#adc_ch
+   \   000076   F0           MOVX    @DPTR,A
+    204                  adc_init(SEL_FM_IIS);
+   \   000077                ; Setup parameters for call to function adc_init
+   \   000077   7909         MOV     R1,#0x9
+   \   000079   90....       MOV     DPTR,#(adc_init & 0xffff)
+   \   00007C   74..         MOV     A,#((adc_init >> 16) & 0xff)
+   \   00007E   8028         SJMP    ??task_aux_eq_enter_1
+    205              }else
+    206          #endif
+    207              {
+    208                  adc_ch = ((AUX_CHANNEL_SEL & 0x80) >> 7) + 1;
+   \                     ??task_aux_eq_enter_0:
+   \   000080   7402         MOV     A,#0x2
+   \   000082   90....       MOV     DPTR,#adc_ch
+   \   000085   F0           MOVX    @DPTR,A
+    209                  adc_init(SEL_AUX_EQ);
+   \   000086                ; Setup parameters for call to function adc_init
+   \   000086   7906         MOV     R1,#0x6
+   \   000088   90....       MOV     DPTR,#(adc_init & 0xffff)
+   \   00008B   74..         MOV     A,#((adc_init >> 16) & 0xff)
+   \   00008D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    210          #if CS8416        
+    211                  if (task_ctl.work_sta == TASK_COAX)
+   \   000090   90....       MOV     DPTR,#task_ctl
+   \   000093   E0           MOVX    A,@DPTR
+   \   000094   6403         XRL     A,#0x3
+   \   000096   7004         JNZ     ??task_aux_eq_enter_2
+    212                  {
+    213                      CS8416_in_choose(Input_coax);                                    
+   \   000098                ; Setup parameters for call to function CS8416_in_choose
+   \   000098   C2F0         CLR     B.0
+   \   00009A   8007         SJMP    ??task_aux_eq_enter_3
+    214                  }
+    215                  else if (task_ctl.work_sta == TASK_OPTI)
+   \                     ??task_aux_eq_enter_2:
+   \   00009C   E0           MOVX    A,@DPTR
+   \   00009D   6404         XRL     A,#0x4
+   \   00009F   700A         JNZ     ??task_aux_eq_enter_4
+    216                  {
+    217                      CS8416_in_choose(Input_opti);    
+   \   0000A1                ; Setup parameters for call to function CS8416_in_choose
+   \   0000A1   D2F0         SETB    B.0
+   \                     ??task_aux_eq_enter_3:
+   \   0000A3   90....       MOV     DPTR,#(CS8416_in_choose & 0xffff)
+   \   0000A6   74..         MOV     A,#((CS8416_in_choose >> 16) & 0xff)
+   \                     ??task_aux_eq_enter_1:
+   \   0000A8   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    218                  }
+    219          #endif
+    220              }
+    221              adc_start();
+   \                     ??task_aux_eq_enter_4:
+   \   0000AB                ; Setup parameters for call to function adc_start
+   \   0000AB   90....       MOV     DPTR,#(adc_start & 0xffff)
+   \   0000AE   74..         MOV     A,#((adc_start >> 16) & 0xff)
+   \   0000B0   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    222              pcm_play();
+   \   0000B3                ; Setup parameters for call to function pcm_play
+   \   0000B3   90....       MOV     DPTR,#(pcm_play & 0xffff)
+   \   0000B6   74..         MOV     A,#((pcm_play >> 16) & 0xff)
+   \   0000B8   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    223              delay_5ms(60);
+   \   0000BB                ; Setup parameters for call to function delay_5ms
+   \   0000BB   793C         MOV     R1,#0x3c
+   \   0000BD   12....       LCALL   delay_5ms & 0xFFFF
+    224          #if MIC_DIRECT_OUT_EN
+    225              mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    226          #endif
+    227          #if IS_LCD_DISPLAY
+    228              set_lcd_buf(LCD_FULL_MODE);
+    229          #endif
+    230          }
+   \   0000C0   02....       LJMP    ?BRET
+    231          
+    232          //任务退出
+    233          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+    234          void task_aux_eq_exit(void)
+   \                     task_aux_eq_exit:
+    235          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    236          #if MODE_CHANGE_BLUE_ON
+    237              led_mode_on();
+   \   000000                ; Setup parameters for call to function led_mode_on
+   \   000000   90....       MOV     DPTR,#(led_mode_on & 0xffff)
+   \   000003   74..         MOV     A,#((led_mode_on >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    238          #endif
+    239              adc_stop();
+   \   000008                ; Setup parameters for call to function adc_stop
+   \   000008   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   00000B   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    240              pcm_stop();
+   \   000010                ; Setup parameters for call to function pcm_stop
+   \   000010   90....       MOV     DPTR,#(pcm_stop & 0xffff)
+   \   000013   74..         MOV     A,#((pcm_stop >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    241              adc_exit();
+   \   000018                ; Setup parameters for call to function adc_exit
+   \   000018   90....       MOV     DPTR,#(adc_exit & 0xffff)
+   \   00001B   74..         MOV     A,#((adc_exit >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    242              adc_ch = 1;
+   \   000020   7401         MOV     A,#0x1
+   \   000022   90....       MOV     DPTR,#adc_ch
+   \   000025   F0           MOVX    @DPTR,A
+    243          #if (DEBUG_UART_SEL && ((AUX_CHANNEL_SEL & 0x07) == CHANNEL_01))
+    244              P0DIR &= ~BIT(1);
+   \   000026   53BAFD       ANL     0xba,#0xfd
+    245              uart_enable();
+   \   000029                ; Setup parameters for call to function uart_enable
+   \   000029   90....       MOV     DPTR,#(uart_enable & 0xffff)
+   \   00002C   74..         MOV     A,#((uart_enable >> 16) & 0xff)
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    246          #endif
+    247          #if MIC_DIRECT_OUT_EN
+    248              mic_direct_out_exit();
+    249          #endif
+    250              if(sys_ctl.mute_flag) {
+   \   000031   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   000034   E0           MOVX    A,@DPTR
+   \   000035   6008         JZ      ??task_aux_eq_exit_0
+    251                  sys_unmute();
+   \   000037                ; Setup parameters for call to function sys_unmute
+   \   000037   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   00003A   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   00003C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    252              }
+    253          }
+   \                     ??task_aux_eq_exit_0:
+   \   00003F   02....       LJMP    ?BRET
+    254          
+    255          #pragma constseg="TASK_AUX_CONST"
+
+   \                                 In segment TASK_AUX_CONST, align 1
+    256          IAR_CONST char str_show_taskauxeq[] = "task_aux_eq\n";
+   \                     str_show_taskauxeq:
+   \   000000   7461736B     DB "task_aux_eq\012"
+   \            5F617578
+   \            5F65710A
+   \            00      
+    257          #pragma constseg=default
+    258          
+    259          //音源输入任务
+    260          #pragma location="TASK_AUX_SEG"
+
+   \                                 In segment TASK_AUX_SEG, align 1, keep-with-next
+    261          void task_aux_eq(void)
+   \                     task_aux_eq:
+    262          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+    263              printf(str_show_taskauxeq);
+   \   000003                ; Setup parameters for call to function my_printf
+   \   000003   7A..         MOV     R2,#(str_show_taskauxeq & 0xff)
+   \   000005   7B..         MOV     R3,#((str_show_taskauxeq >> 8) & 0xff)
+   \   000007   12....       LCALL   my_printf & 0xFFFF
+    264              task_aux_eq_enter();
+   \   00000A                ; Setup parameters for call to function task_aux_eq_enter
+   \   00000A   90....       MOV     DPTR,#(task_aux_eq_enter & 0xffff)
+   \   00000D   74..         MOV     A,#((task_aux_eq_enter >> 16) & 0xff)
+   \   00000F   801C         SJMP    ??task_aux_eq_0
+    265              while (task_ctl.work_sta == TASK_AUX_EQ) {
+    266                  u8 msg = get_msg();
+   \                     ??task_aux_eq_1:
+   \   000011                ; Setup parameters for call to function get_msg
+   \   000011   12....       LCALL   get_msg & 0xFFFF
+   \   000014   E9           MOV     A,R1
+   \   000015   FE           MOV     R6,A
+    267                  task_aux_eq_event();
+   \   000016                ; Setup parameters for call to function comm_event
+   \   000016   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000019   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   00001B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    268                  task_aux_eq_deal_msg(msg);
+   \   00001E                ; Setup parameters for call to function task_aux_eq_deal_msg
+   \   00001E   EE           MOV     A,R6
+   \   00001F   F9           MOV     R1,A
+   \   000020   90....       MOV     DPTR,#(task_aux_eq_deal_msg & 0xffff)
+   \   000023   74..         MOV     A,#((task_aux_eq_deal_msg >> 16) & 0xff)
+   \   000025   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    269                  task_aux_eq_display();
+   \   000028                ; Setup parameters for call to function task_aux_eq_display
+   \   000028   90....       MOV     DPTR,#(task_aux_eq_display & 0xffff)
+   \   00002B   74..         MOV     A,#((task_aux_eq_display >> 16) & 0xff)
+   \                     ??task_aux_eq_0:
+   \   00002D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    270              }
+   \   000030   90....       MOV     DPTR,#task_ctl
+   \   000033   E0           MOVX    A,@DPTR
+   \   000034   640F         XRL     A,#0xf
+   \   000036   60D9         JZ      ??task_aux_eq_1
+    271              task_aux_eq_exit();
+   \   000038                ; Setup parameters for call to function task_aux_eq_exit
+   \   000038   90....       MOV     DPTR,#(task_aux_eq_exit & 0xffff)
+   \   00003B   74..         MOV     A,#((task_aux_eq_exit >> 16) & 0xff)
+   \   00003D   02....       LJMP    ?Subroutine2
+    272          }
+    273          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                  EXT_STACK PSTACK XSTACK
+     --------                  --------- ------ ------
+     aux_eq_continue                  1      0      0
+       -> adc_stop                    0      0      0
+       -> auxeq_load_code             0      0      0
+       -> pcm_init                    0      0      0
+       -> adc_init                    0      0      0
+       -> adc_init                    0      0      0
+       -> adc_start                   0      0      0
+       -> pcm_play                    0      0      0
+       -> sys_mute                    0      0      0
+     auxeq_mute_control               0      0      0
+       -> sys_unmute                  0      0      0
+       -> sys_mute                    0      0      0
+     auxeq_play_vol_music             0      0      0
+       -> adc_stop                    0      0      0
+       -> sys_unmute                  0      0      0
+       -> mp3_res_play_wait           0      0      0
+       -> flush_msg                   0      0      0
+     auxeq_vol_down                   0      0      0
+       -> user_volume_dec             0      0      0
+       -> user_set_volume             0      0      0
+       -> ledseg_ocx_show_vol         0      0      0
+       -> sys_unmute                  0      0      0
+     auxeq_vol_up                     0      0      0
+       -> user_volume_inc             0      0      0
+       -> user_set_volume             0      0      0
+       -> ledseg_ocx_show_vol         0      0      0
+       -> sys_unmute                  0      0      0
+     mp3res_play_auxeqmode            1      0      0
+       -> adc_stop                    2      0      0
+       -> mp3_res_play_wait           2      0      0
+       -> aux_eq_continue             2      0      0
+     task_aux_eq                      1      0      0
+       -> my_printf                   2      0      0
+       -> task_aux_eq_enter           2      0      0
+       -> get_msg                     2      0      0
+       -> comm_event                  2      0      0
+       -> task_aux_eq_deal_msg        2      0      0
+       -> task_aux_eq_display         2      0      0
+       -> task_aux_eq_exit            2      0      0
+     task_aux_eq_deal_msg             1      0      0
+       -> auxeq_mute_control          0      0      0
+       -> auxeq_vol_down              0      0      0
+       -> auxeq_vol_up                0      0      0
+       -> user_set_eq                 0      0      0
+       -> ledseg_ocx_show_eq          0      0      0
+       -> deal_msg                    0      0      0
+     task_aux_eq_display              1      0      0
+       -> ledseg_ocx_event            0      0      0
+       -> ledseg_disp                 0      0      0
+       -> ledseg_ocx_display          0      0      0
+     task_aux_eq_enter                1      0      0
+       -> my_memset                   0      0      0
+       -> led_aux_play                0      0      0
+       -> draw_wait                   0      0      0
+       -> set_sys_clk                 0      0      0
+       -> uart_disable                0      0      0
+       -> user_change_volume          0      0      0
+       -> dac_enable                  0      0      0
+       -> auxeq_load_code             0      0      0
+       -> pcm_init                    0      0      0
+       -> adc_init                    0      0      0
+       -> adc_init                    0      0      0
+       -> CS8416_in_choose            0      0      0
+       -> CS8416_in_choose            0      0      0
+       -> adc_start                   0      0      0
+       -> pcm_play                    0      0      0
+       -> delay_5ms                   0      0      0
+     task_aux_eq_event                0      0      0
+       -> comm_event                  0      0      0
+     task_aux_eq_exit                 1      0      0
+       -> led_mode_on                 0      0      0
+       -> adc_stop                    0      0      0
+       -> pcm_stop                    0      0      0
+       -> adc_exit                    0      0      0
+       -> uart_enable                 0      0      0
+       -> sys_unmute                  0      0      0
+     task_aux_eq_process              0      0      0
+       -> dac_direct_out              0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label        Bytes
+     --------------        -----
+     P0DIR                    1
+     AUCON5                   1
+     AUCON10                  1
+     t_auxeq                  4
+     task_aux_eq_display     35
+     ?Subroutine3             6
+     task_aux_eq_deal_msg    92
+     task_aux_eq_process     89
+     aux_eq_continue        102
+     ?Subroutine1            10
+     mp3res_play_auxeqmode   28
+     ?Subroutine2             9
+     auxeq_play_vol_music    41
+     auxeq_mute_control      40
+     ?Subroutine0            13
+     auxeq_vol_down          50
+     auxeq_vol_up            45
+     task_aux_eq_event        8
+     task_aux_eq_enter      195
+     task_aux_eq_exit        66
+     str_show_taskauxeq      13
+     task_aux_eq             64
+
+ 
+   4 bytes in segment AUX_EQ_XDATA
+  89 bytes in segment AUX_PROC
+   3 bytes in segment SFR_AN
+  13 bytes in segment TASK_AUX_CONST
+ 804 bytes in segment TASK_AUX_SEG
+ 
+ 906 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 3 bytes shared)
+   4 bytes of XDATA memory
+
+Errors: none
+Warnings: none

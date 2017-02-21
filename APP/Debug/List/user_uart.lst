@@ -1,0 +1,408 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:02 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_uart.c                                        #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_uart.c                                        #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_uart.lst                                #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_uart.r51                                 #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_uart.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_uart.c
+      4           * Author    : Hanny
+      5           * Function  : 串口驱动的相关程序
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          
+
+   \                                 In segment XDATA_AN, at 0x3e00, root
+      9          IAR_XDATA_A u8 bt_uart_rxbuf[256] @ 0x3E00;
+   \                     bt_uart_rxbuf:
+   \   000000                DS 256
+     10          
+     11          extern IAR_DATA_A volatile u8 bt_uart_rxptr;     //发送指针
+     12          extern IAR_DATA_A volatile u8 bt_uart_rxlen;
+     13          extern IAR_DATA_A u8 bt_rx_buf;
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     14          volatile u8 bt_sleep_cnt;        //BT模块计数进入休眠模式
+   \                     bt_sleep_cnt:
+   \   000000                DS 1
+     15          
+     16          #pragma location="BT_UART_TX_SEG"
+
+   \                                 In segment BT_UART_TX_SEG, align 1, keep-with-next
+     17          __near_func void bt_check_wake_up(void)
+   \                     bt_check_wake_up:
+     18          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+     19              u8 timeout = 5;                         // 5 * 25ms == 125ms
+   \   000003   7E05         MOV     R6,#0x5
+   \   000005   800B         SJMP    ??bt_check_wake_up_0
+     20              while (bt_sleep_cnt == 0 && timeout--) {
+     21                  UART1DATA = 0xff;
+   \                     ??bt_check_wake_up_1:
+   \   000007   74FF         MOV     A,#-0x1
+   \   000009   907816       MOV     DPTR,#0x7816
+   \   00000C   F0           MOVX    @DPTR,A
+     22                  delay_5ms(5);                       // delay 20ms
+   \   00000D                ; Setup parameters for call to function delay_5ms
+   \   00000D   7905         MOV     R1,#0x5
+   \   00000F   12....       LCALL   delay_5ms
+     23              }
+   \                     ??bt_check_wake_up_0:
+   \   000012   90....       MOV     DPTR,#bt_sleep_cnt
+   \   000015   E0           MOVX    A,@DPTR
+   \   000016   7004         JNZ     ??bt_check_wake_up_2
+   \   000018   EE           MOV     A,R6
+   \   000019   1E           DEC     R6
+   \   00001A   70EB         JNZ     ??bt_check_wake_up_1
+     24          }
+   \                     ??bt_check_wake_up_2:
+   \   00001C   D0E0         POP     A
+   \   00001E   FE           MOV     R6,A
+   \   00001F   22           RET
+     25          
+     26          #pragma location="BT_UART_TX_SEG"
+
+   \                                 In segment BT_UART_TX_SEG, align 1, keep-with-next
+     27          __near_func void uart1_putchar(char ch)
+   \                     uart1_putchar:
+     28          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     29              while((UART1STA & BIT(2)) == 0);
+   \                     ??uart1_putchar_0:
+   \   000000   907817       MOV     DPTR,#0x7817
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000006   50F8         JNC     ??uart1_putchar_0
+     30              UART1DATA = ch;
+   \   000008   E9           MOV     A,R1
+   \   000009   907816       MOV     DPTR,#0x7816
+   \   00000C   F0           MOVX    @DPTR,A
+     31          }
+   \   00000D   22           RET
+     32          
+     33          #pragma location="BT_UART_TX_SEG"
+
+   \                                 In segment BT_UART_TX_SEG, align 1, keep-with-next
+     34          __near_func void uart1_puts(void *buf, u8 len)
+   \                     uart1_puts:
+     35          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006   C0..         PUSH    ?V0 + 0
+   \   000008                ; Saved register size: 3
+   \   000008                ; Auto size: 0
+   \   000008   89..         MOV     ?V0 + 0,R1
+     36          #if 0
+     37              u8 i;
+     38              for (i=0; i<len; i++) {
+     39                  uart1_putchar(((u8 *)buf)[i]);
+     40              }
+     41          #else
+     42              u8 *pbuf = (u8 *)buf;
+   \   00000A   EA           MOV     A,R2
+   \   00000B   FE           MOV     R6,A
+   \   00000C   EB           MOV     A,R3
+   \   00000D   FF           MOV     R7,A
+     43              if (len == 0) {
+   \   00000E   E9           MOV     A,R1
+   \   00000F   6034         JZ      ??uart1_puts_0
+     44                  return;
+     45              }
+     46              if (BYTE0(pbuf) & 1) {
+   \   000011   EE           MOV     A,R6
+   \   000012   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000014   5018         JNC     ??uart1_puts_1
+     47                  uart1_putchar(pbuf[0]);
+   \   000016                ; Setup parameters for call to function uart1_putchar
+   \   000016   8E82         MOV     DPL,R6
+   \   000018   8F83         MOV     DPH,R7
+   \   00001A   E0           MOVX    A,@DPTR
+   \   00001B   F9           MOV     R1,A
+   \   00001C   12....       LCALL   uart1_putchar
+     48                  pbuf++;
+   \   00001F   8E82         MOV     DPL,R6
+   \   000021   8F83         MOV     DPH,R7
+   \   000023   A3           INC     DPTR
+   \   000024   AE82         MOV     R6,DPL
+   \   000026   AF83         MOV     R7,DPH
+     49                  len--;
+     50                  if (len == 0) {
+   \   000028   15..         DEC     ?V0 + 0
+   \   00002A   E5..         MOV     A,?V0 + 0
+   \   00002C   6017         JZ      ??uart1_puts_0
+     51                      return;
+     52                  }
+     53              }
+     54              while((UART1STA & BIT(2)) == 0);
+   \                     ??uart1_puts_1:
+   \   00002E   907817       MOV     DPTR,#0x7817
+   \   000031   E0           MOVX    A,@DPTR
+   \   000032   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000034   50F8         JNC     ??uart1_puts_1
+     55              UARTDMATXPTR = BYTE1(pbuf);
+   \   000036   EF           MOV     A,R7
+   \   000037   907819       MOV     DPTR,#0x7819
+   \   00003A   F0           MOVX    @DPTR,A
+     56              UARTDMATXPTR = BYTE0(pbuf);
+   \   00003B   EE           MOV     A,R6
+   \   00003C   F0           MOVX    @DPTR,A
+     57              UARTDMATXCNT = len - 1;
+   \   00003D   74FF         MOV     A,#-0x1
+   \   00003F   25..         ADD     A,?V0 + 0
+   \   000041   90781B       MOV     DPTR,#0x781b
+   \   000044   F0           MOVX    @DPTR,A
+     58          #endif
+     59          }
+   \                     ??uart1_puts_0:
+   \   000045   D0..         POP     ?V0 + 0
+   \   000047   D0E0         POP     A
+   \   000049   FF           MOV     R7,A
+   \   00004A   D0E0         POP     A
+   \   00004C   FE           MOV     R6,A
+   \   00004D   22           RET
+     60          
+     61          #pragma location="BT_UART_TX_SEG"
+
+   \                                 In segment BT_UART_TX_SEG, align 1, keep-with-next
+     62          __near_func void uart1_wait(void)
+   \                     uart1_wait:
+     63          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     64              while((UART1STA & BIT(2)) == 0);
+   \                     ??uart1_wait_0:
+   \   000000   907817       MOV     DPTR,#0x7817
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000006   50F8         JNC     ??uart1_wait_0
+     65          }
+   \   000008   22           RET
+     66          
+     67          #pragma location="BT_INIT_SEG"
+
+   \                                 In segment BT_INIT_SEG, align 1, keep-with-next
+     68          void bt_uart_init(void)
+   \                     bt_uart_init:
+     69          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     70              UART1CON = 0;
+   \   000000   E4           CLR     A
+   \   000001   907814       MOV     DPTR,#0x7814
+   \   000004   F0           MOVX    @DPTR,A
+     71              PMUXCON0 |= BIT(6);     //Chip Bluetooth
+   \   000005   90783F       MOV     DPTR,#0x783f
+   \   000008   E0           MOVX    A,@DPTR
+   \   000009   D2E6         SETB    0xE0 /* A   */.6
+   \   00000B   F0           MOVX    @DPTR,A
+     72              PMUXCON1 |= BIT(1);     //BT Wake UP
+   \   00000C   90783B       MOV     DPTR,#0x783b
+   \   00000F   E0           MOVX    A,@DPTR
+   \   000010   D2E1         SETB    0xE0 /* A   */.1
+   \   000012   F0           MOVX    @DPTR,A
+     73          
+     74              bt_uart_rxptr = 0;
+   \   000013   75..00       MOV     bt_uart_rxptr,#0x0
+     75              bt_uart_rxlen = 0;
+   \   000016   75..00       MOV     bt_uart_rxlen,#0x0
+     76              bt_rx_buf = BYTE1(bt_uart_rxbuf);
+   \   000019   743E         MOV     A,#0x3e
+   \   00001B   F5..         MOV     bt_rx_buf,A
+     77          
+     78              UARTDMARXPTR = bt_rx_buf;
+   \   00001D   907818       MOV     DPTR,#0x7818
+   \   000020   F0           MOVX    @DPTR,A
+     79              UARTDMARXPTR = 0x00;
+   \   000021   E4           CLR     A
+   \   000022   F0           MOVX    @DPTR,A
+     80              UART1LOOPCNT = 0x1c;
+   \   000023   741C         MOV     A,#0x1c
+   \   000025   9078A5       MOV     DPTR,#0x78a5
+   \   000028   F0           MOVX    @DPTR,A
+     81          
+     82              UART1DIV  = 0x0c;       //921600
+   \   000029   740C         MOV     A,#0xc
+   \   00002B   90781C       MOV     DPTR,#0x781c
+   \   00002E   F0           MOVX    @DPTR,A
+     83          
+     84              UART1CON = BIT(4) | BIT(0);
+   \   00002F   7411         MOV     A,#0x11
+   \   000031   907814       MOV     DPTR,#0x7814
+   \   000034   F0           MOVX    @DPTR,A
+     85              UART1STA |= BIT(0);     //kick rx
+   \   000035   907817       MOV     DPTR,#0x7817
+   \   000038   E0           MOVX    A,@DPTR
+   \   000039   D2E0         SETB    0xE0 /* A   */.0
+   \   00003B   F0           MOVX    @DPTR,A
+     86          
+     87          #if 0
+     88              extern volatile u8 __data bt_uart_rxlen;
+     89              __near_func u8 bt_uart_rxget(void);
+     90          
+     91              WDTCON = 0;
+     92              while(1)
+     93              {
+     94                  if (bt_uart_rxlen) {
+     95                      printf("RE: %02X\n", bt_uart_rxget());
+     96                  }
+     97              }
+     98          #endif
+     99          }
+   \   00003C   02....       LJMP    ?BRET
+    100          
+    101          //---------------------------------------------------------------------------------
+    102          //UART 串口查询发送， 中断接收示例
+    103          
+    104          #if 0
+    105          #pragma vector = VECTOR_OFFSET(RTCC_INT)
+    106          #pragma register_bank=2  //0优先级(最低优先级)必须用bank1 //2优先级必须用bank2 //3优先级必须用bank3
+    107          __interrupt __near_func void uart_rtc_iis_isr(void)
+    108          {
+    109              ISR_ENTER();
+    110              if(UARTSTA & BIT(5)){
+    111                  UARTSTA &= ~BIT(5);
+    112                  uart_putchar(UARTDATA);
+    113              }
+    114              ISR_EXIT();
+    115          }
+    116          
+    117          
+    118          //按48MHz来初始化串口
+    119          void uart_init_test(void)
+    120          {
+    121              UARTBAUDL = 0x33;//0x33;
+    122              UARTBAUDH = 0;
+    123              UARTDIV = 0x07;//0x07;  //48M系统时钟时：  48000/((0x33+1)*(0x07+1)) = 115.38K
+    124              UARTCON = 0x11;         //1bit stop bit   //uart en //uart rx int en
+    125          #if 1
+    126              UARTSTA = 0x01;         //select TX:P01 RX:P00
+    127              PIE0 |= BIT(0)|BIT(1);  //确保P00/P01是数字IO口。
+    128              P0DIR &= ~BIT(1);
+    129              P0DIR |= BIT(0);
+    130              P0PU |= BIT(0);         //P10 10K上拉
+    131          #else
+    132              UARTSTA = 0x00;         //select TX:P16 RX:P34
+    133              P1DIR &= ~BIT(6);
+    134              P3DIR |= BIT(6);
+    135              P1PU |= BIT(6);
+    136              P3PU |= BIT(4);         //P34 10K上拉
+    137              P3PUS0 &= ~BIT(4);
+    138              P3PUS1 &= ~BIT(4);
+    139          #endif
+    140              IPH1 |= BIT(6);   //第2级优先级
+    141              IP1 &= ~BIT(6);
+    142              IE1 |= BIT(6);    //int en
+    143          
+    144          }
+    145          
+    146          //输出一个字符到串口，后台等待发送完结
+    147          void uart_putchar_test(char c)
+    148          {
+    149          	while((UARTSTA & 0x10) == 0);
+    150          	UARTDATA = c;
+    151          }
+    152          
+    153          void uart_int_recv_test(void)
+    154          {
+    155              uart_init_test();
+    156              WDTCON = 0;
+    157              while(1){
+    158                  uart_putchar_test(0x55); //uart_putchar_test(CLKCON1);
+    159                  delay_5ms(100);
+    160              }
+    161          }
+    162          #endif
+
+   Maximum stack usage in bytes:
+
+     Function           EXT_STACK PSTACK XSTACK
+     --------           --------- ------ ------
+     bt_check_wake_up          1      0      0
+       -> delay_5ms            2      0      0
+     bt_uart_init              0      0      0
+     uart1_putchar             3      0      0
+     uart1_puts                3      0      0
+       -> uart1_putchar        6      0      0
+     uart1_wait                0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label    Bytes
+     --------------    -----
+     bt_uart_rxbuf      256
+     bt_sleep_cnt         1
+     bt_check_wake_up    32
+     ??uart1_putchar_0   14
+     uart1_puts          78
+     ??uart1_wait_0       9
+     bt_uart_init        63
+
+ 
+  63 bytes in segment BT_INIT_SEG
+ 133 bytes in segment BT_UART_TX_SEG
+ 256 bytes in segment XDATA_AN
+   1 byte  in segment XDATA_Z
+ 
+ 196 bytes of CODE  memory
+   1 byte  of XDATA memory (+ 256 bytes shared)
+
+Errors: none
+Warnings: none

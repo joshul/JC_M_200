@@ -1,0 +1,492 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_iis.c                                         #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_iis.c                                         #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_iis.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_iis.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_iis.c
+      1          // IIS的音量设置程序，需要按实际需求修改iis_set_vol
+      2          // 注意：因IIS器件调节音量的需要，IIC接口不能与SD接口复用，需要另外定义IIC引脚
+      3          // 启用IIS后，P16、P22、P25、P26将被占用。
+      4          //      MCLK---P16
+      5          //      BCLK---P25
+      6          //      LRCLK--P26
+      7          //      DO/DI--P22
+      8          
+      9          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xa1
+   \   unsigned char volatile __sfr IIS_CON2
+   \                     IIS_CON2:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa9
+   \   unsigned char volatile __sfr IE1
+   \                     IE1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xb9
+   \   unsigned char volatile __sfr IP1
+   \                     IP1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbc
+   \   unsigned char volatile __sfr P2DIR
+   \                     P2DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xc0
+   \   unsigned char volatile __sfr IIS_CON0
+   \                     IIS_CON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xc3
+   \   unsigned char volatile __sfr IIS_CON1
+   \                     IIS_CON1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xe2
+   \   unsigned char volatile __sfr IPH1
+   \                     IPH1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xfe
+   \   unsigned char volatile __sfr IIS_CON3
+   \                     IIS_CON3:
+   \   000000                DS 1
+     10          #include "user_iis.h"
+     11          #include "task.h"
+     12          #include "task_aux_eq.h"
+     13          #include "task_fm.h"
+     14          #include "task_record.h"
+     15          
+     16          //采用中断，目前效果最好(必须优先级最高，不能被打断)
+     17          #if (FM_RECORD_EN || AUX_RECORD_EN) && IIS_EN
+     18          #pragma vector = VECTOR_OFFSET(IIS_INT)
+     19          #pragma register_bank=3  //0优先级(最低优先级)必须用bank1 //2优先级必须用bank2 //3优先级必须用bank3
+     20          __interrupt __near_func void iis_interrupt(void)
+     21          {
+     22              ISR_ENTER();
+     23              if((IIS_CON2 & BIT(3)) != 0x00) {
+     24                  IIS_CON2 = 0x00;
+     25          #if FM_RECORD_EN && AUX_RECORD_EN
+     26                  if(task_ctl.work_sta == TASK_FM)
+     27          #endif
+     28          #if FM_RECORD_EN
+     29          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     30                  {
+     31                      // 数据量很大，不推荐
+     32                      IIS_ADR1 = (u8)(adpcm_input >> 8);
+     33                      IIS_ADR1 = (u8)adpcm_input;
+     34                      IIS_DMA_RD_CNT0 = (u8)(t_fm_rec.spl * adc_ch/2-1);
+     35                      IIS_DMA_RD_CNT1 = (u8)((t_fm_rec.spl * adc_ch/2-1) >> 8);
+     36                  }
+     37          #else
+     38                  {
+     39                      // 使用mp3录音，数据量小，可以使用48K采样率录音
+     40                      IIS_ADR1 = (u8)((u16)adc_buf+(t_fm_rec.pos*t_fm_rec.spl*adc_ch) >> 8);
+     41                      IIS_ADR1 = (u8)((u16)adc_buf+(t_fm_rec.pos*t_fm_rec.spl*adc_ch));
+     42                      IIS_DMA_RD_CNT0 = (u8)(t_fm_rec.spl*adc_ch/2-1);
+     43                      IIS_DMA_RD_CNT1 = (u8)((t_fm_rec.spl*adc_ch/2-1) >> 8);
+     44                  }
+     45          #endif
+     46          #endif
+     47          #if FM_RECORD_EN && AUX_RECORD_EN
+     48                  else
+     49          #endif
+     50          #if AUX_RECORD_EN
+     51          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     52                  {
+     53                      // 数据量很大，不推荐
+     54                      IIS_ADR1 = (u8)(adpcm_input >> 8);
+     55                      IIS_ADR1 = (u8)adpcm_input;
+     56                      IIS_DMA_RD_CNT0 = (u8)(t_rec.spl * adc_ch/2-1);
+     57                      IIS_DMA_RD_CNT1 = (u8)((t_rec.spl * adc_ch/2-1) >> 8);
+     58                  }
+     59          #else
+     60                  {
+     61                      // 使用mp3录音，数据量小，可以使用48K采样率录音
+     62                      IIS_ADR1 = (u8)((u16)adc_buf+(t_rec.pos*t_rec.spl*adc_ch) >> 8);
+     63                      IIS_ADR1 = (u8)((u16)adc_buf+(t_rec.pos*t_rec.spl*adc_ch));
+     64                      IIS_DMA_RD_CNT0 = (u8)(t_rec.spl*adc_ch/2-1);
+     65                      IIS_DMA_RD_CNT1 = (u8)((t_rec.spl*adc_ch/2-1) >> 8);
+     66                  }
+     67          #endif
+     68          #endif
+     69              }
+     70              ISR_EXIT();
+     71          }
+     72          #endif
+     73          
+     74          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+     75          void iis_kick(void)
+   \                     iis_kick:
+     76          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     77              // 手动kick IIS的DMA中断
+     78              IIS_ADR1 = (u8)((u16)adc_buf >> 8);
+   \   000000   74..         MOV     A,#((adc_buf >> 8) & 0xff)
+   \   000002   907805       MOV     DPTR,#0x7805
+   \   000005   F0           MOVX    @DPTR,A
+     79              IIS_ADR1 = (u8)(u16)adc_buf;
+   \   000006   74..         MOV     A,#(adc_buf & 0xff)
+   \   000008   F0           MOVX    @DPTR,A
+     80              IIS_DMA_RD_CNT0 = 1;
+   \   000009   7401         MOV     A,#0x1
+   \   00000B   90782B       MOV     DPTR,#0x782b
+   \   00000E   F0           MOVX    @DPTR,A
+     81              IIS_DMA_RD_CNT1 = 0;
+   \   00000F   E4           CLR     A
+   \   000010   90782C       MOV     DPTR,#0x782c
+   \   000013   F0           MOVX    @DPTR,A
+     82          }
+   \   000014   02....       LJMP    ?BRET
+     83          
+     84          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+     85          void pll2_record_set(u8 channel)
+   \                     pll2_record_set:
+     86          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+     87              iis_kick();
+   \   000005                ; Setup parameters for call to function iis_kick
+   \   000005   90....       MOV     DPTR,#(iis_kick & 0xffff)
+   \   000008   74..         MOV     A,#((iis_kick >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     88              // 配置PLL2做IIS时钟
+     89              //IIS_CON1 = 0x05;  // DOUT和DIN在一起
+     90              IIS_CON1 = 0x15;  // DOUT和DIN分开
+   \   00000D   75C315       MOV     0xc3,#0x15
+     91              // IIS 32数据模式
+     92              IIS_ALLBIT = 15;
+   \   000010   740F         MOV     A,#0xf
+   \   000012   90782D       MOV     DPTR,#0x782d
+   \   000015   F0           MOVX    @DPTR,A
+     93              IIS_BAUD = 31;
+   \   000016   741F         MOV     A,#0x1f
+   \   000018   90782F       MOV     DPTR,#0x782f
+   \   00001B   F0           MOVX    @DPTR,A
+     94              IIS_BCLK_CFG = 15;
+   \   00001C   740F         MOV     A,#0xf
+   \   00001E   90781D       MOV     DPTR,#0x781d
+   \   000021   F0           MOVX    @DPTR,A
+     95          /*
+     96              // IIS 64数据模式
+     97              IIS_ALLBIT = 31;
+     98              IIS_BAUD = 15;
+     99              IIS_BCLK_CFG = 31;
+    100          */
+    101              IIS_VALBIT = 0x0F;
+   \   000022   90780B       MOV     DPTR,#0x780b
+   \   000025   F0           MOVX    @DPTR,A
+    102              IIS_REFCLK_CFG = 15|BIT(5);
+   \   000026   742F         MOV     A,#0x2f
+   \   000028   907838       MOV     DPTR,#0x7838
+   \   00002B   F0           MOVX    @DPTR,A
+    103              CLKCON2 = 0xa0;
+   \   00002C   74A0         MOV     A,#-0x60
+   \   00002E   9078A4       MOV     DPTR,#0x78a4
+   \   000031   F0           MOVX    @DPTR,A
+    104              // 设置IIS DMA中断最高级
+    105              IPH1 |= BIT(6);
+   \   000032   43E240       ORL     0xe2,#0x40
+    106              IP1 |= BIT(6);
+   \   000035   43B940       ORL     0xb9,#0x40
+    107          
+    108              // 判断是不是单声道
+    109              if(!(channel & TWO_CHANNEL)) {
+   \   000038   EE           MOV     A,R6
+   \   000039   A2E7         MOV     C,0xE0 /* A   */.7
+   \   00003B   4005         JC      ??pll2_record_set_0
+    110                  IIS_CON0 = 0x11 | BIT(2);   // 只传左声道数据
+   \   00003D   75C015       MOV     0xc0,#0x15
+   \   000040   8003         SJMP    ??pll2_record_set_1
+    111          #if IIS_TYPE == IIS_TAS5711
+    112                  tas5711_write_4byte(0x25, 0x01, 0x02, 0x02, 0x45);  // IIS器件2个声道都输出左声道的声音
+    113          #endif
+    114              }else {
+    115                  IIS_CON0 = 0x01 | BIT(2);   // 双声道
+   \                     ??pll2_record_set_0:
+   \   000042   75C005       MOV     0xc0,#0x5
+    116              }
+    117          }
+   \                     ??pll2_record_set_1:
+   \   000045   D0E0         POP     A
+   \   000047   FE           MOV     R6,A
+   \   000048   02....       LJMP    ?BRET
+    118          
+    119          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    120          void pll2_record_exit(void)
+   \                     pll2_record_exit:
+    121          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    122              IIS_CON3 &= ~BIT(3);        // 先关断IIS DMA的中断
+   \   000000   53FEF7       ANL     0xfe,#0xf7
+    123              IE1 &= BIT(6);              // 再关断IE1中相应的中断
+   \   000003   53A940       ANL     0xa9,#0x40
+   \   000006   E5A9         MOV     A,0xa9
+    124              IIS_CON0 = 0x01 | BIT(2);   // IIS恢复双声道
+   \   000008   75C005       MOV     0xc0,#0x5
+    125              //IIS_CON1 = 0x09;  // DOUT和DIN在一起
+    126              IIS_CON1 = 0x19;  // DOUT和DIN分开
+   \   00000B   75C319       MOV     0xc3,#0x19
+    127              pll1_set();
+   \   00000E                ; Setup parameters for call to function pll1_set
+   \   00000E                REQUIRE ?Subroutine0
+   \   00000E                ; // Fall through to label ?Subroutine0
+    128          #if IIS_TYPE == IIS_TAS5711
+    129              tas5711_write_4byte(0x25, 0x01, 0x02, 0x13, 0x45);  // IIS器件输出双声道的声音
+    130          #endif
+    131          }
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   90....       MOV     DPTR,#(pll1_set & 0xffff)
+   \   000003   74..         MOV     A,#((pll1_set >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   02....       LJMP    ?BRET
+    132          
+    133          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    134          void pll1_set(void)
+   \                     pll1_set:
+    135          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    136              //set_sys_clk(SYS_48M);
+    137          #if 0
+    138              // IIS 32数据模式
+    139              IIS_ALLBIT = 15;
+    140              IIS_BAUD = 33;
+    141              IIS_BCLK_CFG = 15;
+    142          #endif
+    143              //工作在IIS 64数据模式
+    144              IIS_ALLBIT = 31;
+   \   000000   741F         MOV     A,#0x1f
+   \   000002   90782D       MOV     DPTR,#0x782d
+   \   000005   F0           MOVX    @DPTR,A
+    145              IIS_BAUD = 16;
+   \   000006   7410         MOV     A,#0x10
+   \   000008   90782F       MOV     DPTR,#0x782f
+   \   00000B   F0           MOVX    @DPTR,A
+    146              IIS_BCLK_CFG = 31;
+   \   00000C   741F         MOV     A,#0x1f
+   \   00000E   90781D       MOV     DPTR,#0x781d
+   \   000011   F0           MOVX    @DPTR,A
+    147          
+    148              IIS_VALBIT = 0x0F;
+   \   000012   740F         MOV     A,#0xf
+   \   000014   90780B       MOV     DPTR,#0x780b
+   \   000017   F0           MOVX    @DPTR,A
+    149              IIS_REFCLK_CFG = 16|BIT(5);
+   \   000018   7430         MOV     A,#0x30
+   \   00001A   907838       MOV     DPTR,#0x7838
+   \   00001D   F0           MOVX    @DPTR,A
+    150              CLKCON2 = 0x00;
+   \   00001E   E4           CLR     A
+   \   00001F   9078A4       MOV     DPTR,#0x78a4
+   \   000022   F0           MOVX    @DPTR,A
+    151          }
+   \   000023   02....       LJMP    ?BRET
+    152          
+    153          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    154          void iis_conf(void)
+   \                     iis_conf:
+    155          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    156              P1DIR &= ~BIT(6);
+   \   000000   53BBBF       ANL     0xbb,#0xbf
+    157              P2DIR &= ~(BIT(2) | BIT(5) | BIT(6));
+   \   000003   53BC9B       ANL     0xbc,#0x9b
+   \   000006   E5BC         MOV     A,0xbc
+    158              IIS_CON0 = 0x01 | BIT(2);   // BCLK传数据时应该用上升沿
+   \   000008   75C005       MOV     0xc0,#0x5
+    159              //IIS_CON1 = 0x09;  // DOUT和DIN在一起
+    160              IIS_CON1 = 0x19;  // DOUT和DIN分开
+   \   00000B   75C319       MOV     0xc3,#0x19
+    161              IIS_CON2 = 0x00;
+   \   00000E   75A100       MOV     0xa1,#0x0
+    162              IIS_CON3 = 0x80;
+   \   000011   75FE80       MOV     0xfe,#-0x80
+    163          }
+   \   000014   02....       LJMP    ?BRET
+    164          
+    165          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    166          void iis_init(void)
+   \                     iis_init:
+    167          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    168              iis_conf();
+   \   000000                ; Setup parameters for call to function iis_conf
+   \   000000   90....       MOV     DPTR,#(iis_conf & 0xffff)
+   \   000003   74..         MOV     A,#((iis_conf >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    169              pll1_set();
+   \   000008                ; Setup parameters for call to function pll1_set
+   \   000008   80..         SJMP    ?Subroutine0
+    170          }
+    171          
+    172          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    173          void iis_set_vol(u8 volume)
+   \                     iis_set_vol:
+    174          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    175          #if IIS_TYPE == IIS_TAS5711
+    176              ////    0x08    0dB
+    177              ////    数值变化1  对应0.5dB
+    178              
+    179              if(volume > 0)
+    180                  //tas5711_write_byte(0x07, 0x20+(VOLUME_MAX-volume)*(3*(VOLUME_MAX-volume)/5));
+    181                  //tas5711_write_byte(0x07, 0x20+(VOLUME_MAX-volume)*3);
+    182                  TAS5711_AMP_Volume_Set(volume);
+    183              else
+    184                  tas5711_write_byte(0x07, 0xff);
+    185          #endif
+    186          }
+   \   000000   02....       LJMP    ?BRET
+    187          
+    188          #pragma location="TASK_MUSIC_SEG_3"
+
+   \                                 In segment TASK_MUSIC_SEG_3, align 1, keep-with-next
+    189          void iis_powerdown(void)
+   \                     iis_powerdown:
+    190          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    191          #if IIS_TYPE == IIS_TAS5711
+    192              tas5711_write_byte(0x40, 0x05);
+    193              delay_ms(3);
+    194              PDN_PIN_DIR();
+    195              PDN_LOW();
+    196              delay_ms(2);
+    197              RST_PIN_DIR();
+    198              RST_LOW();
+    199          #endif
+    200          }
+   \   000000   02....       LJMP    ?BRET
+
+   Maximum stack usage in bytes:
+
+     Function         EXT_STACK PSTACK XSTACK
+     --------         --------- ------ ------
+     iis_conf                0      0      0
+     iis_init                0      0      0
+       -> iis_conf           0      0      0
+       -> pll1_set           0      0      0
+     iis_kick                1      0      0
+     iis_powerdown           0      0      0
+     iis_set_vol             0      0      0
+     pll1_set                0      0      0
+     pll2_record_exit        0      0      0
+       -> pll1_set           0      0      0
+     pll2_record_set         1      0      0
+       -> iis_kick           2      0      0
+
+
+   Segment part sizes:
+
+     Function/Label   Bytes
+     --------------   -----
+     IIS_CON2            1
+     IE1                 1
+     IP1                 1
+     P1DIR               1
+     P2DIR               1
+     IIS_CON0            1
+     IIS_CON1            1
+     IPH1                1
+     IIS_CON3            1
+     iis_kick           23
+     pll2_record_set    75
+     pll2_record_exit   14
+     ?Subroutine0       11
+     pll1_set           38
+     iis_conf           23
+     iis_init           10
+     iis_set_vol         3
+     iis_powerdown       3
+
+ 
+   9 bytes in segment SFR_AN
+ 200 bytes in segment TASK_MUSIC_SEG_3
+ 
+ 200 bytes of CODE memory
+   0 bytes of DATA memory (+ 9 bytes shared)
+
+Errors: none
+Warnings: none

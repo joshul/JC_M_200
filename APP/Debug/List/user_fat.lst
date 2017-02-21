@@ -1,0 +1,536 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:59 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fat.c                                         #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fat.c                                         #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fat.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fat.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fat.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_fat.c
+      4           * Author    : Hanny
+      5           * Function  : 文件读接口，可以增加加密算法等
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xaf
+   \   unsigned char volatile __sfr SPMODE
+   \                     SPMODE:
+   \   000000                DS 1
+      8          
+      9          extern type_dev_ctl dev_ctl;
+     10          extern IAR_DATA_A u8 music_critical;
+     11          extern u8 music_ibuf[0xa08];
+     12          
+     13          #if MUSIC_ENCRYPT_EN
+     14          u8 music_encrypt;
+     15          
+     16          u16 music_start_offset;     //Music文件的起始偏移，单位为512Byte
+     17          u16 lrc_start_offset;       //LRC文件的起始偏移，单位为512Byte
+     18          #endif
+     19          
+     20          //返回当前读写指针
+     21          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     22          __near_func u32 f_getpos(FIL *fp)
+   \                     f_getpos:
+     23          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004   C0..         PUSH    ?V0 + 2
+   \   000006   C0..         PUSH    ?V0 + 3
+   \   000008                ; Saved register size: 4
+   \   000008                ; Auto size: 0
+     24              return (fp->fptr + fp->seek * 512);
+   \   000008   EA           MOV     A,R2
+   \   000009   2411         ADD     A,#0x11
+   \   00000B   F582         MOV     DPL,A
+   \   00000D   EB           MOV     A,R3
+   \   00000E   3400         ADDC    A,#0x0
+   \   000010   F583         MOV     DPH,A
+   \   000012   C082         PUSH    DPL
+   \   000014   C083         PUSH    DPH
+   \   000016   EA           MOV     A,R2
+   \   000017   241D         ADD     A,#0x1d
+   \   000019   F582         MOV     DPL,A
+   \   00001B   EB           MOV     A,R3
+   \   00001C   3400         ADDC    A,#0x0
+   \   00001E   F583         MOV     DPH,A
+   \   000020   78..         MOV     R0,#?V0 + 0
+   \   000022   12....       LCALL   ?L_MOV_X
+   \   000025   7409         MOV     A,#0x9
+   \   000027   78..         MOV     R0,#?V0 + 0
+   \   000029   12....       LCALL   ?L_SHL
+   \   00002C   D083         POP     DPH
+   \   00002E   D082         POP     DPL
+   \   000030   78..         MOV     R0,#?V0 + 0
+   \   000032   12....       LCALL   ?L_ADD_X
+   \   000035   AA..         MOV     R2,?V0 + 0
+   \   000037   AB..         MOV     R3,?V0 + 1
+   \   000039   AC..         MOV     R4,?V0 + 2
+   \   00003B   AD..         MOV     R5,?V0 + 3
+   \   00003D                REQUIRE ?Subroutine0
+   \   00003D                ; // Fall through to label ?Subroutine0
+     25          }
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   D0..         POP     ?V0 + 3
+   \   000002   D0..         POP     ?V0 + 2
+   \   000004   D0..         POP     ?V0 + 1
+   \   000006   D0..         POP     ?V0 + 0
+   \   000008   22           RET
+     26          
+     27          
+     28          //音乐文件读解密接口，用户可根据实际算法进行修改。如需调用子函数必须加上__near_func
+     29          //建议用户加密的文件对齐到512Byte，以便精简文件结束判断的处理
+     30          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     31          __near_func void music_read_decrypt(u8 *buf)
+   \                     music_read_decrypt:
+     32          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     33              u16 len = 512;          //解密程序示例
+   \   000000   7800         MOV     R0,#0x0
+   \   000002   7902         MOV     R1,#0x2
+   \   000004   800D         SJMP    ??music_read_decrypt_0
+     34              while (len--) {
+     35                  *buf ^= 0x5a;
+   \                     ??music_read_decrypt_1:
+   \   000006   8A82         MOV     DPL,R2
+   \   000008   8B83         MOV     DPH,R3
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   645A         XRL     A,#0x5a
+   \   00000D   F0           MOVX    @DPTR,A
+     36                  buf++;
+   \   00000E   A3           INC     DPTR
+   \   00000F   AA82         MOV     R2,DPL
+   \   000011   AB83         MOV     R3,DPH
+     37              }
+   \                     ??music_read_decrypt_0:
+   \   000013   E8           MOV     A,R0
+   \   000014   FC           MOV     R4,A
+   \   000015   E9           MOV     A,R1
+   \   000016   FD           MOV     R5,A
+   \   000017   74FF         MOV     A,#-0x1
+   \   000019   2C           ADD     A,R4
+   \   00001A   18           DEC     R0
+   \   00001B   74FF         MOV     A,#-0x1
+   \   00001D   3D           ADDC    A,R5
+   \   00001E   F9           MOV     R1,A
+   \   00001F   EC           MOV     A,R4
+   \   000020   7001         JNZ     ??music_read_decrypt_2
+   \   000022   ED           MOV     A,R5
+   \                     ??music_read_decrypt_2:
+   \   000023   70E1         JNZ     ??music_read_decrypt_1
+     38          }
+   \   000025   22           RET
+     39          
+     40          //音乐文件读接口，每次读取一个512Byte
+     41          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     42          __near_func bool music_read(void *buf)
+   \                     music_read:
+     43          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     44              if (!decoder_read(buf)) {
+   \   000000                ; Setup parameters for call to function decoder_read
+   \   000000   12....       LCALL   decoder_read
+   \   000003   4025         JC      ??music_read_0
+     45                  if (!device_is_actived(fs_cur_dev())) {
+   \   000005                ; Setup parameters for call to function device_is_actived
+   \   000005                ; Setup parameters for call to function fs_cur_dev
+   \   000005   12....       LCALL   fs_cur_dev
+   \   000008   12....       LCALL   device_is_actived
+   \   00000B   401B         JC      ??music_read_1
+     46                      dac_fade_out();
+   \   00000D                ; Setup parameters for call to function dac_fade_out
+   \   00000D   90....       MOV     DPTR,#(dac_fade_out & 0xffff)
+   \   000010   74..         MOV     A,#((dac_fade_out >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     47                      delay_5ms(1);
+   \   000015                ; Setup parameters for call to function delay_5ms
+   \   000015   7901         MOV     R1,#0x1
+   \   000017   12....       LCALL   delay_5ms
+     48                      IE_MP3 = 0;
+   \   00001A   C2AC         CLR     0xa8.4
+     49                      SPMODE &= ~BIT(7);
+   \   00001C   53AF7F       ANL     0xaf,#0x7f
+     50                      music_critical = 1;
+   \   00001F   75..01       MOV     music_critical,#0x1
+     51                      msc_ctl.status = STATUS_PLAY_STOPPING;  //防止播放中拔出设备有拖尾音的问题
+   \   000022   7401         MOV     A,#0x1
+   \   000024   90....       MOV     DPTR,#(msc_ctl + 1)
+   \   000027   F0           MOVX    @DPTR,A
+     52                  }
+     53                 // printf("read fail!\n");
+     54                  return false;                   //读失败
+   \                     ??music_read_1:
+   \   000028   C3           CLR     C
+   \   000029   22           RET
+     55              }
+     56          #if MUSIC_ENCRYPT_EN
+     57              if (music_encrypt) {
+     58                  if (f_getpos(&fat_file_opt) >= ((u32)lrc_start_offset << 9)) {
+     59                      return false;               //判断音乐文件结束
+     60                  }
+     61                  music_read_decrypt(buf);
+     62              }
+     63          #endif
+     64              return true;
+   \                     ??music_read_0:
+   \   00002A   D3           SETB    C
+   \   00002B   22           RET
+     65          }
+     66          
+     67          //带缓存加速的Seek接口
+     68          #pragma location="FAT_COM_SEG"
+
+   \                                 In segment FAT_COM_SEG, align 1, keep-with-next
+     69          __near_func bool music_seek(u8 mode, u32 offset)
+   \                     music_seek:
+     70          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004   C0..         PUSH    ?V0 + 2
+   \   000006   C0..         PUSH    ?V0 + 3
+   \   000008                ; Saved register size: 4
+   \   000008                ; Auto size: 0
+     71          #if MUSIC_ENCRYPT_EN
+     72              if (mode == F_SEEK_ORG) {
+     73                  offset += music_start_offset;
+     74              }
+     75          #endif
+     76              return decoder_seek(mode, offset);
+   \   000008                ; Setup parameters for call to function decoder_seek
+   \   000008   12....       LCALL   decoder_seek
+   \   00000B   80..         SJMP    ?Subroutine0
+     77          }
+     78          
+     79          #if MUSIC_ENCRYPT_EN
+     80          //尝试打开加密歌词
+     81          #pragma location="MUSIC_SEG"
+     82          bool lrc_open_encrypt(void)
+     83          {
+     84              if (!music_encrypt) {
+     85                  return false;
+     86              }
+     87              memcpy(&fat_file, &fat_file_opt, sizeof(fat_file));     //直接打开同一个文件
+     88              return true;
+     89          }
+     90          #endif
+     91          
+     92          //音乐文件读解密接口，用户可根据实际算法进行修改。调用的子函数不需要加上__near_func
+     93          #pragma location = "LRC_SEG"
+
+   \                                 In segment LRC_SEG, align 1, keep-with-next
+     94          bool lrc_read(void *buf)
+   \                     lrc_read:
+     95          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     96              if (!f_read(buf)) {
+   \   000000                ; Setup parameters for call to function f_read
+   \   000000   90....       MOV     DPTR,#(f_read & 0xffff)
+   \   000003   74..         MOV     A,#((f_read >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   4003         JC      ??lrc_read_0
+     97                  return false;
+   \   00000A   C3           CLR     C
+   \   00000B   8001         SJMP    ??lrc_read_1
+     98              }
+     99          #if MUSIC_ENCRYPT_EN
+    100              if (music_encrypt) {
+    101                  music_read_decrypt(buf);
+    102              }
+    103          #endif
+    104              return true;
+   \                     ??lrc_read_0:
+   \   00000D   D3           SETB    C
+   \                     ??lrc_read_1:
+   \   00000E   02....       LJMP    ?BRET
+    105          }
+    106          
+    107          //返回LRC文件头
+    108          #pragma location = "LRC_SEG"
+
+   \                                 In segment LRC_SEG, align 1, keep-with-next
+    109          bool lrc_seek_org(void)
+   \                     lrc_seek_org:
+    110          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004   C0..         PUSH    ?V0 + 2
+   \   000006   C0..         PUSH    ?V0 + 3
+   \   000008                ; Saved register size: 4
+   \   000008                ; Auto size: 0
+    111          #if MUSIC_ENCRYPT_EN
+    112              if (!f_lseek(F_SEEK_ORG, lrc_start_offset)) {
+    113          #else
+    114              if (!f_lseek(F_SEEK_ORG, 0)) {
+   \   000008                ; Setup parameters for call to function f_lseek
+   \   000008   90....       MOV     DPTR,#__Constant_0
+   \   00000B   78..         MOV     R0,#?V0 + 0
+   \   00000D   12....       LCALL   ?L_MOV_C
+   \   000010   AA..         MOV     R2,?V0 + 0
+   \   000012   AB..         MOV     R3,?V0 + 1
+   \   000014   AC..         MOV     R4,?V0 + 2
+   \   000016   AD..         MOV     R5,?V0 + 3
+   \   000018   7900         MOV     R1,#0x0
+   \   00001A   90....       MOV     DPTR,#(f_lseek & 0xffff)
+   \   00001D   74..         MOV     A,#((f_lseek >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000022   4003         JC      ??lrc_seek_org_0
+    115          #endif
+    116                  return false;
+   \   000024   C3           CLR     C
+   \   000025   8001         SJMP    ??lrc_seek_org_1
+    117              }
+    118              return true;
+   \                     ??lrc_seek_org_0:
+   \   000027   D3           SETB    C
+   \                     ??lrc_seek_org_1:
+   \   000028   D0..         POP     ?V0 + 3
+   \   00002A   D0..         POP     ?V0 + 2
+   \   00002C   D0..         POP     ?V0 + 1
+   \   00002E   D0..         POP     ?V0 + 0
+   \   000030   02....       LJMP    ?BRET
+    119          }
+    120          
+    121          #if MUSIC_ENCRYPT_EN
+    122          //MP3文件头解密处理，可以根据扩展名来解析加密，也可以在这里处理头文件
+    123          #pragma location="MUSIC_SEG"
+    124          void music_head_decrypt(void)
+    125          {
+    126              music_start_offset = 0;
+    127              lrc_start_offset = 0;
+    128              if (music_encrypt) {
+    129                  f_read_opt(dec_ibuf);                                   //注意，这里Music文件的读取，需要用f_read_opt
+    130                  music_read_decrypt(dec_ibuf);                           //解密头
+    131                  music_start_offset = LOAD_U32(dec_ibuf) >> 9;           //如果有加密的话，需要在这里偏移掉加密的文件头，单位为512Byte
+    132                  lrc_start_offset = LOAD_U32(&dec_ibuf[4]) >> 9;         //也可以通过在加密的头信息设置LRC的起始头，单位为512Byte
+    133                  //printf("ms: %04x\n", music_start_offset);
+    134                  //printf("ls: %04x\n", lrc_start_offset);
+    135              }
+    136          }
+    137          #endif
+    138          
+    139          /*
+    140          //歌词文件头解密处理，可以根据扩展名来解析加密，也可以在这里处理头文件
+    141          void lrc_head_decrypt(void)
+    142          {
+    143              if (music_encrypt) {
+    144                  lrc_read(lrc_ibuf);             //LRC需要用f_read来获取相关信息
+    145                  lrc_start_offset += 0;          //如果LRC起始的位置还有头，也可以在这里进行处理。
+    146              }
+    147          }
+    148          */
+    149          
+    150          #pragma location="MUSIC_SEG"
+
+   \                                 In segment MUSIC_SEG, align 1, keep-with-next
+    151          u16 str_len2(u8 *str, u8 fb_gbk)
+   \                     str_len2:
+    152          {
+   \   000000                ; Saved register size: 1
+   \   000000                ; Auto size: 0
+    153              u8 *s=str;
+   \   000000   EA           MOV     A,R2
+   \   000001   FC           MOV     R4,A
+   \   000002   EB           MOV     A,R3
+   \   000003   FD           MOV     R5,A
+    154          
+    155              if (fb_gbk) {
+   \   000004   E9           MOV     A,R1
+   \   000005   7013         JNZ     ??str_len2_0
+   \   000007   8029         SJMP    ??str_len2_1
+    156                  while (1) {
+    157                      if (*str == 0) {
+    158                          str++;
+    159                          break;
+    160                      }
+    161                      if (*str & 0x80) {
+   \                     ??str_len2_2:
+   \   000009   A2E7         MOV     C,0xE0 /* A   */.7
+   \   00000B   5004         JNC     ??str_len2_3
+    162                          str++;
+   \   00000D   E8           MOV     A,R0
+   \   00000E   FA           MOV     R2,A
+   \   00000F   E9           MOV     A,R1
+   \   000010   FB           MOV     R3,A
+    163                      }
+    164                      str++;
+   \                     ??str_len2_3:
+   \   000011   8A82         MOV     DPL,R2
+   \   000013   8B83         MOV     DPH,R3
+   \   000015   A3           INC     DPTR
+   \   000016   AA82         MOV     R2,DPL
+   \   000018   AB83         MOV     R3,DPH
+   \                     ??str_len2_0:
+   \   00001A   8A82         MOV     DPL,R2
+   \   00001C   8B83         MOV     DPH,R3
+   \   00001E   A3           INC     DPTR
+   \   00001F   A882         MOV     R0,DPL
+   \   000021   A983         MOV     R1,DPH
+   \   000023   8A82         MOV     DPL,R2
+   \   000025   8B83         MOV     DPH,R3
+   \   000027   E0           MOVX    A,@DPTR
+   \   000028   70DF         JNZ     ??str_len2_2
+   \   00002A   E8           MOV     A,R0
+   \   00002B   FA           MOV     R2,A
+   \   00002C   8018         SJMP    ??str_len2_4
+    165                  }
+    166              } else {
+    167                  while (1) {
+    168                      if (*str == 0 && *(str+1) == 0) {
+    169                          str += 2;
+    170                          break;
+    171                      }
+    172                      str += 2;
+   \                     ??str_len2_5:
+   \   00002E   0A           INC     R2
+   \   00002F   0A           INC     R2
+   \   000030   E9           MOV     A,R1
+   \   000031   FB           MOV     R3,A
+   \                     ??str_len2_1:
+   \   000032   EA           MOV     A,R2
+   \   000033   2402         ADD     A,#0x2
+   \   000035   EB           MOV     A,R3
+   \   000036   3400         ADDC    A,#0x0
+   \   000038   F9           MOV     R1,A
+   \   000039   8A82         MOV     DPL,R2
+   \   00003B   8B83         MOV     DPH,R3
+   \   00003D   E0           MOVX    A,@DPTR
+   \   00003E   70EE         JNZ     ??str_len2_5
+   \   000040   A3           INC     DPTR
+   \   000041   E0           MOVX    A,@DPTR
+   \   000042   70EA         JNZ     ??str_len2_5
+   \   000044   0A           INC     R2
+   \   000045   0A           INC     R2
+   \                     ??str_len2_4:
+   \   000046   E9           MOV     A,R1
+   \   000047   FB           MOV     R3,A
+    173                  }
+    174              }
+    175              return (u16)str - (u16)s;
+   \   000048   EA           MOV     A,R2
+   \   000049   C3           CLR     C
+   \   00004A   9C           SUBB    A,R4
+   \   00004B   FA           MOV     R2,A
+   \   00004C   EB           MOV     A,R3
+   \   00004D   9D           SUBB    A,R5
+   \   00004E   FB           MOV     R3,A
+   \   00004F   02....       LJMP    ?BRET
+    176          }
+
+   \                                 In segment CODE_C, align 1
+   \                     __Constant_0:
+   \   000000   00000000     DD 0
+
+   \                                 In segment SFR_AN, at 0xa8
+   \   union <unnamed> volatile __sfr _A_IE0
+   \                     _A_IE0:
+   \   000000                DS 1
+
+   Maximum stack usage in bytes:
+
+     Function               EXT_STACK PSTACK XSTACK
+     --------               --------- ------ ------
+     f_getpos                      6      0      0
+     lrc_read                      0      0      0
+       -> f_read                   0      0      0
+     lrc_seek_org                  4      0      0
+       -> f_lseek                  8      0      0
+     music_read                    0      0      0
+       -> decoder_read             0      0      0
+       -> fs_cur_dev               0      0      0
+       -> device_is_actived        0      0      0
+       -> dac_fade_out             0      0      0
+       -> delay_5ms                0      0      0
+     music_read_decrypt            0      0      0
+     music_seek                    4      0      0
+       -> decoder_seek             8      0      0
+     str_len2                      1      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     SPMODE                1
+     f_getpos             61
+     ?Subroutine0          9
+     music_read_decrypt   38
+     music_read           44
+     music_seek           13
+     lrc_read             17
+     lrc_seek_org         51
+     str_len2             82
+     __Constant_0          4
+     _A_IE0                1
+
+ 
+   4 bytes in segment CODE_C
+ 165 bytes in segment FAT_COM_SEG
+  68 bytes in segment LRC_SEG
+  82 bytes in segment MUSIC_SEG
+   2 bytes in segment SFR_AN
+ 
+ 315 bytes of CODE memory (+ 4 bytes shared)
+   0 bytes of DATA memory (+ 2 bytes shared)
+
+Errors: none
+Warnings: none

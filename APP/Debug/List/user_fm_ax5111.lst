@@ -1,0 +1,215 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:51 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_ax5111.c                           #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_ax5111.c                           #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm_ax5111.lst                           #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm_ax5111.r51                            #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm\user_fm_ax5111.c
+      1          #include "include.h"
+      2          #include "user_fm.h"
+      3          #include "AX5111.h"
+      4          
+      5          #if (FM_TYPE == FM_AX5111)
+      6          
+      7          #pragma constseg="FM_INIT_CONST_AX5111"
+      8          IAR_CONST u8 AX5111_INIT_TABLE[]=
+      9          {
+     10            0xE0, //CLKCON0      54
+     11            0xF0, //CLKCON1      48
+     12            0x24, //LVDCON       68
+     13            0x00, //P0
+     14            0x00, //P1
+     15            0x00, //P0DIR
+     16            0x00, //P1DIR
+     17            0x00, //PUP0
+     18            0x00, //PUP1
+     19            0x00, //PDN0
+     20            0x00, //PDN1
+     21            0x40, //PTE
+     22            0x00, //DCN    RO
+     23            0x00, //ID_H   RO
+     24            0x15, //ID_L   RO
+     25            0x00, //DACCON0
+     26            0x40, //DACCON1      5B
+     27            0x80, //DACCON2      3F
+     28            0x02, //DACCON3      0D
+     29            0x18, //DACCON5      15
+     30            0x01, //FMRX_CON     01
+     31            0x37, //FMRXACON0
+     32            0xA8, //FMRXACON1    AA
+     33            0xAA, //FMRXACON2
+     34            0x00, //FMRXACON3    7F
+     35            0x2A, //FMRXACON4
+     36          #if (REFCLK==4)
+     37            0x23,//0x23, //FMRXACON5    4M:0x23,12M/24M:0x21
+     38          #else
+     39            0x21,//0x21,
+     40          #endif
+     41            0x30, //FMRXACON6    32
+     42            0xAA, //FMRXACON7
+     43            0xD0, //FMRXACON8
+     44            0x04, //FMRX_TS0
+     45            0x5D, //LPLL_FRAC_N_H
+     46            0x2F, //LPLL_FRAC_N_L
+     47            0x17, //LPLL_INT_N
+     48            0xD3, //FMRX_CTL    17
+     49            0x00, //LPLL_CTL0    81
+     50          #if (REFCLK==4)
+     51            0x16, //LPLL_CTL1    4M:0x16,12M/24M:0x1E
+     52          #else
+     53            0x1E,
+     54          #endif
+     55            0x20, //LPLL_CTL2    20
+     56            0x05, //IFADC_CTL0   BD
+     57            0xA9, //IFADC_CTL1   A9
+     58          #if (REFCLK==24)
+     59            0x04,
+     60          #else
+     61            0x00, //FMFE_CTL0    4M/12M:0x00,24M:0x04
+     62          #endif
+     63            0x01, //FMFE_CTL1    AA
+     64            0x00, //FMFE_CTL2    EA
+     65            0x07, //FMFE_CTL3
+     66            0x07, //FMFE_CTL4    87
+     67            0x20, //FMFE_CTL5    20
+     68            0x7F, //FM_BLEND     FF
+     69            0x7F, //VOL_TAB_H
+     70            0xFF, //VOL_TAB_L
+     71            0x00, //VOL_TRM_L_H
+     72            0x00, //VOL_TRM_L_L
+     73            0x00, //VOL_TRM_R_H
+     74            0x00, //VOL_TRM_R_L
+     75            0x00, //FM_TEST_CTL
+     76          #if (REFCLK==4)
+     77            0x18, //BANDCNT_CTL  4M:0x18,12M/24M:0x1C
+     78          #else
+     79            0x1C,
+     80          #endif
+     81            0x7F, //I_GAIN_H
+     82            0xFF, //I_GAIN_L
+     83            0x7F, //Q_GAIN_H
+     84            0xFF  //Q_GAIN_L
+     85          };
+     86          #pragma constseg=default
+     87          
+     88          #pragma constseg="FM_CONST_AX5111"
+     89          u8 VOL_TABLE[16][2]=
+     90          {
+     91          	0x00,0x00,
+     92          	0x00,0x10,
+     93          	0x00,0x20,
+     94          	0x00,0x40,
+     95          	0x00,0x80,
+     96          	0x01,0x00,
+     97          	0x02,0x00,
+     98          	0x04,0x00,
+     99          	0x08,0x00,
+    100          	0x10,0x00,
+    101          	0x16,0x9F,
+    102          	0x20,0x00,
+    103          	0x2D,0x3F,
+    104          	0x40,0x00,
+    105          	0x5A,0x7E,
+    106          	0x7F,0xFF
+    107          };
+    108          
+    109          #pragma location="FM_SEG_AX5111"
+    110          u8 ax5111_seek(u16 freq)
+    111          {
+    112              int DRSSI;
+    113              Write_FMREG(AX5111_FM_TEST_CTL,0x00); //disable complex filter
+    114              Write_FMREG(AX5111_FMRX_CTL,0x07);    //disable demodulator
+    115              LO_Calibration(freq);
+    116              DRSSI = GetDRSSI(freq);
+    117          
+    118              if(DRSSI>=ISSTATION_DRSSI_TH)
+    119              {
+    120                  if(((freq%40)==0)||(freq==948)||(freq==949)||(freq==1021)||(freq==1022))
+    121                  {
+    122                      if(DRSSI<ISSTATION_DRSSI_4M){
+    123                          return 0;
+    124                      }
+    125                  }
+    126                  Write_FMREG(AX5111_FMRX_CTL,0x0F);	//set CS Filter to 128K
+    127                  DRSSI = GetDRSSI(freq-1);
+    128                  Write_FMREG(AX5111_FMRX_CTL,0x07);	//set CS Filter to 228K
+    129                  if(DRSSI>=ISSTATION_DRSSI_TH){
+    130                      ax5111_set_freq(freq);          //判断为真台后设置一下频率播放一小段时间
+    131                      return 1;
+    132                  }
+    133              }
+    134              return 0;
+    135          }
+    136          
+    137          #pragma location="FM_SEG_AX5111"
+    138          void ax5111_set_vol(u8 vol)
+    139          {
+    140              if(vol>15)
+    141                  vol=15;
+    142          
+    143              Write_FMREG(AX5111_VOL_TAB_L,VOL_TABLE[vol][1]);
+    144              Write_FMREG(AX5111_VOL_TAB_H,VOL_TABLE[vol][0]);
+    145          }
+    146          
+    147          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

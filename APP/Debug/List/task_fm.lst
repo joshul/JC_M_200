@@ -1,0 +1,996 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:56 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_fm.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_fm.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_fm.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_fm.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_fm.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_fm.c
+      4           * Author    : Hanny
+      5           * Function  : 收音机任务
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "user_tas5711.h"
+      9          
+     10          #if TASK_FM_EN
+     11          #include "task.h"
+     12          #include "user_fm.h"
+     13          #include "task_fm.h"
+     14          #if FM_RECORD_EN
+     15          #include "task_record.h"
+     16          #include "task_music.h"
+     17          #include "user_iis.h"
+     18          #endif
+     19          
+     20          #define DEBUG_TASK_FM           0
+     21          #define FM_ITEMS_NUM            6
+     22          #define MAX_FREQ                10800
+     23          #if ((FM_TYPE == FM_RTC6218) && (SYS_CRY == CRY_2M))
+     24          #define MIN_RREQ                8740
+     25          #else
+     26          #define MIN_RREQ                8750
+     27          #endif
+     28          
+     29          enum {
+     30              SEEK_STOP,SEEK_AUTO,
+     31          };
+     32          enum {
+     33              ITEM_AUTO_SEEK,ITEM_DELETE,ITEM_DEL_ALL,ITEM_BACK_MENU,ITEM_EXIT,
+     34          };
+     35          struct {
+     36              char *ptr;
+     37          } disp_fm;
+     38          
+     39          //task fm controller
+     40          IAR_XDATA_A TYPE_TASK_FM t_fm           @ "FM_XDATA";
+     41          IAR_XDATA_A type_task_fm_rec t_fm_rec   @ "FM_XDATA";
+     42          
+     43          extern IAR_BIT_A volatile bool flag_tm2_fade;
+     44          //IAR_BIT_A volatile bool flag_tm2_fade_bak;
+     45          
+     46          #pragma constseg="LIST_CONTENT"
+     47          string IAR_CONST tbl_fm_items[FM_ITEMS_NUM+1] = {
+     48              STR_FM_RECIEVE,
+     49              STR_FM_AUTO_SEEK,
+     50              STR_FM_DELETE,
+     51              STR_FM_DEL_ALL,
+     52              STR_BACK_MENU,
+     53              STR_MENU_EXIT,
+     54          };
+     55          void task_fm_save(void);
+     56          extern u32 WriteTotalData;              //文件系统写数据时候使用
+     57          __near_func void task_fm_auto_stop(void);
+     58          __near_func void task_fm_auto_play(void);
+     59          __near_func void task_fm_auto_start(void);
+     60          __near_func void task_fm_prevch(void);
+     61          __near_func bool user_set_volume_fm(u8 volume);
+     62          void task_fm_select_freq_chan(u8 num);
+     63          static void task_fm_nextch(void);
+     64          __near_func u8 user_volume_dec_fm(u8 volume);
+     65          __near_func u8 user_volume_inc_fm(u8 volume);
+     66          void task_fm_reuse_init(void);
+     67          void fm_play_vol_music(void);
+     68          void fm_play_continue(void);
+     69          void task_aux_eq_enter(void);
+     70          void task_aux_eq_exit(void);
+     71          void aux_eq_continue(void);
+     72          
+     73          #include SET_USER_PATH(CFG_UI_FM_DIR, /ui/ui_fm.c)
+     74          
+     75          #if FM_RECORD_EN
+     76          #define TASK_SUB
+     77          #include "sub/tasksub_fm_record.c"          //录音子任务
+     78          #include "sub/tasksub_fm_recplay.c"         //录音子任务
+     79          #endif
+     80          
+     81          void task_fm_display_init(void);
+     82          void task_fm_load(void);
+     83          void task_fm_fix(void);
+     84          
+     85          IAR_XDATA_A u16 fm_ch[64] @ "FM_CH_BUF";
+     86          
+     87          extern void task_fm_dispmem_init(void);         //预装数据
+     88          extern void task_fm_play_dispmem_init(void);
+     89          extern void task_fm_list_dispmem_init(void);
+     90          extern void task_fm_display(void);              //收音机显示接口
+     91          extern void usb_host_reactive(void);
+     92          __near_func void dac_anl_fade_wait(void);
+     93          
+     94          #if !FM_VOUT_THROUGH_MCU
+     95          //#pragma inline=forced
+     96          void dac_pull_down(void)
+     97          {
+     98             dac_anl_fade_wait();
+     99             speaker_mute();   //配置DAC时有杂音，MUTE住功放
+    100             dac_off(0);
+    101          }
+    102          
+    103          //#pragma inline=forced
+    104          void dac_recover(void)
+    105          {
+    106             speaker_mute();   //配置DAC时有杂音，MUTE住功放
+    107             dac_init(0);
+    108          #if DAC_MIX_OUT_EN
+    109             dac_left_right_mix_out();
+    110          #endif
+    111          }
+    112          #endif
+    113          
+    114          //任务初始化
+    115          #pragma location="TASK_FM_INIT"
+    116          void task_fm_enter(void)
+    117          {
+    118          #if 0
+    119          #if IIS_TYPE == IIS_TAS5711
+    120              TAS5711_AMP_Mute_Set(FALSE);
+    121          #endif
+    122          #endif
+    123              if(device_is_online(DEVICE_UDISK)){
+    124                  //usb_host_suspend();
+    125              }
+    126          #if (FM_CLK_SEL == FMOSC_REUSE_32KSDCLK)
+    127              set_sys_clk(SYS_12M);           //需要通过 SDCLK 推32.728K时钟时，FM模式下工作在12M系统时钟
+    128          #else
+    129              set_sys_clk(SYS_24M);           //FM模式下工作在24M系统时钟
+    130          #endif
+    131             // user_set_volex(0);              //FM音源较大，一般不需要3DB音量补偿
+    132              led_fm_play();
+    133              draw_wait();
+    134          
+    135              task_ctl.work_sta = TASK_FM;
+    136              memset(&t_fm,0,sizeof(t_fm));
+    137          
+    138          #if (((FM_CHANNEL_SEL & 0x07) == CHANNEL_01) && FM_VOUT_THROUGH_MCU)
+    139              uart_disable();
+    140              P0DIR |= BIT(1);
+    141          #endif
+    142          
+    143              P3DRV0 &= ~BIT(3);
+    144          #if (FM_CLK_SEL == P33_OUT_32K)
+    145              P3DIR &= ~BIT(3);
+    146              PCON3 |= 0x80;   // make sure 32k xosc run
+    147              PMUXCON5 = (PMUXCON5 & 0xF0) | BIT(0);    //XOSC
+    148          #elif (FM_CLK_SEL == P33_OUT_12M)
+    149              P3DIR &= ~BIT(3);
+    150              PMUXCON5 = (PMUXCON5 & 0xF0) | BIT(0) | BIT(2);  //PLL 12M
+    151          #endif
+    152          
+    153              task_fm_reuse_init();
+    154              user_change_volume(sys_ctl.volume); //数字音量
+    155              if (!fm_init()) {
+    156                  task_ctl.work_sta = TASK_EXIT;  //FM模块错误
+    157                  return;
+    158              }
+    159          #if !FM_VOUT_THROUGH_MCU
+    160              fm_off();                       //先关一下FM，防止FM拉低提示音
+    161              delay_5ms(100);
+    162          #endif
+    163          
+    164              //提示音
+    165          
+    166          #if MP3BT_DECT_EN
+    167              work_sta_interrupt = TASK_NULL;
+    168          #endif
+    169          
+    170          #if WARNING_TASK_FM
+    171              if (work_sta_interrupt == TASK_NULL) {
+    172                  dac_enable();
+    173                  mp3_res_play_wait(RES_MP3_FM_MODE);
+    174                  dac_disable();
+    175              }
+    176          #endif
+    177              task_fm_reuse_init();
+    178              work_sta_interrupt = TASK_NULL;
+    179          #if !FM_VOUT_THROUGH_MCU
+    180              dac_pull_down();
+    181              delay_5ms(10);
+    182              fm_init();                      //上面关闭FM后在此再初始化一下FM
+    183          #endif
+    184              t_fm.disp_flag = 1;
+    185              t_fm.disp_ch_flag = 1;
+    186              t_fm.disp_freq = 0xffff;
+    187          
+    188              load_code(0x28, 3);
+    189              task_fm_load();
+    190              t_fm.ch_sel = sys_param_read8(PARAM_FM_CHSEL);              //当前台号
+    191              if(t_fm.ch_cnt >= 100 || t_fm.ch_sel > 100)
+    192              {
+    193                  t_fm.ch_cnt = 0;
+    194                  t_fm.ch_sel = 0;
+    195              }
+    196              if (t_fm.ch_sel > t_fm.ch_cnt || t_fm.ch_sel == 0) {
+    197                  t_fm.ch_sel = t_fm.ch_cnt;
+    198              }
+    199          
+    200              t_fm.freq = sys_param_read16(PARAM_FM_FREQ);                //起始频率
+    201              t_fm.seek_sta = SEEK_STOP;
+    202              t_fm.fm_sta = FM_PLAY;
+    203              task_fm_fix();
+    204              fm_set_freq(t_fm.freq);
+    205              WATCHDOG_CLR();
+    206              //开始播放
+    207          
+    208          #if FM_VOUT_THROUGH_MCU
+    209          #if !IIS_EN
+    210              amux_init(FM_CHANNEL_SEL);
+    211          #endif
+    212          #else
+    213              fm_set_vol(sys_ctl.volume); //设置FM模块音量为系统音量，开始播放
+    214          #endif
+    215          #if KEY_VOICE_EN
+    216              key_voice_init();
+    217          #endif
+    218              draw_clear();
+    219              ocx_clear();
+    220          
+    221          #if IS_LCD_DISPLAY
+    222              task_fm_disp_init();
+    223          #endif
+    224          
+    225          #if MIC_DIRECT_OUT_EN && FM_VOUT_THROUGH_MCU
+    226              mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    227          #endif
+    228              if (!sys_ctl.mute_flag) {
+    229          #if FM_VOUT_THROUGH_MCU
+    230          #if !IIS_EN
+    231                  amux_play();
+    232          #endif
+    233          #else
+    234                  speaker_unmute();
+    235          #endif
+    236              }
+    237              //printf("fm_init finished\n");
+    238          #if FM_VOUT_THROUGH_MCU && IIS_EN
+    239              work_sta_interrupt = TASK_FM;
+    240              task_aux_eq_enter();
+    241          #endif
+    242          
+    243          }
+    244          
+    245          #pragma location="TASK_FM_SEG_1"
+    246          void mp3res_play_fmmode(u8 music_num)
+    247          {
+    248          #if IIS_EN
+    249              adc_stop();
+    250          #endif
+    251              dac_enable();
+    252              mp3_res_play_wait(music_num);
+    253              task_fm_reuse_init();
+    254              dac_disable();
+    255              load_code(0x28, 3);
+    256              task_fm_load();     //由于fm_ch[]是保存在DCODE_RAM的，播放提示音后会被清零，需要重新LOAD一下
+    257          #if IIS_EN
+    258              work_sta_interrupt = TASK_FM;
+    259              task_aux_eq_enter();
+    260          #endif
+    261          }
+    262          
+    263          #pragma location="TASK_FM_SEG_1"
+    264          void fm_play_exit(void)
+    265          {
+    266          #if IIS_TYPE == IIS_TAS5711
+    267              TAS5711_AMP_Mute_Set(TRUE);
+    268          #endif
+    269          #if FM_VOUT_THROUGH_MCU
+    270          #if !IIS_EN
+    271              amux_exit();
+    272          #endif
+    273          #else
+    274              speaker_mute();
+    275              fm_set_vol(0);
+    276              fm_off();       //播放提示音时需要关闭FM，否则FM会把DAC声音拉低
+    277              dac_recover();
+    278              speaker_unmute();
+    279          #endif
+    280          }
+    281          
+    282          #pragma location="TASK_FM_SEG_1"
+    283          void fm_play_continue(void)
+    284          {
+    285          #if FM_VOUT_THROUGH_MCU
+    286          #if !IIS_EN
+    287              amux_init(FM_CHANNEL_SEL);
+    288          #endif
+    289              if(!t_fm.mute){
+    290                  sys_unmute();
+    291          #if !FM_VOUT_THROUGH_MCU && !IIS_EN
+    292                  amux_play();
+    293          #endif
+    294              }
+    295          #else                          //校正频道
+    296              dac_pull_down();
+    297              delay_5ms(10);
+    298              fm_init();
+    299              load_code(0x28, 3);
+    300              task_fm_load();     //由于fm_ch[]是保存在DCODE_RAM的，播放提示音后会被清零，需要重新LOAD一下
+    301              fm_set_freq(t_fm.freq);                     //设置频率
+    302              if(t_fm.mute){
+    303                  speaker_mute();
+    304                  fm_set_vol(0);
+    305              }else{
+    306                  fm_set_vol(sys_ctl.volume);
+    307                  speaker_unmute();
+    308              }
+    309              WATCHDOG_CLR();
+    310          #endif
+    311          }
+    312          
+    313          #pragma location="TASK_FM_SEG_1"
+    314          void fm_play_vol_music(void)
+    315          {
+    316              if(SEEK_AUTO == t_fm.seek_sta){
+    317                  task_fm_save();
+    318              }
+    319          #if FM_VOUT_THROUGH_MCU
+    320              sys_unmute();
+    321          #else
+    322              speaker_unmute();
+    323          #endif
+    324              if(!sys_ctl.vol_maxmin_music_play) { //音量hold消息时，只执行下面的一次
+    325                  fm_play_exit();
+    326                  sys_ctl.vol_maxmin_music_play = 1;
+    327              }
+    328              mp3res_play_fmmode(RES_MP3_VOL_MAXMIN);
+    329              flush_msg();
+    330          }
+    331          
+    332          #pragma location="TASK_FM_SEG_1"
+    333          void task_fm_menu_music_continue(u8 menu_music_num)
+    334          {
+    335              fm_play_exit();
+    336              mp3res_play_fmmode(menu_music_num);
+    337              fm_play_continue();
+    338          }
+    339          
+    340          //保存频道
+    341          #pragma location="TASK_FM_INIT"
+    342          void task_fm_save(void)
+    343          {
+    344              sys_param_write8(PARAM_FM_CH, t_fm.ch_cnt);
+    345              sys_param_write(fm_ch, PARAM_FM_CH+2, sizeof(fm_ch));
+    346          }
+    347          
+    348          #pragma location="TASK_FM_INIT"
+    349          void task_fm_reuse_init(void)
+    350          {
+    351              sd_stop(1);
+    352          
+    353          #if IIC_REUSE_SD                    //复用SD时先输出一段SDCLK，使SD卡释放SDDAT
+    354              SDCON0 |= BIT(1);               //Keep Clk Outing
+    355              delay_5ms(2);
+    356              SDCON0 &= ~(BIT(1) | BIT(0));   //Disable SDC & CLK
+    357          #endif
+    358          
+    359          #if ((FM_CLK_SEL == FMOSC_REUSE_32KSDCLK) || (FM_CLK_SEL == FMOSC_REUSE_12MSDCLK))
+    360              SD_CLK_DIR_OUT();
+    361              SDCON0 |= BIT(0);               //Enable SDC
+    362            #if (FM_CLK_SEL == FMOSC_REUSE_32KSDCLK)
+    363              SDBAUD = 0xB6;        //12MHz / 2 / (SDBAUD + 1) = 32.768K  //  sd_set_rate0(0xb7);
+    364            #else
+    365              SDBAUD = 0x00;        //24MHz / 2 / (SDBAUD + 1) = 12M //sd_set_rate0(0);
+    366            #endif
+    367              SDCON0 |= BIT(1);               //Keep Clk Outing
+    368              delay_5ms(2);                   //复用SD时先输出一段SDCLK，使SD卡释放SDDAT
+    369          #endif
+    370          }
+    371          
+    372          #pragma location="TASK_FM_INIT"
+    373          void task_fm_reuse_exit(void)
+    374          {
+    375          #if IIC_REUSE_SD
+    376              sd_reactive();
+    377          #endif
+    378          #if ((FM_CLK_SEL == FMOSC_REUSE_32KSDCLK) || (FM_CLK_SEL == FMOSC_REUSE_12MSDCLK))
+    379              SDCON0 &= ~BIT(1);                   //suspend sdclk
+    380              sd_reactive();
+    381          #endif
+    382          
+    383          #if IICCLK_REUSE_USB
+    384              usb_host_reactive();
+    385          #endif
+    386          }
+    387          //任务退出
+    388          #pragma location="TASK_FM_SEG_1"
+    389          void task_fm_exit(void)
+    390          {
+    391          #if FM_VOUT_THROUGH_MCU && IIS_EN
+    392              task_aux_eq_exit();
+    393          #endif
+    394          #if FM_RECORD_EN
+    395              if((t_fm.sta == FM_REC_PAUSE) && t_fm_rec.file_open) {
+    396                  task_fm_record_stop();
+    397              }
+    398          	adc_exit();
+    399              adc_ch = 1;
+    400          #endif
+    401              amux_exit();
+    402          #if FM_VOUT_THROUGH_MCU
+    403              sys_unmute();
+    404          #else
+    405              speaker_mute();
+    406              fm_set_vol(0);
+    407          #endif
+    408          
+    409          #if MIC_DIRECT_OUT_EN && FM_VOUT_THROUGH_MCU
+    410              mic_direct_out_exit();
+    411          #endif
+    412          #if MODE_CHANGE_BLUE_ON
+    413              led_mode_on();
+    414          #endif
+    415              fm_off();
+    416          
+    417              if(t_fm.seek_sta == SEEK_AUTO) {
+    418                  task_fm_auto_stop();
+    419              }
+    420              if(t_fm.freq) {  //防止fm初始化失败写flash
+    421              sys_param_write8(PARAM_FM_CHSEL, t_fm.ch_sel);              //保存当前台号
+    422              sys_param_write16(PARAM_FM_FREQ, t_fm.freq);                //保存起始频率
+    423              }
+    424          
+    425          #if (DEBUG_UART_SEL && ((FM_CHANNEL_SEL & 0x07) == CHANNEL_01) && FM_VOUT_THROUGH_MCU)
+    426              P0DIR &= ~BIT(1);  //LQP48 S10上测试,若打开它,DAC输出声音会变得很小
+    427              uart_enable();
+    428          #endif
+    429          
+    430          #if ((FM_CLK_SEL == P33_OUT_32K) || (FM_CLK_SEL == P33_OUT_12M))  //关闭P33时钟输出.
+    431              PMUXCON5 &= 0xF0;
+    432          #endif
+    433              task_fm_reuse_exit();
+    434          #if !FM_VOUT_THROUGH_MCU
+    435              dac_recover();
+    436          #endif
+    437              if(device_is_online(DEVICE_UDISK)){
+    438                  //usb_host_resume();
+    439              }
+    440          }
+    441          
+    442          //载入频道
+    443          #pragma location="TASK_FM_INIT"
+    444          void task_fm_load(void)
+    445          {
+    446              t_fm.ch_cnt = sys_param_read8(PARAM_FM_CH);
+    447              sys_param_read(fm_ch, PARAM_FM_CH+2, sizeof(fm_ch));
+    448          }
+    449          
+    450          //停止搜台
+    451          #pragma location="TASK_FMPLAY_SEG"
+    452          __near_func void task_fm_auto_stop(void)
+    453          {
+    454              t_fm.fm_sta = FM_PLAY;
+    455              task_fm_save();
+    456              t_fm.ch_sel  = 1;
+    457              t_fm.disp_ch_flag = 1;
+    458              t_fm.seek_sta = SEEK_STOP;
+    459          
+    460              led_idle();
+    461              ocx_clear();
+    462          #if DEBUG_TASK_FM
+    463              printf("t_fm.ch_cnt: %d\n",t_fm.ch_cnt);
+    464          #endif
+    465          }
+    466          
+    467          //停止搜台后播放
+    468          #pragma location="TASK_FMPLAY_SEG"
+    469          __near_func void task_fm_auto_play(void)
+    470          {
+    471              if(t_fm.ch_sel) {
+    472                  t_fm.freq = fm_ch[t_fm.ch_sel-1];
+    473                  task_fm_fix();
+    474                  fm_set_freq(t_fm.freq);
+    475              }
+    476              t_fm.mute = 0;
+    477          #if FM_VOUT_THROUGH_MCU
+    478              if(sys_ctl.volume){
+    479                  sys_unmute();
+    480          #if !IIS_EN
+    481                  amux_play();
+    482          #endif
+    483              }
+    484          #else
+    485              speaker_unmute();
+    486              fm_set_vol(sys_ctl.volume);
+    487          #endif
+    488          }
+    489          
+    490          //开始搜台
+    491          #pragma location="TASK_FMPLAY_SEG"
+    492          __near_func void task_fm_auto_start(void)
+    493          {
+    494              t_fm.freq = MIN_RREQ;
+    495              t_fm.ch_cnt = 0;
+    496              t_fm.ch_sel = 0;
+    497              t_fm.fm_sta = FM_AUTO_SEEK;
+    498              led_busy();
+    499              ocx_clear();
+    500          #if FM_VOUT_THROUGH_MCU
+    501              sys_mute();   //QN8065搜台时MUTE住功放
+    502          #else
+    503              speaker_mute();
+    504              fm_set_vol(0);
+    505          #endif
+    506          }
+    507          
+    508          //选好频点后设置频点
+    509          #pragma location="TASK_FMPLAY_SEG"
+    510          __near_func void task_fm_set_freq(void)
+    511          {
+    512          #if !FM_VOUT_THROUGH_MCU
+    513              fm_set_vol(0);
+    514          #else
+    515              sys_mute();
+    516          #endif
+    517              task_fm_fix();
+    518              fm_set_freq(t_fm.freq);
+    519              delay_5ms(20);//QN8065设置频点后要延时，否则有沙沙声
+    520          
+    521          #if FM_VOUT_THROUGH_MCU
+    522              if (sys_ctl.mute_flag && sys_ctl.volume) {
+    523                  t_fm.mute = 0;
+    524                  sys_unmute();
+    525          #if IIS_EN
+    526                  pcm_play(); // 修正插拔U盘后IIS失声问题
+    527          #else
+    528                  amux_play();
+    529          #endif
+    530              }
+    531          #else
+    532              if(sys_ctl.spk_mute && sys_ctl.volume){
+    533                  t_fm.mute = 0;
+    534                  fm_set_vol(sys_ctl.volume);
+    535                  speaker_unmute();
+    536              }
+    537          #endif
+    538          }
+    539          
+    540          //下一频率
+    541          #pragma location="TASK_FMPLAY_SEG"
+    542          __near_func bool task_fm_auto_nextfreq(void)
+    543          {
+    544              if (t_fm.freq < MAX_FREQ) {
+    545          //#if (((FM_CLK_SEL != SHARE_CRYSTAL_32K)  && (FM_TYPE == FM_QN8065)) || (FM_TYPE == FM_RTC6218))
+    546          #if FM_TYPE == FM_RTC6218
+    547                  t_fm.freq += 5;
+    548          #else
+    549                  t_fm.freq += 10;
+    550          #endif
+    551                  return true;
+    552              }
+    553              led_fm_play();
+    554              task_fm_auto_stop();
+    555              task_fm_auto_play();  //更正FM收完台后无声音.
+    556              t_fm.freq = fm_ch[t_fm.ch_sel-1];
+    557              task_fm_fix();
+    558              fm_set_freq(t_fm.freq);
+    559              sys_param_write8(PARAM_FM_CHSEL, t_fm.ch_sel);              //保存当前台号
+    560              sys_param_write16(PARAM_FM_FREQ, t_fm.freq);                //保存起始频率
+    561              return false;
+    562          }
+    563          
+    564          //校正频道
+    565          #pragma location="TASK_FM_SEG"
+    566          void task_fm_fix(void)
+    567          {
+    568              if (t_fm.freq < MIN_RREQ) {
+    569                  t_fm.freq = MAX_FREQ;//MIN_RREQ;
+    570              } else if (t_fm.freq > MAX_FREQ) {
+    571                  t_fm.freq = MIN_RREQ;//MAX_FREQ;
+    572              }
+    573          }
+    574          
+    575          //上一频道
+    576          #pragma location="TASK_FMPLAY_SEG"
+    577          __near_func void task_fm_prevch(void)
+    578          {
+    579              if (t_fm.ch_cnt) {
+    580                  t_fm.ch_sel--;
+    581                  if (!t_fm.ch_sel) {
+    582                      t_fm.ch_sel = t_fm.ch_cnt;
+    583                  }
+    584                  t_fm.freq = fm_ch[t_fm.ch_sel-1];
+    585          #if (IS_LCDSEG_DISPLAY || IS_LEDSEG_DISPLAY)
+    586                  show_freq_chan();   //LCDSEG及LEDSEG时显示正在频道切换时的频道号
+    587          #endif
+    588          
+    589              } else {
+    590                  t_fm.freq -= 10;
+    591              }
+    592          
+    593              task_fm_set_freq();
+    594          }
+    595          
+    596          //下一频道
+    597          #pragma location="TASK_FM_SEG"
+    598          static void task_fm_nextch(void)
+    599          {
+    600              if (t_fm.ch_cnt) {
+    601                  t_fm.ch_sel++;
+    602                  if (t_fm.ch_sel > t_fm.ch_cnt) {
+    603                      t_fm.ch_sel = 1;
+    604                  }
+    605                  t_fm.freq = fm_ch[t_fm.ch_sel-1];
+    606          
+    607          
+    608          #if (IS_LCDSEG_DISPLAY || IS_LEDSEG_DISPLAY)
+    609                  show_freq_chan();   //LCDSEG及LEDSEG时显示正在频道切换时的频道号
+    610          #endif
+    611          
+    612              } else {
+    613                  t_fm.freq += 10;
+    614              }
+    615          
+    616              task_fm_set_freq();
+    617          }
+    618          //任务事务处理
+    619          #pragma location="TASK_FMPLAY_SEG"
+    620          __near_func void task_fm_event(void)
+    621          {
+    622              u8 fm_chk;
+    623          
+    624              comm_event();
+    625          #if FM_RECORD_EN
+    626              if (device_change()) {
+    627                  if(t_fm.fm_sta == FM_REC_PAUSE) {
+    628                      t_fm_rec.play_flag = 0;
+    629                      task_fm_record_stop();
+    630                  }
+    631              }
+    632          #endif
+    633          #if WARNING_LOWPOWER
+    634              if(sys_ctl.lowpower_warning_flag == 1){
+    635                  task_fm_menu_music_continue(RES_MP3_PLEASE_CHARGE);
+    636                  sys_ctl.lowpower_warning_flag = 2;
+    637              }
+    638          #endif
+    639              switch (t_fm.fm_sta) {
+    640              case FM_AUTO_SEEK:
+    641                  fm_chk = fm_check_freq(t_fm.freq);
+    642                  if(fm_chk) {
+    643                      led_fm_play();
+    644          #if FM_TYPE == FM_RTC6218
+    645                      fm_ch[t_fm.ch_cnt++] = t_fm.freq + 5*(fm_chk - 1);
+    646          #else
+    647                      fm_ch[t_fm.ch_cnt++] = t_fm.freq;
+    648          #endif
+    649                      set_timeout(200);
+    650                      t_fm.fm_sta = FM_AUTO_PLAY;
+    651          #if SEEK_DISPLAY_CHANNEL_NUM
+    652                      t_fm.ch_sel = t_fm.ch_cnt;
+    653                      show_freq_chan();
+    654          #endif
+    655                      fm_unmute();
+    656                      t_fm.mute = 0;
+    657          #if FM_VOUT_THROUGH_MCU
+    658                      if(sys_ctl.volume){
+    659                          sys_unmute();
+    660          #if !IIS_EN
+    661                          amux_play();
+    662          #endif
+    663                      }
+    664          #else
+    665                      fm_set_vol(sys_ctl.volume);
+    666                      if (!sys_ctl.mute_flag) {
+    667                          speaker_unmute();
+    668                      }
+    669          #endif
+    670                      break;
+    671                  }
+    672          		//printf("t_fm.freq: %d\n",t_fm.freq);
+    673                  task_fm_auto_nextfreq();
+    674                  break;
+    675              case FM_AUTO_PLAY:
+    676                  if (!time_out_flag) {
+    677                      break;
+    678                  }
+    679                  led_fm_scan();
+    680          #if SEEK_DISPLAY_CHANNEL_NUM
+    681                  ocx_clear();
+    682          #endif
+    683          #if FM_VOUT_THROUGH_MCU
+    684                  sys_mute();   //QN8065搜台时MUTE住功放
+    685          #else
+    686                  speaker_mute();
+    687                  fm_set_vol(0);
+    688          #endif
+    689                  t_fm.fm_sta = FM_AUTO_SEEK;
+    690                  task_fm_auto_nextfreq();
+    691                  break;
+    692              }
+    693          #if FM_AUTO_STANDBY_EN || IR_HARD_POWERDOWN_EN
+    694              if((((!sys_ctl.sleep_cnt) && BT_IS_SLEEP) || sys_ctl.ir_power_flag) && !sys_ctl.lowpower_flag){
+    695          #if FM_VOUT_THROUGH_MCU
+    696                  sys_mute();
+    697          #else
+    698                  speaker_mute();
+    699          #endif
+    700                  fm_off();                               //关闭FM模式以降低功耗
+    701                  //task_fm_reuse_exit();
+    702                  task_hold();
+    703                  dac_disable();
+    704                  task_fm_reuse_init();
+    705          
+    706          #if (DEBUG_UART_SEL && ((FM_CHANNEL_SEL & 0x07) == CHANNEL_01) && FM_VOUT_THROUGH_MCU)
+    707                  uart_disable();
+    708                  P0DIR |= BIT(1);
+    709          #endif
+    710          
+    711                  fm_init();      //FM模块初始化
+    712                  task_fm_load(); //载入频道总数
+    713                  t_fm.ch_sel = sys_param_read8(PARAM_FM_CHSEL);  //读取当前台号
+    714                  t_fm.freq = sys_param_read16(PARAM_FM_FREQ);    //读取当前频率
+    715                  task_fm_fix();          //校正频道
+    716                  fm_set_freq(t_fm.freq); //设置频率
+    717                  sys_ctl.sleep_cnt = 0xffff;
+    718          
+    719          #if FM_VOUT_THROUGH_MCU
+    720                  if (sys_ctl.mute_flag && sys_ctl.volume) {
+    721                      t_fm.mute = 0;
+    722                      sys_unmute();
+    723          #if !IIS_EN
+    724                      amux_play();
+    725          #endif
+    726                  }
+    727          #else
+    728                  if(sys_ctl.spk_mute && sys_ctl.volume){
+    729                      t_fm.mute = 0;
+    730                      fm_set_vol(sys_ctl.volume);
+    731                      speaker_unmute();
+    732                  }
+    733          #endif
+    734              }
+    735          #endif
+    736          }
+    737          
+    738          #pragma location="TASK_FM_SEG_1"
+    739          void task_fm_list(void)
+    740          {
+    741                  u8 index = listbox(0, FM_ITEMS_NUM, NULL, (u16)tbl_fm_items, LIST_TIME);
+    742                  switch (index) {
+    743                /*  case ITEM_AUTO:
+    744                      t_fm.seekway = ITEM_AUTO;
+    745                       task_fm_auto_start();
+    746                      break;
+    747                  case ITEM_HALF_AUTO:
+    748                      t_fm.seekway = ITEM_HALF_AUTO;
+    749                      task_fm_auto_nextfreq();
+    750                      t_fm.fm_sta = FM_AUTO_SEEK;
+    751                      break;
+    752                  case ITEM_HAND:
+    753                      t_fm.seekway = ITEM_HAND;
+    754                      //task_ctl.work_sta = TASK_MENU;      //退出
+    755                      break;
+    756                  case ITEM_SAVE:
+    757                      break;*/
+    758                  case ITEM_AUTO_SEEK:
+    759                        task_fm_auto_start();
+    760                        t_fm.seek_sta = SEEK_AUTO;
+    761                      break;
+    762                  case ITEM_DELETE:
+    763                  if(!t_fm.ch_cnt)
+    764                  {
+    765                      break;
+    766                  }
+    767                  for(u8 k=t_fm.ch_sel-1;k<t_fm.ch_cnt-1;k++)
+    768                  {
+    769                      fm_ch[k] = fm_ch[k+1];
+    770                  }
+    771                  t_fm.ch_cnt -=1;
+    772                  if (t_fm.ch_sel>1) {
+    773                      t_fm.ch_sel--;
+    774                  }
+    775                  else
+    776                  {
+    777                      t_fm.ch_sel = t_fm.ch_cnt;
+    778                  }
+    779                  if(t_fm.ch_sel)
+    780                  {
+    781                      task_fm_nextch();
+    782                  }
+    783                  task_fm_save();
+    784                  sys_param_write8(PARAM_FM_CHSEL, t_fm.ch_sel);              //保存当前台号
+    785                  sys_param_write16(PARAM_FM_FREQ, t_fm.freq);                //保存起始频率
+    786                  break;
+    787              case ITEM_DEL_ALL:
+    788                  t_fm.ch_cnt = 0;
+    789                  t_fm.ch_sel = 0;
+    790                  task_fm_save();
+    791                  sys_param_write8(PARAM_FM_CHSEL, t_fm.ch_sel);              //保存当前台号
+    792                  break;
+    793              case ITEM_EXIT:
+    794                  /* task_ctl.work_sta = TASK_MENU;              //返回主菜单
+    795                  task_fm_save();
+    796                  sys_param_write8(PARAM_FM_CHSEL, t_fm.ch_sel);              //保存当前台号
+    797                  sys_param_write16(PARAM_FM_FREQ, t_fm.freq);                //保存起始频率*/
+    798                  break;
+    799              case ITEM_BACK_MENU:
+    800                  task_ctl.work_sta = TASK_MENU;              //返回主菜单
+    801                  break;
+    802              default:
+    803                  break;
+    804              }
+    805          #if IS_LCD_DISPLAY
+    806              //task_fm_list_dispmem_init();
+    807              task_fm_disp_init();
+    808          #endif
+    809          }
+    810          #pragma location="TASK_FM_SEG_1"
+    811          void task_fm_volume_set(void)
+    812          {
+    813              //调用音量调节器，显示1.5秒
+    814              progressbox(sys_ctl.volume, 0, VOLUME_MAX, (u32)&tbl_pg_volume, USE_VOL_KEY, PROGRESS_TIME);
+    815              //更新显示
+    816          #if IS_LCD_DISPLAY
+    817              //task_fm_display_init();
+    818              task_fm_disp_init();
+    819          #endif
+    820          }
+    821          
+    822          //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+    823          #if !FM_SET_VOL_CHANGE_BANK
+    824          extern u8 const tbl_volume[VOLUME_MAX+1];
+    825          
+    826          
+    827          #pragma location="TASK_FMPLAY_SEG"
+    828          __near_func u8 user_volume_inc_fm(u8 volume)
+    829          {
+    830              volume++;
+    831              if(volume > VOLUME_MAX)
+    832                  volume = VOLUME_MAX;
+    833              return volume;
+    834          }
+    835          
+    836          #pragma location="TASK_FMPLAY_SEG"
+    837          __near_func u8 user_volume_dec_fm(u8 volume)
+    838          {
+    839              if(volume > 0)
+    840                  volume--;
+    841              return volume;
+    842          }
+    843          
+    844          //保存设置音量
+    845          #pragma location="TASK_FMPLAY_SEG"
+    846          __near_func bool user_change_volume_fm(u8 volume)
+    847          {
+    848              if (volume <= VOLUME_MAX) {//printf("tbl_volume_fm[%d]: %d\n",volume,tbl_volume_fm[volume]);
+    849                  u8 dac_vol = tbl_volume[volume] + sys_ctl.vol_ex;
+    850                  if (volume == 0) {
+    851                      dac_vol = 0;
+    852                  }
+    853                  if (dac_vol >= 128) {
+    854                      dac_vol = 0;
+    855                  } else if (dac_vol > 65) {
+    856                      dac_vol = 65;
+    857                  }
+    858                  dac_set_volume(dac_vol);
+    859              }
+    860              return true;
+    861          }
+    862          
+    863          //保存设置音量
+    864          #pragma location="TASK_FMPLAY_SEG"
+    865          __near_func bool user_set_volume_fm(u8 volume)
+    866          {
+    867              user_change_volume_fm(volume);
+    868          
+    869              if (volume == sys_ctl.volume) {
+    870                  return false;                             //没有更改
+    871              }
+    872              if (volume <= VOLUME_MAX) {
+    873                  sys_ctl.volume = volume;
+    874          
+    875                  //改到长按键松开才记忆
+    876                  //sys_param_write8(PARAM_VOLUME, volume);
+    877              }
+    878              return true;
+    879          }
+    880          #endif
+    881          //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+    882          
+    883          #pragma location="TASK_FM_SEG"
+    884          void task_fm_select_freq_chan(u8 num)
+    885          {
+    886              u16 freq_chan_index = numbox(num, NULL);
+    887          
+    888              if(freq_chan_index < MIN_RREQ/10) {         //小于最小频点时，用于选频道
+    889                  if(freq_chan_index != 0 && freq_chan_index <= t_fm.ch_cnt){
+    890                      t_fm.ch_sel = freq_chan_index;
+    891                      t_fm.freq = fm_ch[t_fm.ch_sel-1];
+    892          
+    893          #if (IS_LCDSEG_DISPLAY || IS_LEDSEG_DISPLAY)
+    894                      show_freq_chan();                   //LCDSEG及LEDSEG时显示正在频道切换时的频道号
+    895          #endif
+    896                      task_fm_set_freq();
+    897                  }
+    898              } else {                                    //大于时，用于选频点
+    899                  if(freq_chan_index >= MIN_RREQ/10 && freq_chan_index <= MAX_FREQ/10){
+    900                      t_fm.freq  = freq_chan_index * 10;
+    901                      task_fm_set_freq();
+    902                  }
+    903              }
+    904          #if IS_LCD_DISPLAY
+    905              //task_fm_display_init();
+    906              task_fm_disp_init();
+    907          #endif
+    908          }
+    909          
+    910          #pragma constseg="TASK_FM_SEG_CONST"
+    911          IAR_CONST char str_show_taskfm[] = "task_fm\n";
+    912          #pragma constseg=default
+    913          
+    914          //任务主流程
+    915          #pragma location="TASK_FM_SEG"
+    916          void task_fm(void)
+    917          {
+    918              printf(str_show_taskfm);
+    919              task_fm_enter();
+    920              while (task_ctl.work_sta == TASK_FM) {
+    921                  u8 msg = get_msg();
+    922                  task_fm_event();
+    923                  task_fm_deal_msg(msg);
+    924                  task_fm_display();
+    925              }
+    926              task_fm_exit();
+    927          }
+    928          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

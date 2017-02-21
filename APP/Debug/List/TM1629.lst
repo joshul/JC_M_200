@@ -1,0 +1,1689 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:51 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\TM1629.c                                        #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\TM1629.c                                        #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\TM1629.lst                                   #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\TM1629.r51                                    #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\TM1629.c
+      1          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x90
+   \   unsigned char volatile __sfr P1
+   \                     P1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa0
+   \   unsigned char volatile __sfr P2
+   \                     P2:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbc
+   \   unsigned char volatile __sfr P2DIR
+   \                     P2DIR:
+   \   000000                DS 1
+      2          #include "TM1629.h"
+      3          #include "lcd.h"
+      4          #include "task_NPCP215X.h"
+      5          
+      6          
+      7          #if TM1629
+      8          
+
+   \                                 In segment XDATA_N, align 1
+      9          __no_init volatile u16 temp_1629[8];
+   \                     temp_1629:
+   \   000000                DS 16
+     10          //__no_init u16 temp_1629[8];
+     11          
+     12          #if 0
+     13          #if BT_MODE_EN
+     14          extern u8 bt_status;
+     15          #endif
+     16          #endif
+
+   \                                 In segment CODE_C, align 1
+     17          const u16 DIGIT_FONT[10]  = {CHAR_0, CHAR_1, CHAR_2, CHAR_3, CHAR_4, CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9};
+   \                     DIGIT_FONT:
+   \   000000   3CD18100     DW 53564, 129, 6948, 2860, 18956, 19240, 23336, 44, 23340, 19244
+   \            241B2C0B
+   \            0C4A284B
+   \            285B2C00
+   \            2C5B2C4B
+
+   \                                 In segment CODE_C, align 1
+     18          const u16 DIGIT_FONT_[10] = {CHAR_0, CHAR_1, CHAR_2_,CHAR_3_,CHAR_4_,CHAR_5_,CHAR_6_,CHAR_7,CHAR_8_,CHAR_9_};
+   \                     DIGIT_FONT_:
+   \   000000   3CD18100     DW 53564, 129, 814, 558, 1542, 1580, 1836, 44, 1838, 1582
+   \            2E032E02
+   \            06062C06
+   \            2C072C00
+   \            2E072E06
+     19          
+     20          #pragma location="IIC_CODE_API"
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+     21          void WriteData(BYTE Value)
+   \                     WriteData:
+     22          //#pragma location="LCD_1629_API"
+     23          //void WriteData(BYTE Value)
+     24          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     25          	BYTE i;
+     26          	for(i=0;i<8;i++)
+   \   000000   7A08         MOV     R2,#0x8
+     27          	{
+     28          		TM_CLK_LOW;
+   \                     ??WriteData_0:
+   \   000002   C2A0         CLR     0xa0.0
+     29          		if(Value & 0x01)TM_DIO_HIGH;
+   \   000004   E9           MOV     A,R1
+   \   000005   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000007   5004         JNC     ??WriteData_1
+   \   000009   D2A1         SETB    0xa0.1
+   \   00000B   8002         SJMP    ??WriteData_2
+     30          		else            TM_DIO_LOW;
+   \                     ??WriteData_1:
+   \   00000D   C2A1         CLR     0xa0.1
+     31          		Delay_myself;
+   \                     ??WriteData_2:
+   \   00000F   00           nop
+   \   000010   00           nop
+   \   000011   00           nop
+   \   000012   00           nop
+   \   000013   00           nop
+   \   000014   00           nop
+   \   000015   00           nop
+     32          		TM_CLK_HIGH;
+   \   000016   D2A0         SETB    0xa0.0
+     33          		Value >>= 1;
+   \   000018   C3           CLR     C
+   \   000019   13           RRC     A
+   \   00001A   F9           MOV     R1,A
+     34          	}
+   \   00001B   1A           DEC     R2
+   \   00001C   EA           MOV     A,R2
+   \   00001D   70E3         JNZ     ??WriteData_0
+     35          }
+   \   00001F   02....       LJMP    ?BRET
+     36          //#pragma location="LCD_1629_API"
+     37          //__near_func void WriteData(BYTE Value)
+     38          #pragma location="IIC_CODE_API"
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+     39          void TM_INIT(void)
+   \                     TM_INIT:
+     40          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     41          	TM_STB_OUTPUT;
+   \   000000   53BBFB       ANL     0xbb,#0xfb
+     42          	TM_CLK_OUTPUT;
+   \   000003   53BCFE       ANL     0xbc,#0xfe
+     43          	TM_DIO_OUTPUT;
+   \   000006   53BCFD       ANL     0xbc,#0xfd
+     44          	
+     45          	TM_STB_HIGH;			  //Initial state
+   \   000009   D292         SETB    0x90.2
+     46          	TM_CLK_HIGH;			  //Initial state
+   \   00000B   D2A0         SETB    0xa0.0
+     47          #if 1
+     48          	TM_STB_LOW;
+   \   00000D   C292         CLR     0x90.2
+     49          	//WriteData(0x8f);			//Command 3, Display ON //10/16 PWM
+     50          	//sys_ctl.dim_level = 7;
+     51          	Duty_set();
+   \   00000F                ; Setup parameters for call to function Duty_set
+   \   00000F   90....       MOV     DPTR,#(Duty_set & 0xffff)
+   \   000012   74..         MOV     A,#((Duty_set >> 16) & 0xff)
+   \   000014                REQUIRE ?Subroutine6
+   \   000014                ; // Fall through to label ?Subroutine6
+     52          	TM_STB_HIGH;
+     53          #endif 
+     54              //sys_ctl.dim_level = 3;
+     55              //Dim_Duty_set(0);////
+     56          }
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   D292         SETB    0x90.2
+   \   000005   02....       LJMP    ?BRET
+     57          #pragma location="IIC_CODE_API"
+     58          //__near_func void TM_INIT(void)
+     59          //#pragma location="LCD_1629_API"
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+     60          void ShowCHAR(void)
+   \                     ShowCHAR:
+     61          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     62          
+     63              TM_STB_LOW;
+   \   000000   C292         CLR     0x90.2
+     64          	WriteData(0x40);					//Command 1, Fixed address
+   \   000002                ; Setup parameters for call to function WriteData
+   \   000002   7940         MOV     R1,#0x40
+   \   000004   90....       MOV     DPTR,#(WriteData & 0xffff)
+   \   000007   74..         MOV     A,#((WriteData >> 16) & 0xff)
+   \   000009   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     65          	TM_STB_HIGH;	
+   \   00000C   D292         SETB    0x90.2
+     66          	Delay_myself;
+   \   00000E   00           nop
+   \   00000F   00           nop
+   \   000010   00           nop
+   \   000011   00           nop
+   \   000012   00           nop
+   \   000013   00           nop
+   \   000014   00           nop
+     67          	
+     68          	TM_STB_LOW;
+   \   000015   C292         CLR     0x90.2
+     69          	WriteData(0xc0);					//Command 2	
+   \   000017                ; Setup parameters for call to function WriteData
+   \   000017   79C0         MOV     R1,#-0x40
+   \   000019   90....       MOV     DPTR,#(WriteData & 0xffff)
+   \   00001C   74..         MOV     A,#((WriteData >> 16) & 0xff)
+   \   00001E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     70          	#if 0
+     71          	WriteData((temp_1629[4]&0x00ff)   );//c1
+     72          	WriteData((temp_1629[4]&0xff00)>>8);
+     73          	
+     74          	WriteData((temp_1629[2]&0x00ff)   );//D3
+     75          	WriteData((temp_1629[2]&0xff00)>>8);
+     76          	
+     77          	WriteData((temp_1629[1]&0x00ff)   );//D2
+     78          	WriteData((temp_1629[1]&0xff00)>>8);
+     79          	
+     80          	WriteData((temp_1629[0]&0x00ff)	 );//D1
+     81          	WriteData((temp_1629[0]&0xff00)>>8);
+     82          	
+     83          	WriteData((temp_1629[3]&0x00ff)	 );//D4
+     84          	WriteData((temp_1629[3]&0xff00)>>8);
+     85          	
+     86          	WriteData((temp_1629[6]&0x00ff)	 );//D6
+     87          	WriteData((temp_1629[6]&0xff00)>>8);
+     88          	
+     89          	WriteData((temp_1629[5]&0x00ff)	 );//Dchar
+     90          	WriteData((temp_1629[5]&0xff00)>>8);
+     91          	
+     92          	WriteData((temp_1629[7]&0x00ff)   );//Dflash
+     93          	WriteData((temp_1629[7]&0xff00)>>8);
+     94          	#else
+     95                  
+     96              WriteData((temp_1629[7]&0x00ff)   );//c2
+   \   000021                ; Setup parameters for call to function WriteData
+   \   000021   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   000024   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_8:
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     97          	WriteData((temp_1629[7]&0xff00)>>8);
+   \   00002A                ; Setup parameters for call to function WriteData
+   \   00002A   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   00002D   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_16:
+   \   000030   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     98              WriteData((temp_1629[6]&0x00ff)   );//c2
+   \   000033                ; Setup parameters for call to function WriteData
+   \   000033   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000036   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_9:
+   \   000039   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     99          	WriteData((temp_1629[6]&0xff00)>>8);  
+   \   00003C                ; Setup parameters for call to function WriteData
+   \   00003C   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   00003F   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_17:
+   \   000042   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    100              WriteData((temp_1629[5]&0x00ff)   );//c2
+   \   000045                ; Setup parameters for call to function WriteData
+   \   000045   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   000048   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_10:
+   \   00004B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    101          	WriteData((temp_1629[5]&0xff00)>>8);
+   \   00004E                ; Setup parameters for call to function WriteData
+   \   00004E   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   000051   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_18:
+   \   000054   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    102              WriteData((temp_1629[4]&0x00ff)   );//c2
+   \   000057                ; Setup parameters for call to function WriteData
+   \   000057   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   00005A   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_11:
+   \   00005D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    103          	WriteData((temp_1629[4]&0xff00)>>8);
+   \   000060                ; Setup parameters for call to function WriteData
+   \   000060   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   000063   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_19:
+   \   000066   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    104              WriteData((temp_1629[2]&0x00ff)   );//c2
+   \   000069                ; Setup parameters for call to function WriteData
+   \   000069   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   00006C   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_12:
+   \   00006F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    105          	WriteData((temp_1629[2]&0xff00)>>8);
+   \   000072                ; Setup parameters for call to function WriteData
+   \   000072   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000075   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_20:
+   \   000078   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    106              WriteData((temp_1629[3]&0x00ff)   );//c2
+   \   00007B                ; Setup parameters for call to function WriteData
+   \   00007B   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   00007E   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_13:
+   \   000081   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    107          	WriteData((temp_1629[3]&0xff00)>>8);
+   \   000084                ; Setup parameters for call to function WriteData
+   \   000084   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   000087   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_21:
+   \   00008A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    108              WriteData((temp_1629[1]&0x00ff)   );//c1
+   \   00008D                ; Setup parameters for call to function WriteData
+   \   00008D   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000090   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_14:
+   \   000093   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    109          	WriteData((temp_1629[1]&0xff00)>>8);
+   \   000096                ; Setup parameters for call to function WriteData
+   \   000096   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000099   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_22:
+   \   00009C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    110              WriteData((temp_1629[0]&0x00ff)   );//c0
+   \   00009F                ; Setup parameters for call to function WriteData
+   \   00009F   90....       MOV     DPTR,#temp_1629
+   \   0000A2   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_15:
+   \   0000A5   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    111          	WriteData((temp_1629[0]&0xff00)>>8);
+   \   0000A8                ; Setup parameters for call to function WriteData
+   \   0000A8   90....       MOV     DPTR,#temp_1629
+   \   0000AB   12....       LCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_23:
+   \   0000AE   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    112          #if 0    
+    113              WriteData((temp_1629[0]&0x00ff)   );//c0
+    114          	WriteData((temp_1629[0]&0xff00)>>8);
+    115          	WriteData((temp_1629[1]&0x00ff)   );//c1
+    116          	WriteData((temp_1629[1]&0xff00)>>8);
+    117          	WriteData((temp_1629[2]&0x00ff)   );//c2
+    118          	WriteData((temp_1629[2]&0xff00)>>8);
+    119          	WriteData((temp_1629[4]&0x00ff)   );//c4
+    120          	WriteData((temp_1629[4]&0xff00)>>8);
+    121          	WriteData((temp_1629[7]&0x00ff)	 );//c7////rst
+    122          	WriteData((temp_1629[7]&0xff00)>>8);
+    123          	WriteData((temp_1629[5]&0x00ff)	 );//c5
+    124          	WriteData((temp_1629[5]&0xff00)>>8);
+    125          	WriteData((temp_1629[6]&0x00ff)	 );//c6///icon
+    126          	WriteData((temp_1629[6]&0xff00)>>8);
+    127          	WriteData((temp_1629[3]&0x00ff)	 );//c3
+    128          	WriteData((temp_1629[3]&0xff00)>>8);
+    129          	WriteData((temp_1629[0]&0x00ff)   );//c0
+    130          	WriteData((temp_1629[0]&0xff00)>>8);
+    131              
+    132          #endif
+    133          
+    134          	#endif
+    135          	TM_STB_HIGH;
+   \   0000B1   D292         SETB    0x90.2
+    136          	Delay_myself;
+   \   0000B3   00           nop
+   \   0000B4   00           nop
+   \   0000B5   00           nop
+   \   0000B6   00           nop
+   \   0000B7   00           nop
+   \   0000B8   00           nop
+   \   0000B9   00           nop
+    137          
+    138          	TM_STB_LOW;
+   \   0000BA   C292         CLR     0x90.2
+    139          	//WriteData(0x8f);			//Command 3, Display ON //10/16 PWM
+    140          	WriteData(sys_ctl.TM1629_input);
+   \   0000BC                ; Setup parameters for call to function WriteData
+   \   0000BC   90....       MOV     DPTR,#(sys_ctl + 59)
+   \   0000BF   E0           MOVX    A,@DPTR
+   \   0000C0   F9           MOV     R1,A
+   \   0000C1   90....       MOV     DPTR,#(WriteData & 0xffff)
+   \   0000C4   74..         MOV     A,#((WriteData >> 16) & 0xff)
+   \   0000C6   02....       LJMP    ?Subroutine6
+    141          	TM_STB_HIGH;
+    142          	
+    143          }
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   A3           INC     DPTR
+   \   000002   E0           MOVX    A,@DPTR
+   \   000003                REQUIRE ?Subroutine7
+   \   000003                ; // Fall through to label ?Subroutine7
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+   \                     ?Subroutine7:
+   \   000000   F9           MOV     R1,A
+   \   000001   90....       MOV     DPTR,#(WriteData & 0xffff)
+   \   000004   74..         MOV     A,#((WriteData >> 16) & 0xff)
+   \   000006   22           RET
+
+   \                                 In segment IIC_CODE_API, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F8           MOV     R0,A
+   \   000002   A3           INC     DPTR
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   E8           MOV     A,R0
+   \   000005   80..         SJMP    ?Subroutine7
+    144          #if 0
+    145          
+    146          #pragma location="FRE_SHOW_API"
+    147          void Write_Display_Protect_(void)
+    148          {
+    149          	temp_1629[3]&= (ICON_O2|ICON_O3|ICON_O4|ICON_O5);
+    150          	temp_1629[4]&= (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    151          	temp_1629[5]&= (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    152          	temp_1629[7]&= (ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_R5|ICON_T1|ICON_T2|ICON_T3|ICON_T4|ICON_T5|ICON_S2|ICON_S3|ICON_S4|ICON_S5);
+    153          }
+    154          #pragma location="LCD_1629_API"
+    155          void Write_Display_Digtial_1629(s8 value)
+    156          {
+    157          	Write_Display_Protect_();
+    158          	temp_1629[6]&= ~ CHAR_MASK;
+    159          	if(value < 0) 
+    160          	{		
+    161          		value = -value;		
+    162          		if(value > 9)
+    163          		{ 
+    164          			temp_1629[4] |= (DIGIT_FONT[value/10]|CHAR_MINUS);
+    165          		}
+    166          		else 
+    167          		{	
+    168          			temp_1629[4] |= CHAR_MINUS;
+    169          		}
+    170          	}
+    171          	else 
+    172          	{
+    173          //		if(cur_menu==MENU_VOLUE)
+    174          			temp_1629[4] |= DIGIT_FONT[value/10];
+    175          		//else if(DIGIT_FONT[value/10]<1)
+    176          		//	temp_1629[4] = CHAR_MASK;
+    177          	}
+    178          	temp_1629[5] |= DIGIT_FONT[value%10];
+    179          }
+    180          
+    181          //#pragma location="IIC_CODE_API"
+    182          #pragma location="LCD_1629_API"
+    183          void Write_Display_VOL(u8 style)
+    184          {
+    185          	s8 vol;
+    186          	temp_1629[0]=CHAR_MASK;
+    187          	temp_1629[1]=CHAR_MASK;
+    188          	switch(style)
+    189          	{
+    190          		#if PT2358
+    191          		case MENU_FL:
+    192          			temp_1629[0]=CHAR_F_;
+    193          			temp_1629[1]=CHAR_R_;
+    194          			temp_1629[2]=CHAR_T_;
+    195          			vol=fl_vol;
+    196          			break;
+    197          		case MENU_CEN:
+    198          			temp_1629[0]=CHAR_C;
+    199          			temp_1629[1]=CHAR_E_;
+    200          			temp_1629[2]=CHAR_N;
+    201          			vol=cen_vol;
+    202          			break;
+    203          		case MENU_SL:
+    204          			temp_1629[0]=CHAR_S_;
+    205          			temp_1629[1]=CHAR_U;
+    206          			temp_1629[2]=CHAR_R_;
+    207          			vol=sl_vol;
+    208          			break;
+    209          		case MENU_SUB:
+    210          			temp_1629[0]=CHAR_S_;
+    211          			temp_1629[1]=CHAR_U;
+    212          			temp_1629[2]=CHAR_B_;
+    213          			vol=sw_vol;
+    214          			break;
+    215          		case MENU_VOLUE:
+    216          			temp_1629[0]=CHAR_V_;
+    217          			temp_1629[1]=CHAR_O;
+    218          			temp_1629[2]=CHAR_L;
+    219          			vol=main_vol;
+    220          			break;
+    221          		#endif
+    222          
+    223          		#if CS2313
+    224          		case MENU_TRE:
+    225          			temp_1629[2]=CHAR_H_;
+    226          			vol=Trable_vol;
+    227          			break;
+    228          		//case MENU_BASS:
+    229          		//	temp_1629[0]=CHAR_B_;
+    230          		//	temp_1629[1]=CHAR_A_;
+    231          		//	vol=Bass_vol;
+    232          		//	break;
+    233          		case MENU_SW:
+    234          			temp_1629[2]=CHAR_B_;
+    235          			vol=SW_vol;
+    236          			break;
+    237          		case MENU_VOLUE:
+    238          			temp_1629[0]=CHAR_V_;
+    239          			temp_1629[1]=CHAR_O;
+    240          			temp_1629[2]=CHAR_L;
+    241          			vol=main_vol;
+    242          			break;
+    243          		#endif
+    244          
+    245          		default:
+    246          			break;
+    247          	}
+    248          #if (CS2313 || PT2358)
+    249          	Write_Display_Digtial_1629(vol);
+    250          #endif
+    251          }
+    252          #endif
+    253          #if 0
+    254          #if 1
+    255          #pragma location="LCD_1629_API"
+    256          void Write_Display_FL_VOL(void)
+    257          {
+    258          	temp_1629[0]=CHAR_F_;
+    259          	temp_1629[1]=CHAR_R_;
+    260          	temp_1629[2]=CHAR_T_;
+    261          	//temp[3]=CHAR_MASK;
+    262          	Write_Display_Digtial_1629(fl_vol);
+    263          	//temp_1629[6] &= ~ CHAR_MASK;
+    264          }
+    265          #pragma location="LCD_1629_API"
+    266          void Write_Display_CE_VOL(void)
+    267          {
+    268          	temp_1629[0]=CHAR_C;
+    269          	temp_1629[1]=CHAR_E_;
+    270          	temp_1629[2]=CHAR_N;
+    271          	//temp[3]=CHAR_MASK;
+    272          	Write_Display_Digtial_1629(cen_vol);
+    273          	//temp_1629[6] &= ~ CHAR_MASK;
+    274          }
+    275          #pragma location="LCD_1629_API"
+    276          void Write_Display_SL_VOL(void)
+    277          {
+    278          	temp_1629[0]=CHAR_S_;
+    279          	temp_1629[1]=CHAR_U;
+    280          	temp_1629[2]=CHAR_R_;
+    281          	//temp[3]=CHAR_MASK;
+    282          	Write_Display_Digtial_1629(sl_vol);
+    283          	//temp_1629[6] &= ~ CHAR_MASK;
+    284          }
+    285          #pragma location="LCD_1629_API"
+    286          void Write_Display_SB_VOL(void)
+    287          {
+    288          	temp_1629[0]=CHAR_S_;
+    289          	temp_1629[1]=CHAR_U;
+    290          	temp_1629[2]=CHAR_B_;
+    291          	//temp[3]=CHAR_MASK;
+    292          	Write_Display_Digtial_1629(sw_vol);
+    293          	//temp_1629[6] &= ~ CHAR_MASK;
+    294          }
+    295          #else
+    296          #pragma location="LCD_1629_API"
+    297          void Write_Display_TRE_VOL(void)
+    298          {
+    299          	temp[0]=CHAR_H_;
+    300          	temp[1]=CHAR_MASK;
+    301          	temp[2]=CHAR_MASK;
+    302          	temp[3]=CHAR_MASK;
+    303          	Write_Display_Digtial(Trable_vol);
+    304          	temp[6] &= ~ CHAR_MASK;
+    305          }
+    306          #pragma location="LCD_1629_API"
+    307          void Write_Display_SW_VOL(void)
+    308          {
+    309          	temp[0]=CHAR_S_;
+    310          	temp[1]=CHAR_B_;
+    311          	temp[2]=CHAR_MASK;
+    312          	temp[3]=CHAR_MASK;
+    313          	Write_Display_Digtial(Bass_vol);
+    314          	temp[6] &= ~ CHAR_MASK;
+    315          }
+    316          #pragma location="LCD_1629_API"
+    317          void Write_Display_BASS_VOL(void)
+    318          {
+    319          	temp[0]=CHAR_B_;
+    320          	temp[1]=CHAR_A_;
+    321          	temp[2]=CHAR_MASK;
+    322          	temp[3]=CHAR_MASK;
+    323          	Write_Display_Digtial(Sw_vol);
+    324          	temp[6] &= ~ CHAR_MASK;
+    325          }
+    326          #endif
+    327          #pragma location="LCD_1629_API"
+    328          void Write_Display_MAIN_VOL(void)
+    329          {
+    330          	temp_1629[0]=CHAR_V_;
+    331          	temp_1629[1]=CHAR_O;
+    332          	temp_1629[2]=CHAR_L;
+    333          	//temp[3]=CHAR_MASK;
+    334          	Write_Display_Digtial_1629(main_vol);
+    335          }
+    336          
+    337          #pragma location="LCD_1629_API"
+    338          void Write_Display_Number(u16 num1)
+    339          {
+    340              u8 ii;
+    341              for(ii = 6; ii > 3; ii--)
+    342              {
+    343                  temp_1629[ii-1] = DIGIT_FONT[num1 % 10];
+    344                  num1 /= 10;
+    345              }
+    346          	temp_1629[2] = DIGIT_FONT_[num1 % 10];
+    347          }
+    348          #pragma location="LCD_1629_API"
+    349          void Write_Display_FM_Frequency(u16 fmFrequency)
+    350          {
+    351              u8 ii;
+    352          	temp_1629[3] = DIGIT_FONT[fmFrequency % 10];
+    353          	fmFrequency /= 10;
+    354              for(ii = 3; ii > 0; ii--)
+    355              {
+    356                  temp_1629[ii-1] = DIGIT_FONT_[fmFrequency % 10];
+    357                  fmFrequency /= 10;
+    358              }
+    359          	if(temp_1629[0]==CHAR_0)temp_1629[0]=CHAR_MASK;
+    360          }
+    361          
+    362          #pragma location="FRE_SHOW_API"
+    363          void MENU_DISPLAY_MASK(void)
+    364          {
+    365          	u8 i;
+    366              for(i=0;i<8;i++)
+    367                  temp_1629[i] = CHAR_MASK;
+    368          }
+    369          
+    370          #pragma location="FRE_SHOW_API"
+    371          void Write_Display_Work_Mode(u8 style)
+    372          {
+    373          	MENU_DISPLAY_MASK();
+    374          	switch(style)
+    375          	{
+    376          		case MENU_LINE_IN:
+    377          			temp_1629[0]=CHAR_A_;
+    378          			temp_1629[1]=CHAR_U;
+    379          			temp_1629[2]=CHAR_X_;
+    380          			temp_1629[6] = CHAR_AUX;
+    381          			break;
+    382          		//case MENU_DVD:
+    383          		//	temp_1629[0]=CHAR_A_;
+    384          		//	temp_1629[1]=CHAR_C;
+    385          		//	temp_1629[2]=CHAR_3_;
+    386          		//	temp_1629[6] = CHAR_51;
+    387          		//	break;
+    388          		case MENU_FM_FREQ:
+    389          			Write_Display_FM_Frequency(fm_freq);
+    390          			temp_1629[2]|= CHAR_DP1;
+    391          			temp_1629[6] = CHAR_MHz;
+    392          			break;
+    393          		case MENU_BT:
+    394          #if BT_MODE_EN
+    395          			temp_1629[1] = CHAR_B_;
+    396          			temp_1629[2] = CHAR_t_;
+    397          			temp_1629[6] = CHAR_BT;
+    398          			if((bt_status<BT_STATUS_CONNECTED)&&(bonoff))
+    399          			{
+    400          				temp_1629[1] = CHAR_MASK;
+    401          				temp_1629[2] = CHAR_MASK;
+    402          			}
+    403          			//if((bt_status<BT_STATUS_CONNECTED)&&(bt_first_in)&&(bonoff))temp_1629[6] = CHAR_MASK;
+    404          			if(bt_status>=BT_STATUS_CONNECTED)
+    405          			{
+    406          				if(bt_status==BT_STATUS_PLAYING)temp_1629[6] |= CHAR_PLAY;
+    407          				else temp_1629[6] |= CHAR_PAUSE;
+    408          			}
+    409          #endif
+    410          			break;
+    411          		case MENU_USB_SD:
+    412          			if(device_active==0x02)
+    413          			{
+    414          				temp_1629[0] = CHAR_U;
+    415          				temp_1629[1] = CHAR_S_;
+    416          				temp_1629[2] = CHAR_B_;
+    417          			}
+    418          			else
+    419          			{
+    420          				temp_1629[1] = CHAR_S_;
+    421          				temp_1629[2] = CHAR_D_;
+    422          			}
+    423          			temp_1629[6] = CHAR_USBSD;
+    424          			break;
+    425          	}
+    426          	if((style==MENU_BT)||(style==MENU_DVD)||(style==MENU_LINE_IN))
+    427          	{
+    428          		temp_1629[4] = DIGIT_FONT[main_vol/10];
+    429          		temp_1629[5] = DIGIT_FONT[main_vol%10];
+    430          	}
+    431          	//if(style!=MENU_DVD)
+    432          	//{
+    433          		temp_1629[6]|=	CHAR_21;
+    434          		//if(!bMode)temp_1629[6] |= CHAR_21;
+    435          		//else	  temp_1629[6] |= CHAR_51;
+    436          	//}
+    437          }
+    438          #pragma location="FRE_SHOW_API"
+    439          void Write_Display_Mode(void)
+    440          {
+    441          	#if PT2358
+    442          	if(work_mode==DVD_MODE)
+    443          	{
+    444          		temp_1629[0]=CHAR_MASK;
+    445          		temp_1629[5] &= ~ CHAR_8_;
+    446          		if(bProgic)
+    447          		{
+    448          			temp_1629[1]=CHAR_A_;
+    449          			temp_1629[2]=CHAR_C;
+    450          			temp_1629[3]=CHAR_MINUS;
+    451          			temp_1629[4]=CHAR_3;
+    452          		}
+    453          		else
+    454          		{
+    455          			temp_1629[1]=CHAR_MASK;
+    456          			temp_1629[2]=CHAR_3_;
+    457          			temp_1629[3]=CHAR_D;
+    458          			temp_1629[4]=CHAR_MASK;
+    459          		}
+    460          	}
+    461          	else
+    462          	{
+    463          		if(!bMode)
+    464          		 {
+    465          			temp_1629[6] |=   CHAR_21;
+    466          			temp_1629[6] &= ~ CHAR_51;
+    467          		 }
+    468          		else
+    469          		 {
+    470          			temp_1629[6] |=   CHAR_51;
+    471          			temp_1629[6] &= ~ CHAR_21;
+    472          		 }
+    473          	}
+    474          	#endif
+    475          
+    476          	#if CS2313
+    477          	temp_1629[0]=CHAR_0;
+    478          	if(!bMode)
+    479          	{
+    480          		temp_1629[1]=CHAR_F_;
+    481          		temp_1629[2]=CHAR_F_;
+    482          	}
+    483          	else
+    484          	{
+    485          		temp_1629[1]=CHAR_N_;
+    486          		temp_1629[2]=CHAR_MASK;
+    487          	}
+    488          	temp_1629[3]=CHAR_MASK;
+    489          	temp_1629[4]=CHAR_MASK;
+    490          	temp_1629[5]=CHAR_MASK;
+    491          	//temp_1629[6]=CHAR_MASK;
+    492          	//Write_Display_Digtial_1629(main_vol);
+    493          	#endif
+    494          }
+    495          #pragma location="LCD_1629_API"
+    496          //__near_func void Write_Display_Work_Mode(u8 style)
+    497          //#pragma location="LCD_1629_API"
+    498          void Write_Display_TIME(void)
+    499          {   
+    500          	//if(!player.play_time)
+    501          	//{
+    502          		Write_Display_Protect_();
+    503          		temp_1629[0] = CHAR_MASK;
+    504          		temp_1629[1] = CHAR_MASK;
+    505          		cur_play_time.min = player.play_time / 60;
+    506          		//if (cur_play_time.min > 99)
+    507          		//{
+    508          		//	cur_play_time.min = 99;
+    509          		//}
+    510          		temp_1629[2] = DIGIT_FONT[cur_play_time.min /10];
+    511          		temp_1629[3]|= DIGIT_FONT[cur_play_time.min %10];
+    512          		cur_play_time.sec = player.play_time % 60;
+    513          		temp_1629[4]|= DIGIT_FONT[cur_play_time.sec /10];
+    514          		temp_1629[5]|= DIGIT_FONT[cur_play_time.sec %10];
+    515          		temp_1629[6] = (CHAR_USBSD|CHAR_21);
+    516          		temp_1629[3]|= CHAR_DP2_2;
+    517          		if(play_mode==REPEAT_ONE)temp_1629[6]|= CHAR_ONE;
+    518          		else                     temp_1629[6]|= CHAR_ALL;
+    519          		if(play_pause)           temp_1629[6]|= CHAR_PLAY;
+    520          		else                     temp_1629[6]|= CHAR_PAUSE;
+    521          		//if(!bMode)               temp_1629[6]|=	CHAR_21;
+    522          		//else                     temp_1629[6]|= CHAR_51;
+    523          		//temp_1629[6]|=	CHAR_21;
+    524          	//}
+    525          }
+    526          #pragma location="LCD_1629_API"
+    527          void MENU_USB_SD_REPEAT(void)
+    528          {
+    529          	temp_1629[0] = CHAR_M_;
+    530          	temp_1629[1] = CHAR_P_;
+    531          	temp_1629[2] = CHAR_MASK;
+    532          	temp_1629[6]&= ~(CHAR_ONE|CHAR_ALL);
+    533          	if(play_mode==REPEAT_ONE)
+    534          	{
+    535          		temp_1629[6]|= CHAR_ONE;
+    536          		temp_1629[3] = CHAR_0;
+    537          		temp_1629[4] = CHAR_N;
+    538          		temp_1629[5] = CHAR_E;
+    539          	}
+    540          	else					 
+    541          	{
+    542          		temp_1629[6]|= CHAR_ALL;
+    543          		temp_1629[3] = CHAR_A;
+    544          		temp_1629[4] = CHAR_L;
+    545          		temp_1629[5] = CHAR_L;
+    546          	}
+    547          }
+    548          #pragma location="LCD_1629_API"
+    549          void MENU_FILE_NUM(void)
+    550          {
+    551          	temp_1629[0] =  CHAR_MASK;
+    552          	temp_1629[1] =  CHAR_MASK;
+    553          	Write_Display_Number(fs_apiinfo.file_number);
+    554          	temp_1629[3]&=~ CHAR_DP2_2;
+    555          	temp_1629[7] =  CHAR_MASK;
+    556          	temp_1629[6] =  (CHAR_USBSD|CHAR_21|CHAR_PLAY);
+    557          	if(play_mode==REPEAT_ONE)temp_1629[6]|= CHAR_ONE;
+    558          	else					 temp_1629[6]|= CHAR_ALL;
+    559          }
+    560          #pragma location="LCD_FUN_ENCODE"
+    561          void MENU_FM_NUMBER(void)
+    562          {
+    563          	temp_1629[0] = CHAR_F_;
+    564          	temp_1629[1] = CHAR_M_;
+    565          	temp_1629[2] = CHAR_MASK;
+    566          	temp_1629[3] = (CHAR_P|CHAR_DP2_2);
+    567          	temp_1629[4] = DIGIT_FONT[fm_cur_ch/10];
+    568          	temp_1629[5] = DIGIT_FONT[fm_cur_ch%10];
+    569          	temp_1629[6]&= ~ CHAR_MHz;
+    570          	//temp_1629[2]&= ~ CHAR_DP1;
+    571          	//temp_1629[3]|=  CHAR_DP2_2;
+    572          	temp_1629[7] =  CHAR_MASK;
+    573          }
+    574          #pragma location="LCD_1629_API"
+    575          void Write_Display_Power_Mute(void)
+    576          {
+    577          	MENU_DISPLAY_MASK();
+    578          	if(work_mode==OFF_MODE)
+    579          	{
+    580          		//temp_1629[1] = CHAR_MINUS_;
+    581          		//temp_1629[2] = CHAR_MINUS_;
+    582          		temp_1629[3] = CHAR_MINUS;
+    583          		temp_1629[4] = CHAR_MINUS;
+    584          		temp_1629[5] = CHAR_MINUS;
+    585          	}
+    586          	else if(volume_mute_falg)
+    587          	{
+    588          		temp_1629[0] = CHAR_M_;
+    589          		temp_1629[1] = CHAR_U;
+    590          		temp_1629[2] = CHAR_T_;
+    591          		temp_1629[3] = CHAR_E;
+    592          	}
+    593          }
+    594          
+    595          #pragma location="LCD_1629_API"
+    596          void MENU_SELECT_MP3_FM_NUMBER(void)
+    597          {
+    598          	if(work_mode==MUSIC_PLAY_MODE)
+    599          	{
+    600          		temp_1629[0] = CHAR_MASK;
+    601          		temp_1629[1] = CHAR_MASK;
+    602          		temp_1629[2] = CHAR_0;
+    603          		temp_1629[3] = DIGIT_FONT[m_Couunt3%10];
+    604          	}
+    605          	else 
+    606          	{
+    607          		temp_1629[0] = CHAR_F_;
+    608          		temp_1629[1] = CHAR_M_;
+    609          		temp_1629[2] = CHAR_MASK;
+    610          		temp_1629[3] = (CHAR_P|CHAR_DP2_2);
+    611          		temp_1629[6]&= ~ CHAR_MHz;
+    612          		//temp_1629[2]&= ~ CHAR_DP1;
+    613          		//temp_1629[3]|=	 CHAR_DP2_2;
+    614          		temp_1629[7] =	 CHAR_MASK;
+    615          	}
+    616          	temp_1629[4] = DIGIT_FONT[m_Couunt2%10];
+    617          	temp_1629[5] = DIGIT_FONT[m_Couunt1%10];
+    618          }
+    619          #pragma location="LCD_1629_API"
+    620          //#pragma location="LED_SCAN"
+    621          //__near_func void MENU_DISPLAY_FLASH(void)
+    622          void MENU_DISPLAY_FLASH(void)
+    623          {
+    624          	temp_1629[3]&=~ (ICON_O2|ICON_O3|ICON_O4|ICON_O5);
+    625          	temp_1629[4]&=~ (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    626          	temp_1629[5]&=~ (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    627          	temp_1629[7] =  CHAR_MASK;
+    628          	///*
+    629          	if(Flash_Count == 2)
+    630          	{
+    631          		temp_1629[3]|= (ICON_O2);
+    632          		temp_1629[4]|= (ICON_P1);
+    633          		temp_1629[5]|= (ICON_Q2);
+    634          		temp_1629[7] = ICON_R1|ICON_T1;
+    635          	}
+    636          	else if(Flash_Count == 3)
+    637          	{
+    638          		temp_1629[3]|= (ICON_O2);
+    639          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3);
+    640          		temp_1629[5]|= (ICON_Q2);
+    641          		temp_1629[7] = ICON_R1|ICON_R2|ICON_T1|ICON_T2|ICON_T3;
+    642          	}//break;
+    643          	else if(Flash_Count == 4)
+    644          	{
+    645          		temp_1629[3]|= (ICON_O2|ICON_O3);
+    646          		temp_1629[4]|= (ICON_P1|ICON_P2);
+    647          		temp_1629[5]|= (ICON_Q2|ICON_Q3);
+    648          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_T1|ICON_T2|ICON_S2|ICON_S3;
+    649          	}//break;
+    650          	else if(Flash_Count == 5)
+    651          	{
+    652          		temp_1629[3]|= (ICON_O2|ICON_O3);
+    653          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3|ICON_P4);
+    654          		temp_1629[5]|= (ICON_Q2);
+    655          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_T1|ICON_T2|ICON_T3|ICON_S2|ICON_S3;
+    656          	}//break;
+    657          	else if(Flash_Count == 6)
+    658          	{
+    659          		temp_1629[3]|= (ICON_O2|ICON_O3|ICON_O4);
+    660          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3);
+    661          		temp_1629[5]|= (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    662          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_T1|ICON_T2|ICON_T3|ICON_S2|ICON_S3|ICON_S4;
+    663          	}//break;
+    664          	else if(Flash_Count == 7)
+    665          	{
+    666          		temp_1629[3]|= (ICON_O2|ICON_O3|ICON_O4);
+    667          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    668          		temp_1629[5]|= (ICON_Q2|ICON_Q3|ICON_Q4);
+    669          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_R5|ICON_T1|ICON_T2|ICON_T3|ICON_T4|ICON_S2|ICON_S3;
+    670          	}//break;
+    671          	else if(Flash_Count == 8)
+    672          	{
+    673          		temp_1629[3]|= (ICON_O2|ICON_O3|ICON_O4|ICON_O5);
+    674          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    675          		temp_1629[5]|= (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    676          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_R5|ICON_T1|ICON_T2|ICON_T3|ICON_T4|ICON_T5|ICON_S2|ICON_S3|ICON_S4|ICON_S5;
+    677          	}//break;
+    678          	//*/
+    679          }
+    680          #pragma location="LCD_1629_API"
+    681          //#pragma location="IIC_CODE_API"
+    682          //#pragma location="LED_SCAN"
+    683          //__near_func void MENU_POWER_FLASH(void)
+    684          void MENU_POWER_FLASH(void)
+    685          {
+    686          	temp_1629[3]&=~ (ICON_O2|ICON_O3|ICON_O4|ICON_O5);
+    687          	temp_1629[4]&=~ (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    688          	temp_1629[5]&=~ (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    689          	temp_1629[7] =  CHAR_MASK;
+    690          	if(Power_Flash == 1)
+    691          	{
+    692          		temp_1629[4]|= ICON_P1;
+    693          		temp_1629[7] = ICON_R1|ICON_T1;
+    694          	}
+    695          	else if(Power_Flash == 2)
+    696          	{
+    697          		temp_1629[3]|= (ICON_O2);
+    698          		temp_1629[4]|= (ICON_P1|ICON_P2);
+    699          		temp_1629[5]|= (ICON_Q2);
+    700          		temp_1629[7] = ICON_R1|ICON_R2|ICON_T1|ICON_T2|ICON_S2;
+    701          	}//break;
+    702          	else if(Power_Flash == 3)
+    703          	{
+    704          		temp_1629[3]|= (ICON_O2|ICON_O3);
+    705          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3);
+    706          		temp_1629[5]|= (ICON_Q2|ICON_Q3);
+    707          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_T1|ICON_T2|ICON_T3|ICON_S2|ICON_S3;
+    708          	}//break;
+    709          	else if(Power_Flash == 4)
+    710          	{
+    711          		temp_1629[3]|= (ICON_O2|ICON_O3|ICON_O4);
+    712          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3|ICON_P4);
+    713          		temp_1629[5]|= (ICON_Q2|ICON_Q3|ICON_Q4);
+    714          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_T1|ICON_T2|ICON_T3|ICON_T4|ICON_S2|ICON_S3|ICON_S4;
+    715          	}//break;
+    716          	else if(Power_Flash == 5)
+    717          	{
+    718          		temp_1629[3]|= (ICON_O2|ICON_O3|ICON_O4|ICON_O5);
+    719          		temp_1629[4]|= (ICON_P1|ICON_P2|ICON_P3|ICON_P4|ICON_P5);
+    720          		temp_1629[5]|= (ICON_Q2|ICON_Q3|ICON_Q4|ICON_Q5);
+    721          		temp_1629[7] = ICON_R1|ICON_R2|ICON_R3|ICON_R4|ICON_R5|ICON_T1|ICON_T2|ICON_T3|ICON_T4|ICON_T5|ICON_S2|ICON_S3|ICON_S4|ICON_S5;
+    722          	}//break;
+    723          }
+    724          
+    725          #pragma location="LCD_1629_API"
+    726          void MENU_BT_CLEAR_DISPLAY(void)
+    727          {
+    728          	temp_1629[0] = CHAR_C;
+    729          	temp_1629[1] = CHAR_L;
+    730          	temp_1629[2] = CHAR_E_;
+    731          	temp_1629[3] = CHAR_MASK;
+    732          	temp_1629[4] = CHAR_MASK;
+    733          	temp_1629[5] = CHAR_MASK;
+    734          }
+    735          
+    736          #pragma location="FRE_SHOW_API"
+    737          void Write_Display_BT_PREVNEXT(U8 STYTE)
+    738          {
+    739          	if(STYTE==MENU_BT_PREV)
+    740          	{
+    741          		temp_1629[0] = CHAR_PREV;
+    742          		temp_1629[1] = CHAR_PREV;
+    743          		temp_1629[2] = CHAR_PREV;
+    744          	}
+    745          	else
+    746          	{
+    747          		temp_1629[0] = CHAR_NEXT;
+    748          		temp_1629[1] = CHAR_NEXT;
+    749          		temp_1629[2] = CHAR_NEXT;
+    750          	}
+    751          	//temp_1629[3] = CHAR_MASK;
+    752          	//temp_1629[4] = CHAR_MASK;
+    753          	//temp_1629[5] = CHAR_MASK;
+    754          }
+    755          
+    756          #pragma location="LCD_1629_API"
+    757          void MENU_EQ_DISPLAY(void)
+    758          {
+    759          	temp_1629[0] = CHAR_MASK;
+    760          	temp_1629[1] = CHAR_MASK;
+    761          	temp_1629[2] = CHAR_MASK;
+    762          	temp_1629[3] = CHAR_E;
+    763          	temp_1629[4] = CHAR_Q;
+    764          	//temp_1629[5] = CHAR_MASK;
+    765          	if(work_mode==MUSIC_PLAY_MODE)
+    766          	{
+    767          		temp_1629[0] = CHAR_M_;
+    768          		temp_1629[1] = CHAR_P_;
+    769          	}
+    770          	else if(work_mode==FM_MODE)
+    771          	{
+    772          		temp_1629[0] = CHAR_F_;
+    773          		temp_1629[1] = CHAR_M_;
+    774          	}
+    775          	if(eq_mode_court==0)
+    776          	{
+    777          		temp_1629[5] = CHAR_0;
+    778          	}
+    779          	else if(eq_mode_court==1)
+    780          	{
+    781          		temp_1629[5] = CHAR_1;
+    782          	}
+    783          	else if(eq_mode_court==2)
+    784          	{
+    785          		temp_1629[5] = CHAR_2;
+    786          	}
+    787          	else if(eq_mode_court==3)
+    788          	{
+    789          		temp_1629[5] = CHAR_3;
+    790          	}
+    791          	else 
+    792          	{
+    793          		temp_1629[5] = CHAR_4;
+    794          	}
+    795          }
+    796          
+    797          void MENU_BT_ONONLINE_DISPLAY(void)
+    798          {
+    799          	temp_1629[1] = CHAR_MASK;
+    800          	temp_1629[2] = CHAR_MASK;
+    801          }
+    802          
+    803          #if 0
+    804          #pragma location="LED_SCAN"
+    805          __near_func void DispMenu_1629(u8 menu_number)//@"IIC_CODE_API"  //ÃÓ≥‰…®√Ëbuf
+    806          //#pragma location="LCD_621_SEG_API"
+    807          //void DispMenu_1629(u8 menu_number)
+    808          {
+    809          	switch (menu_number)
+    810          	{
+    811          		case MENU_VOLUE:	  
+    812          			Write_Display_VOL(MENU_VOLUE);
+    813          			break;		  
+    814          #if PT2358
+    815          		case MENU_FL:	
+    816          			Write_Display_VOL(MENU_FL);
+    817          			break;
+    818          			
+    819          		case MENU_SL:	
+    820          			Write_Display_VOL(MENU_SL);
+    821          			break;
+    822          			
+    823          		case MENU_CEN:		
+    824          			Write_Display_VOL(MENU_CEN);
+    825          			break;
+    826          
+    827          		case MENU_SUB:	
+    828          			Write_Display_VOL(MENU_SUB);
+    829          			break;
+    830          #endif
+    831          			
+    832          #if CS2313
+    833          		case MENU_SW:   
+    834          			Write_Display_VOL(MENU_SW);
+    835          			break;
+    836          
+    837          		case MENU_BASS:
+    838          			Write_Display_VOL(MENU_BASS);
+    839          			break;
+    840          
+    841          		case MENU_TRE:	  
+    842          			Write_Display_VOL(MENU_TRE);
+    843          			break;
+    844          #endif
+    845          		case MENU_USB_SD:
+    846          			Write_Display_Work_Mode(MENU_USB_SD);
+    847          			break;
+    848          
+    849          		case MENU_LINE_IN:   
+    850          			Write_Display_Work_Mode(MENU_LINE_IN);
+    851          			break;
+    852          			
+    853          		case MENU_DVD:	 
+    854          			Write_Display_Work_Mode(MENU_DVD);
+    855          			break;
+    856          
+    857          		case MENU_FM_FREQ:
+    858          			Write_Display_Work_Mode(MENU_FM_FREQ);
+    859          			break;
+    860          
+    861          		case MENU_BT:
+    862          			Write_Display_Work_Mode(MENU_BT);
+    863          			break;
+    864          
+    865          		case MENU_BT_NEXT:
+    866          			Write_Display_BT_PREVNEXT(MENU_BT_NEXT);
+    867          			break;
+    868          			
+    869          		case MENU_BT_PREV:
+    870          			Write_Display_BT_PREVNEXT(MENU_BT_PREV);
+    871          			break;
+    872          
+    873          		case MENU_PLAY_NUM:
+    874          			MENU_FILE_NUM();
+    875          			break;
+    876          
+    877          		case MENU_PAUSE:
+    878          		case MENU_PLAY:
+    879          			if(!volume_mute_falg)Write_Display_TIME();
+    880          			break;
+    881          
+    882          		case MENU_SELECT_NUMBER:
+    883          			MENU_SELECT_MP3_FM_NUMBER();
+    884          			break;
+    885          			
+    886          		case MENU_PLAY_MODE:
+    887          			MENU_USB_SD_REPEAT();
+    888          			break;
+    889          			
+    890          		case MENU_FM_CH:
+    891          			MENU_FM_NUMBER();
+    892          			break;
+    893          
+    894          		case MENU_POWER_MUTE:
+    895          			Write_Display_Power_Mute();
+    896          			break;
+    897          
+    898          		case MENU_MODE:
+    899          			Write_Display_Mode();
+    900          			break;
+    901          
+    902          		case MENU_FLASH:
+    903          			MENU_DISPLAY_FLASH();
+    904          			break;
+    905          
+    906          		case MENU_POWER_ON_FLASH:
+    907          			MENU_POWER_FLASH();
+    908          			break;
+    909          			
+    910          		case MENU_BT_CLEAR:
+    911          			MENU_BT_CLEAR_DISPLAY();
+    912          			break;
+    913          
+    914          		case MENU_EQ:
+    915          			MENU_EQ_DISPLAY();
+    916          			break;
+    917          			
+    918          		case BT_MENU_NULL:
+    919          			MENU_BT_ONONLINE_DISPLAY();
+    920          			break;
+    921          			
+    922          		default:
+    923          			break;
+    924          	}
+    925          	ShowCHAR();
+    926          }
+    927          #endif
+    928          
+    929          #endif
+    930          #pragma location="LCD_1629_API"
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+    931          void Write_Display_Digtial_1629(s8 value)
+   \                     Write_Display_Digtial_1629:
+    932          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   FC           MOV     R4,A
+    933          	if(value < 0) 
+   \   000002   C3           CLR     C
+   \   000003   9400         SUBB    A,#0x0
+   \   000005   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000007   65D0         XRL     A,PSW
+   \   000009   33           RLC     A
+   \   00000A   5034         JNC     ??Write_Display_Digtial_1629_0
+    934          	{		
+    935          		value = -value;
+   \   00000C   EC           MOV     A,R4
+   \   00000D   F4           CPL     A
+   \   00000E   04           INC     A
+   \   00000F   FC           MOV     R4,A
+    936          		temp_1629[2] = CHAR_MINUS;
+   \   000010   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000013   E4           CLR     A
+   \   000014   F0           MOVX    @DPTR,A
+   \   000015   A3           INC     DPTR
+   \   000016   740A         MOV     A,#0xa
+   \   000018   F0           MOVX    @DPTR,A
+    937                  temp_1629[3] = DIGIT_FONT[value/10];
+    938          		temp_1629[4] = DIGIT_FONT[value%10];
+    939          	}
+    940          	else 
+    941          	{
+    942          	    if((sys_ctl.Vol_tyle == STATE_MAIN)||(sys_ctl.Vol_tyle == STATE_SUB))
+    943                  {   
+    944              		temp_1629[4] = DIGIT_FONT[value/10];
+    945              		temp_1629[5] = DIGIT_FONT[value%10];
+    946                  }
+    947                  else
+    948                  {
+    949                      temp_1629[3] = DIGIT_FONT[value/10];
+   \                     ??Write_Display_Digtial_1629_1:
+   \   000019   EC           MOV     A,R4
+   \   00001A   F8           MOV     R0,A
+   \   00001B   33           RLC     A
+   \   00001C   95E0         SUBB    A,0xE0 /* A   */
+   \   00001E   F9           MOV     R1,A
+   \   00001F   7A0A         MOV     R2,#0xa
+   \   000021   7B00         MOV     R3,#0x0
+   \   000023   12....       LCALL   ?S_DIV_MOD
+   \   000026   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_2:
+   \   000029   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   00002C   12....       LCALL   ?Subroutine4
+    950              		temp_1629[4] = DIGIT_FONT[value%10];    
+   \                     ??CrossCallReturnLabel_4:
+   \   00002F   12....       LCALL   ?SC_DIV_MOD
+   \   000032   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_0:
+   \   000035   90....       MOV     DPTR,#(temp_1629 + 8)
+   \                     ??Write_Display_Digtial_1629_2:
+   \   000038   E8           MOV     A,R0
+   \   000039   F0           MOVX    @DPTR,A
+   \   00003A   A3           INC     DPTR
+   \   00003B   E9           MOV     A,R1
+   \   00003C   F0           MOVX    @DPTR,A
+    951                  }
+    952          	}
+    953              
+    954          }
+   \   00003D   02....       LJMP    ?BRET
+   \                     ??Write_Display_Digtial_1629_0:
+   \   000040   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   000043   E0           MOVX    A,@DPTR
+   \   000044   FA           MOV     R2,A
+   \   000045   7401         MOV     A,#0x1
+   \   000047   6A           XRL     A,R2
+   \   000048   6005         JZ      ??Write_Display_Digtial_1629_3
+   \   00004A   7402         MOV     A,#0x2
+   \   00004C   6A           XRL     A,R2
+   \   00004D   70CA         JNZ     ??Write_Display_Digtial_1629_1
+   \                     ??Write_Display_Digtial_1629_3:
+   \   00004F   EC           MOV     A,R4
+   \   000050   F8           MOV     R0,A
+   \   000051   33           RLC     A
+   \   000052   95E0         SUBB    A,0xE0 /* A   */
+   \   000054   F9           MOV     R1,A
+   \   000055   7A0A         MOV     R2,#0xa
+   \   000057   7B00         MOV     R3,#0x0
+   \   000059   12....       LCALL   ?S_DIV_MOD
+   \   00005C   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_3:
+   \   00005F   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   000062   12....       LCALL   ?Subroutine4
+   \                     ??CrossCallReturnLabel_5:
+   \   000065   12....       LCALL   ?SC_DIV_MOD
+   \   000068   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_1:
+   \   00006B   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   00006E   80C8         SJMP    ??Write_Display_Digtial_1629_2
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   E8           MOV     A,R0
+   \   000001   F0           MOVX    @DPTR,A
+   \   000002   A3           INC     DPTR
+   \   000003   E9           MOV     A,R1
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   EC           MOV     A,R4
+   \   000006   75F00A       MOV     B,#0xa
+   \   000009   22           RET
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_7:
+   \   000003   22           RET
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   E5F0         MOV     A,B
+   \   000002   F8           MOV     R0,A
+   \   000003   33           RLC     A
+   \   000004   95E0         SUBB    A,0xE0 /* A   */
+   \   000006   F9           MOV     R1,A
+   \   000007   12....       LCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_6:
+   \   00000A   22           RET
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   E8           MOV     A,R0
+   \   000001   C3           CLR     C
+   \   000002   33           RLC     A
+   \   000003   F8           MOV     R0,A
+   \   000004   E9           MOV     A,R1
+   \   000005   33           RLC     A
+   \   000006   F9           MOV     R1,A
+   \   000007   E8           MOV     A,R0
+   \   000008   24..         ADD     A,#(DIGIT_FONT & 0xff)
+   \   00000A   F582         MOV     DPL,A
+   \   00000C   E9           MOV     A,R1
+   \   00000D   34..         ADDC    A,#((DIGIT_FONT >> 8) & 0xff)
+   \   00000F   F583         MOV     DPH,A
+   \   000011   E4           CLR     A
+   \   000012   93           MOVC    A,@A+DPTR
+   \   000013   F8           MOV     R0,A
+   \   000014   7401         MOV     A,#0x1
+   \   000016   93           MOVC    A,@A+DPTR
+   \   000017   F9           MOV     R1,A
+   \   000018   22           RET
+    955          //
+    956          #pragma location="LCD_1629_API"
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+    957          void MENU_DISPLAY_MASK(void)
+   \                     MENU_DISPLAY_MASK:
+    958          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    959          	u8 i;
+    960              for(i=0;i<8;i++)
+   \   000000   7A00         MOV     R2,#0x0
+    961                  temp_1629[i] = CHAR_MASK;
+   \                     ??MENU_DISPLAY_MASK_0:
+   \   000002   EA           MOV     A,R2
+   \   000003   C3           CLR     C
+   \   000004   33           RLC     A
+   \   000005   F8           MOV     R0,A
+   \   000006   E4           CLR     A
+   \   000007   33           RLC     A
+   \   000008   F9           MOV     R1,A
+   \   000009   E8           MOV     A,R0
+   \   00000A   24..         ADD     A,#(temp_1629 & 0xff)
+   \   00000C   F582         MOV     DPL,A
+   \   00000E   E9           MOV     A,R1
+   \   00000F   34..         ADDC    A,#((temp_1629 >> 8) & 0xff)
+   \   000011   F583         MOV     DPH,A
+   \   000013   E4           CLR     A
+   \   000014   F0           MOVX    @DPTR,A
+   \   000015   A3           INC     DPTR
+   \   000016   F0           MOVX    @DPTR,A
+   \   000017   0A           INC     R2
+   \   000018   EA           MOV     A,R2
+   \   000019   C3           CLR     C
+   \   00001A   9408         SUBB    A,#0x8
+   \   00001C   40E4         JC      ??MENU_DISPLAY_MASK_0
+    962          }
+   \   00001E   02....       LJMP    ?BRET
+    963          
+    964          #pragma location="LCD_1629_API"
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+    965          void Duty_set(void)
+   \                     Duty_set:
+    966          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+    967              
+    968              u8 dim_level,set_level;   
+    969              if(sys_ctl.dim_level ==3)
+   \   000003   90....       MOV     DPTR,#(sys_ctl + 58)
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   FA           MOV     R2,A
+   \   000008   7403         MOV     A,#0x3
+   \   00000A   6A           XRL     A,R2
+   \   00000B   7004         JNZ     ??Duty_set_0
+    970              {
+    971                  set_level=7;
+   \   00000D   7E07         MOV     R6,#0x7
+   \   00000F   8010         SJMP    ??Duty_set_1
+    972              }
+    973              else if(sys_ctl.dim_level ==2)
+   \                     ??Duty_set_0:
+   \   000011   7402         MOV     A,#0x2
+   \   000013   6A           XRL     A,R2
+   \   000014   7004         JNZ     ??Duty_set_2
+    974              {
+    975                  set_level=2;
+   \   000016   7E02         MOV     R6,#0x2
+   \   000018   8007         SJMP    ??Duty_set_1
+    976              }
+    977              else if(sys_ctl.dim_level ==1)
+   \                     ??Duty_set_2:
+   \   00001A   7401         MOV     A,#0x1
+   \   00001C   6A           XRL     A,R2
+   \   00001D   7002         JNZ     ??Duty_set_1
+    978              {
+    979                  set_level=0;
+   \   00001F   7E00         MOV     R6,#0x0
+    980              }
+    981              dim_level = sys_ctl.dim_level+1;
+    982              sys_param_write8(PARAM_DIM, dim_level);
+   \                     ??Duty_set_1:
+   \   000021                ; Setup parameters for call to function spi_param_write8
+   \   000021   7401         MOV     A,#0x1
+   \   000023   2A           ADD     A,R2
+   \   000024   FB           MOV     R3,A
+   \   000025   7A0E         MOV     R2,#0xe
+   \   000027   7900         MOV     R1,#0x0
+   \   000029   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   00002C   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    983              sys_ctl.TM1629_input = (set_level & 0x07)|0x88;
+   \   000031   7407         MOV     A,#0x7
+   \   000033   5E           ANL     A,R6
+   \   000034   4488         ORL     A,#0x88
+   \   000036   90....       MOV     DPTR,#(sys_ctl + 59)
+   \   000039   F0           MOVX    @DPTR,A
+    984          #if 0    
+    985              if(!sys_ctl.dim_level)TM1629_input = 0x80;    
+    986              else TM1629_input = (set_level & 0x07)|0x88;
+    987          #endif   
+    988          	TM_STB_LOW;
+   \   00003A   C292         CLR     0x90.2
+    989          	WriteData(sys_ctl.TM1629_input);     
+   \   00003C                ; Setup parameters for call to function WriteData
+   \   00003C   F9           MOV     R1,A
+   \   00003D   90....       MOV     DPTR,#(WriteData & 0xffff)
+   \   000040   74..         MOV     A,#((WriteData >> 16) & 0xff)
+   \   000042   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    990          	TM_STB_HIGH;
+   \   000045   D292         SETB    0x90.2
+    991                 
+    992          }
+   \   000047                REQUIRE ?Subroutine8
+   \   000047                ; // Fall through to label ?Subroutine8
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   \                     ?Subroutine8:
+   \   000000   D0E0         POP     A
+   \   000002   FE           MOV     R6,A
+   \   000003   02....       LJMP    ?BRET
+    993          #if 0
+    994          #pragma location="LCD_1629_API"
+    995          void Dim_Duty_set(bool Up_Down)
+    996          {  
+    997              if(Up_Down)
+    998              {
+    999                  sys_ctl.dim_level++;
+   1000                  if(sys_ctl.dim_level > 2)sys_ctl.dim_level = 2;
+   1001              }
+   1002              else
+   1003              {
+   1004                  sys_ctl.dim_level--;
+   1005                  if(sys_ctl.dim_level < 0)sys_ctl.dim_level = 0;
+   1006              }   
+   1007              Duty_set();
+   1008          }
+   1009          #endif
+   1010          #pragma location="LCD_1629_API"
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   1011          void Write_Display_Work_Mode(u8 style)
+   \                     Write_Display_Work_Mode:
+   1012          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+   1013          	MENU_DISPLAY_MASK();
+   \   000005                ; Setup parameters for call to function MENU_DISPLAY_MASK
+   \   000005   90....       MOV     DPTR,#(MENU_DISPLAY_MASK & 0xffff)
+   \   000008   74..         MOV     A,#((MENU_DISPLAY_MASK >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1014          	//memset((u16*)temp_1629,0x0000,8);
+   1015          	switch(style)
+   \   00000D   EE           MOV     A,R6
+   \   00000E   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for Write_Display_Work_Mode>_0`:
+   \   000011   00           DB        0
+   \   000012   00           DB        0
+   \   000013   ....         DW        ??Write_Display_Work_Mode_0
+   \   000015   ....         DW        ??Write_Display_Work_Mode_1
+   1016          	{
+   1017          		case MENU_LINE_IN:
+   1018                      
+   1019                      temp_1629[0]  = CHAR_H;
+   \                     ??Write_Display_Work_Mode_1:
+   \   000017   90....       MOV     DPTR,#temp_1629
+   \   00001A   740C         MOV     A,#0xc
+   \   00001C   F0           MOVX    @DPTR,A
+   \   00001D   A3           INC     DPTR
+   \   00001E   745A         MOV     A,#0x5a
+   \   000020   F0           MOVX    @DPTR,A
+   1020                      temp_1629[1]  = CHAR_I;          
+   \   000021   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000024   74A1         MOV     A,#-0x5f
+   \   000026   F0           MOVX    @DPTR,A
+   \   000027   A3           INC     DPTR
+   \   000028   7401         MOV     A,#0x1
+   \   00002A   F0           MOVX    @DPTR,A
+   1021          			break;
+   1022          	}
+   1023          	
+   1024          }
+   \                     ??Write_Display_Work_Mode_0:
+   \   00002B   80..         SJMP    ?Subroutine8
+   1025          
+   1026          #pragma location="LCD_1629_API"
+
+   \                                 In segment LCD_1629_API, align 1, keep-with-next
+   1027          void DispMenu_1629(u8 menu_number)//@"IIC_CODE_API"  //ÃÓ≥‰…®√Ëbuf
+   \                     DispMenu_1629:
+   1028          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   1029          	switch (menu_number)
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for DispMenu_1629>_0`:
+   \   000004   00           DB        0
+   \   000005   00           DB        0
+   \   000006   ....         DW        ??DispMenu_1629_0
+   \   000008   ....         DW        ??DispMenu_1629_1
+   1030          	{
+   1031          		case MENU_LINE_IN:   
+   1032          			Write_Display_Work_Mode(MENU_LINE_IN);
+   \                     ??DispMenu_1629_1:
+   \   00000A                ; Setup parameters for call to function Write_Display_Work_Mode
+   \   00000A   7900         MOV     R1,#0x0
+   \   00000C   90....       MOV     DPTR,#(Write_Display_Work_Mode & 0xffff)
+   \   00000F   74..         MOV     A,#((Write_Display_Work_Mode >> 16) & 0xff)
+   \   000011   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1033          			break;		  
+   1034          			
+   1035          		default:
+   1036          			break;
+   1037          	}
+   1038          	ShowCHAR();
+   \                     ??DispMenu_1629_0:
+   \   000014                ; Setup parameters for call to function ShowCHAR
+   \   000014   90....       MOV     DPTR,#(ShowCHAR & 0xffff)
+   \   000017   74..         MOV     A,#((ShowCHAR >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1039          }
+   \   00001C   02....       LJMP    ?BRET
+   1040          
+   1041          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                     EXT_STACK PSTACK XSTACK
+     --------                     --------- ------ ------
+     DispMenu_1629                       0      0      0
+       -> Write_Display_Work_Mode        0      0      0
+       -> ShowCHAR                       0      0      0
+     Duty_set                            1      0      0
+       -> spi_param_write8               2      0      0
+       -> WriteData                      2      0      0
+     MENU_DISPLAY_MASK                   1      0      0
+     ShowCHAR                            0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+       -> WriteData                      0      0      0
+     TM_INIT                             0      0      0
+       -> Duty_set                       0      0      0
+     WriteData                           1      0      0
+     Write_Display_Digtial_1629          0      0      0
+     Write_Display_Work_Mode             1      0      0
+       -> MENU_DISPLAY_MASK              2      0      0
+
+
+   Segment part sizes:
+
+     Function/Label             Bytes
+     --------------             -----
+     P1                            1
+     P2                            1
+     P1DIR                         1
+     P2DIR                         1
+     temp_1629                    16
+     DIGIT_FONT                   20
+     DIGIT_FONT_                  20
+     WriteData                    34
+     TM_INIT                      20
+     ?Subroutine6                  8
+     ShowCHAR                    201
+     ?Subroutine1                  3
+     ?Subroutine7                  7
+     ?Subroutine0                  7
+     Write_Display_Digtial_1629  112
+     ?Subroutine4                 10
+     ?Subroutine3                  4
+     ?Subroutine2                 11
+     ?Subroutine5                 25
+     MENU_DISPLAY_MASK            33
+     Duty_set                     71
+     ?Subroutine8                  6
+     Write_Display_Work_Mode      45
+     DispMenu_1629                31
+
+ 
+  40 bytes in segment CODE_C
+ 280 bytes in segment IIC_CODE_API
+ 348 bytes in segment LCD_1629_API
+   4 bytes in segment SFR_AN
+  16 bytes in segment XDATA_N
+ 
+ 668 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 4 bytes shared)
+  16 bytes of XDATA memory
+
+Errors: none
+Warnings: none

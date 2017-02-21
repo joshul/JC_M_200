@@ -1,0 +1,117 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_bt_lost.c      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_bt_lost.c      #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_bt_lost.lst  #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_bt_lost.r51   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_bt_lost.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_bt_lost.c
+      4           * Author    :
+      5           * Function  : 蓝牙任务 - 防丢器任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          void task_bt_lost_deal_msg(u8 msg);
+      9          
+     10          #pragma location="TASK_BT_LOST_SEG"
+     11          void tasksub_bt_lost_enter(void)
+     12          {
+     13              task_ctl.work_sub = TASK_BT_LOST;
+     14              led_bt_idle();
+     15          }
+     16          
+     17          #pragma location="TASK_BT_LOST_SEG"
+     18          void tasksub_bt_lost_exit(void)
+     19          {
+     20              task_bt_sta_update();
+     21          }
+     22          
+     23          #pragma location="TASK_BT_LOST_SEG"
+     24          void tasksub_bt_lost_event(void)
+     25          {
+     26              WATCHDOG_CLR();
+     27              comm_event();
+     28          
+     29              if (sys_ctl.bt_sta >= BT_STA_CONNECTED) {
+     30                  task_ctl.work_sub = TASK_BT_NULL;  //退出出BT_LOST
+     31              }
+     32          }
+     33          
+     34          #pragma location="TASK_BT_LOST_SEG"
+     35          void tasksub_bt_lost_loop(void)
+     36          {
+     37              u8 msg;
+     38              u8 work_sta = task_ctl.work_sta;    //TASK_BT / TASK_BT_HID
+     39          
+     40              while (task_ctl.work_sta == work_sta && task_ctl.work_sub == TASK_BT_LOST) {
+     41                  tasksub_bt_lost_event();
+     42                  while (msg = get_msg()) {
+     43                      task_bt_lost_deal_msg(msg);
+     44                  }
+     45                  task_bt_display();
+     46              }
+     47          }
+     48          
+     49          #pragma location="TASK_BT_LOST_SEG"
+     50          void tasksub_bt_lost(void)
+     51          {
+     52              //printf("tasksub_ bt_lost\n");
+     53              tasksub_bt_lost_enter();
+     54              tasksub_bt_lost_loop();
+     55              tasksub_bt_lost_exit();
+     56              //printf("tasksub_bt_ lost exit\n");
+     57          }
+     58          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

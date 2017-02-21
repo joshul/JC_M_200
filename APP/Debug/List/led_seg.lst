@@ -1,0 +1,3036 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   28/Jun/2016  10:50:09 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_seg.c                                #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_seg.c                                #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\led_seg.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\led_seg.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\ledseg\led_seg.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : led_seg.c
+      4           * Author    : Hanny
+      5           * Function  : LED数码管显示函数
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #include "task.h"
+      9          #include "task_music.h"
+     10          #include "task_fm.h"
+     11          #include "task_clock.h"
+     12          #include "task_record.h"
+     13          #include "task_update_fw.h"
+     14          #include "tm1629.h"  
+     15          
+     16          
+     17          #if IS_LEDSEG_DISPLAY
+     18          #include "led_seg.h"
+     19          
+     20          extern  __no_init volatile u16 temp_1629[8];
+     21          
+
+   \                                 In segment XDATA_N, align 1
+     22          __no_init u8 disp_buf[5];
+   \                     disp_buf:
+   \   000000                DS 5
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     23          u16 disp_sel_num;
+   \                     disp_sel_num:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     24          u8 flicker_500ms_cnt;
+   \                     flicker_500ms_cnt:
+   \   000000                DS 1
+     25          extern u8 eq_flag;
+     26          
+     27          
+     28          typedef void(*H)(void);
+     29          
+     30          #pragma constseg="DISP_LEDSEG_TBL"
+
+   \                                 In segment DISP_LEDSEG_TBL, align 1
+     31          IAR_CONST u16 tbl_ledseg_num[10] =
+   \                     tbl_ledseg_num:
+   \   000000   3CD18100     DW 53564, 129, 6948, 2860, 18956, 19240, 23336, 44, 23340, 19244
+   \            241B2C0B
+   \            0C4A284B
+   \            285B2C00
+   \            2C5B2C4B
+     32          {
+     33          #if 0
+     34              LEDSEG_0, LEDSEG_1, LEDSEG_2, LEDSEG_3, LEDSEG_4,
+     35              LEDSEG_5, LEDSEG_6, LEDSEG_7, LEDSEG_8, LEDSEG_9,
+     36          #endif
+     37              CHAR_0, CHAR_1, CHAR_2, CHAR_3, CHAR_4,
+     38              CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9,
+     39          };
+     40          
+     41          #pragma constseg="DISP_LEDSEG_TBL"
+
+   \                                 In segment DISP_LEDSEG_TBL, align 1
+     42          IAR_CONST u8 eq_table[7][3] =
+   \                     eq_table:
+   \   000000   373F5073     DB 55, 63, 80, 115, 63, 115, 80, 63, 57, 30, 119, 91, 57, 56, 119, 57
+   \            3F73503F
+   \            391E775B
+   \            39387739
+   \   000010   3E785E50     DB 62, 120, 94, 80, 57
+   \            39      
+     43          {
+     44              {LEDSEG_N,LEDSEG_O,LEDSEG_R},//NORMAL
+     45              {LEDSEG_P,LEDSEG_O,LEDSEG_P},//POP
+     46              {LEDSEG_R,LEDSEG_O,LEDSEG_C},//ROCK
+     47              {LEDSEG_J,LEDSEG_A,LEDSEG_Z},//JAZZ
+     48              {LEDSEG_C,LEDSEG_L,LEDSEG_A},//CLASSIC
+     49              {LEDSEG_C,LEDSEG_U,LEDSEG_T},//COUNTRY
+     50              {LEDSEG_D,LEDSEG_R,LEDSEG_C},//DRC
+     51          };
+     52          
+     53          #pragma constseg="DISP_LEDSEG_TBL"
+
+   \                                 In segment DISP_LEDSEG_TBL, align 1
+     54          IAR_CONST u16 play_mode_table[6][3] =
+   \                     play_mode_table:
+   \   000000   2C5A0051     DW 23084, 20736, 20736, 20780, 53276, 23328, 23072, 20780, 429, 53276
+   \            00512C51
+   \            1CD0205B
+   \            205A2C51
+   \            AD011CD0
+   \   000014   2C51345A     DW 20780, 23092, 23092, 429, 20780, 2477, 23092, 20780
+   \            345AAD01
+   \            2C51AD09
+   \            345A2C51
+     55          {
+     56              {CHAR_A,CHAR_L,CHAR_L},//全部循環
+     57              {CHAR_O,CHAR_N,CHAR_E},//單曲循環
+     58              {CHAR_F,CHAR_O,CHAR_D},//文件夾循環
+     59              {CHAR_N,CHAR_O,CHAR_R},//顺序播放
+     60              {CHAR_R,CHAR_D,CHAR_O},//隨机
+     61              {CHAR_B,CHAR_R,CHAR_O},//浏览
+     62          #if 0
+     63              {LEDSEG_A,LEDSEG_L,LEDSEG_L},//全部循環
+     64              {LEDSEG_O,LEDSEG_N,LEDSEG_E},//單曲循環
+     65              {LEDSEG_F,LEDSEG_O,LEDSEG_D},//文件夾循環
+     66              {LEDSEG_N,LEDSEG_O,LEDSEG_R},//顺序播放
+     67              {LEDSEG_R,LEDSEG_D,LEDSEG_O},//隨机
+     68              {LEDSEG_B,LEDSEG_R,LEDSEG_O},//浏览
+     69          #endif    
+     70          };
+     71          
+     72          #pragma constseg=default
+     73          
+     74          //显示播放设备
+     75          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+     76          void ledseg_disp_device(void)
+   \                     ledseg_disp_device:
+     77          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     78          #if 0
+     79              if(task_ctl.work_sta == TASK_MUSIC || task_ctl.work_sta == TASK_MIC || task_ctl.work_sta == TASK_VOICE 
+     80                 || task_ctl.work_sta == TASK_AUX || task_ctl.work_sta == TASK_FM)
+     81              {
+     82                  if(fs_cur_dev() == DEVICE_SDMMC) {
+     83                      //disp_buf[4] |= ICON_SD;
+     84                  } else if (fs_cur_dev() == DEVICE_UDISK) {
+     85                      //disp_buf[4] |= ICON_USB;
+     86                  }
+     87              }
+     88          #endif    
+     89          }
+   \   000000   02....       LJMP    ?BRET
+     90          
+     91          //显示数字
+     92          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+     93          void ledseg_disp_num(u16 num)
+   \                     ledseg_disp_num:
+     94          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   EA           MOV     A,R2
+   \   000001   FC           MOV     R4,A
+   \   000002   EB           MOV     A,R3
+   \   000003   FD           MOV     R5,A
+     95              temp_1629[2] = tbl_ledseg_num[num / 1000];
+   \   000004   EC           MOV     A,R4
+   \   000005   F8           MOV     R0,A
+   \   000006   ED           MOV     A,R5
+   \   000007   F9           MOV     R1,A
+   \   000008   7AE8         MOV     R2,#-0x18
+   \   00000A   7B03         MOV     R3,#0x3
+   \   00000C   12....       LCALL   ?US_DIV_MOD
+   \   00000F   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_7:
+   \   000012   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000015   12....       LCALL   ?Subroutine21
+     96              temp_1629[3] = tbl_ledseg_num[(num % 1000)/100];
+   \                     ??CrossCallReturnLabel_36:
+   \   000018   7AE8         MOV     R2,#-0x18
+   \   00001A   7B03         MOV     R3,#0x3
+   \   00001C   12....       LCALL   ?US_DIV_MOD
+   \   00001F   EA           MOV     A,R2
+   \   000020   F8           MOV     R0,A
+   \   000021   EB           MOV     A,R3
+   \   000022   F9           MOV     R1,A
+   \   000023   7A64         MOV     R2,#0x64
+   \   000025   7B00         MOV     R3,#0x0
+   \   000027   12....       LCALL   ?US_DIV_MOD
+   \   00002A   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_8:
+   \   00002D   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   000030   12....       LCALL   ?Subroutine21
+     97              temp_1629[4] = tbl_ledseg_num[(num % 100)/10];
+   \                     ??CrossCallReturnLabel_37:
+   \   000033   7A64         MOV     R2,#0x64
+   \   000035   7B00         MOV     R3,#0x0
+   \   000037   12....       LCALL   ?US_DIV_MOD
+   \   00003A   EA           MOV     A,R2
+   \   00003B   F8           MOV     R0,A
+   \   00003C   EB           MOV     A,R3
+   \   00003D   F9           MOV     R1,A
+   \   00003E   7A0A         MOV     R2,#0xa
+   \   000040   7B00         MOV     R3,#0x0
+   \   000042   12....       LCALL   ?US_DIV_MOD
+   \   000045   E8           MOV     A,R0
+   \   000046   12....       LCALL   ?Subroutine2
+     98              temp_1629[5] = tbl_ledseg_num[num % 10];    
+   \                     ??CrossCallReturnLabel_5:
+   \   000049   F8           MOV     R0,A
+   \   00004A   ED           MOV     A,R5
+   \   00004B   F9           MOV     R1,A
+   \   00004C   7A0A         MOV     R2,#0xa
+   \   00004E   7B00         MOV     R3,#0x0
+   \   000050   12....       LCALL   ?US_DIV_MOD
+   \   000053   12....       LCALL   ?Subroutine1
+     99          #if 0
+    100              disp_buf[0] = tbl_ledseg_num[num / 1000];
+    101              disp_buf[1] = tbl_ledseg_num[(num % 1000)/100];
+    102              disp_buf[2] = tbl_ledseg_num[(num % 100)/10];
+    103              disp_buf[3] = tbl_ledseg_num[num % 10];
+    104          #endif    
+    105          }
+   \                     ??CrossCallReturnLabel_2:
+   \   000056   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine21:
+   \   000000   12....       LCALL   ??Subroutine33_0
+   \                     ??CrossCallReturnLabel_67:
+   \   000003   EC           MOV     A,R4
+   \   000004   F8           MOV     R0,A
+   \   000005   ED           MOV     A,R5
+   \   000006   F9           MOV     R1,A
+   \   000007   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   EA           MOV     A,R2
+   \   000001   33           RLC     A
+   \   000002   FA           MOV     R2,A
+   \   000003   EB           MOV     A,R3
+   \   000004   33           RLC     A
+   \   000005   FB           MOV     R3,A
+   \   000006   EA           MOV     A,R2
+   \   000007   24..         ADD     A,#(tbl_ledseg_num & 0xff)
+   \   000009   F582         MOV     DPL,A
+   \   00000B   EB           MOV     A,R3
+   \                     ??Subroutine1_0:
+   \   00000C   12....       LCALL   ??Subroutine37_0
+   \                     ??CrossCallReturnLabel_75:
+   \   00000F   12....       LCALL   ?Subroutine33
+   \                     ??CrossCallReturnLabel_65:
+   \   000012   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine33:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 10)
+   \                     ??Subroutine33_0:
+   \   000003   E8           MOV     A,R0
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   E9           MOV     A,R1
+   \   000007   F0           MOVX    @DPTR,A
+   \   000008   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   12....       LCALL   ?Subroutine37
+   \                     ??CrossCallReturnLabel_76:
+   \   000003   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   000006   12....       LCALL   ??Subroutine33_0
+   \                     ??CrossCallReturnLabel_66:
+   \   000009   EC           MOV     A,R4
+   \   00000A   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   E8           MOV     A,R0
+   \   000001   12....       LCALL   ?Subroutine37
+   \                     ??CrossCallReturnLabel_77:
+   \   000004   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine37:
+   \   000000   33           RLC     A
+   \   000001   F8           MOV     R0,A
+   \   000002   E9           MOV     A,R1
+   \   000003   33           RLC     A
+   \   000004   F9           MOV     R1,A
+   \   000005   E8           MOV     A,R0
+   \   000006   24..         ADD     A,#(tbl_ledseg_num & 0xff)
+   \   000008   F582         MOV     DPL,A
+   \   00000A   E9           MOV     A,R1
+   \                     ??Subroutine37_0:
+   \   00000B   12....       LCALL   ?Subroutine40
+   \                     ??CrossCallReturnLabel_82:
+   \   00000E   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine40:
+   \   000000   34..         ADDC    A,#((tbl_ledseg_num >> 8) & 0xff)
+   \   000002   F583         MOV     DPH,A
+   \   000004   E4           CLR     A
+   \   000005   93           MOVC    A,@A+DPTR
+   \   000006   F8           MOV     R0,A
+   \   000007   7401         MOV     A,#0x1
+   \   000009   93           MOVC    A,@A+DPTR
+   \   00000A   F9           MOV     R1,A
+   \   00000B   22           RET
+    106          
+    107          //开机显示
+    108          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    109          void menu_welcome_ledseg(void)
+   \                     menu_welcome_ledseg:
+    110          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    111          #if 0
+    112              disp_buf[1] = LEDSEG_H;
+    113              disp_buf[2] = LEDSEG_I;
+    114          #endif
+    115              temp_1629[0] = CHAR_Q;
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   743C         MOV     A,#0x3c
+   \   000005   12....       LCALL   ??Subroutine23_0
+   \                     ??CrossCallReturnLabel_40:
+   \   000008   12....       LCALL   ?Subroutine31
+    116              temp_1629[1] = CHAR_S;
+   \                     ??CrossCallReturnLabel_60:
+   \   00000B   12....       LCALL   ??Subroutine5_0
+    117              temp_1629[2] = CHAR_O;
+    118              temp_1629[3] = CHAR_N;
+   \                     ??CrossCallReturnLabel_117:
+   \   00000E   741C         MOV     A,#0x1c
+   \   000010   F0           MOVX    @DPTR,A
+   \   000011   A3           INC     DPTR
+   \   000012   74D0         MOV     A,#-0x30
+   \   000014   12....       LCALL   ?Subroutine12
+    119              temp_1629[4] = CHAR_I;
+    120              temp_1629[5] = CHAR_C;
+   \                     ??CrossCallReturnLabel_84:
+   \   000017   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   00001A   7420         MOV     A,#0x20
+   \   00001C   12....       LCALL   ??Subroutine23_0
+   \                     ??CrossCallReturnLabel_41:
+   \   00001F                REQUIRE ?Subroutine46
+   \   00001F                ; // Fall through to label ?Subroutine46
+    121              temp_1629[6] = CHAR_MASK;
+    122              temp_1629[7] = CHAR_MASK;
+    123          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine46:
+   \   000000   12....       LCALL   ?Subroutine10
+   \                     ??CrossCallReturnLabel_98:
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine10:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000004   E4           CLR     A
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   F0           MOVX    @DPTR,A
+   \   000008   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   00000B   F0           MOVX    @DPTR,A
+   \   00000C   A3           INC     DPTR
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine23:
+   \   000000   E4           CLR     A
+   \                     ??Subroutine23_0:
+   \   000001   12....       LCALL   ??Subroutine34_0
+   \                     ??CrossCallReturnLabel_72:
+   \   000004   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine49:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   000004   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   12....       LCALL   ??Subroutine34_0
+   \                     ??Subroutine5_0:
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000007   12....       LCALL   ?Subroutine34
+   \                     ??CrossCallReturnLabel_68:
+   \   00000A   80..         SJMP    ?Subroutine49
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine34:
+   \   000000   742C         MOV     A,#0x2c
+   \                     ??Subroutine34_0:
+   \   000002   F0           MOVX    @DPTR,A
+   \   000003   A3           INC     DPTR
+   \   000004   7451         MOV     A,#0x51
+   \   000006   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine31:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000004   7428         MOV     A,#0x28
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   A3           INC     DPTR
+   \   000008   744B         MOV     A,#0x4b
+   \   00000A   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine30:
+   \   000000   E4           CLR     A
+   \   000001   F0           MOVX    @DPTR,A
+   \   000002   A3           INC     DPTR
+   \   000003   740A         MOV     A,#0xa
+   \                     ??Subroutine30_0:
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   000009   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine12:
+   \   000000   12....       LCALL   ??Subroutine30_0
+   \                     ??CrossCallReturnLabel_97:
+   \   000003   74A1         MOV     A,#-0x5f
+   \                     ??Subroutine12_0:
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7401         MOV     A,#0x1
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   22           RET
+    124          
+    125          //关机显示
+    126          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    127          void menu_poweroff_ledseg(void)
+   \                     menu_poweroff_ledseg:
+    128          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    129              temp_1629[1] = CHAR_B;
+   \   000000   12....       LCALL   ?Subroutine19
+    130              temp_1629[2] = CHAR_Y;
+   \                     ??CrossCallReturnLabel_25:
+   \   000003   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000006   7441         MOV     A,#0x41
+   \   000008   F0           MOVX    @DPTR,A
+   \   000009   A3           INC     DPTR
+   \   00000A   7480         MOV     A,#-0x80
+   \   00000C   12....       LCALL   ?Subroutine18
+    131              temp_1629[3] = CHAR_E;
+   \                     ??CrossCallReturnLabel_23:
+   \   00000F   F0           MOVX    @DPTR,A
+    132          }
+   \   000010   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine19:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 2)
+   \                     ??Subroutine19_0:
+   \   000003   74AD         MOV     A,#-0x53
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7409         MOV     A,#0x9
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine18:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   000004   7420         MOV     A,#0x20
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   A3           INC     DPTR
+   \   000008   745B         MOV     A,#0x5b
+   \   00000A   22           RET
+    133          
+    134          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    135          void menu_standby_ledseg(void)
+   \                     menu_standby_ledseg:
+    136          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    137              //temp_1629[1] = CHAR_B;
+    138              //temp_1629[2] = CHAR_Y;
+    139              //temp_1629[3] = CHAR_E;
+    140              if(sys_ctl.bonoff)temp_1629[7] = CHAR_POWER;
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 54)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   000007   6007         JZ      ??menu_standby_ledseg_0
+   \   000009   E4           CLR     A
+   \   00000A   F0           MOVX    @DPTR,A
+   \   00000B   A3           INC     DPTR
+   \   00000C   7404         MOV     A,#0x4
+   \   00000E   8003         SJMP    ??menu_standby_ledseg_1
+    141              else              temp_1629[7] = CHAR_MASK;    
+   \                     ??menu_standby_ledseg_0:
+   \   000010   E4           CLR     A
+   \   000011   F0           MOVX    @DPTR,A
+   \   000012   A3           INC     DPTR
+   \                     ??menu_standby_ledseg_1:
+   \   000013   F0           MOVX    @DPTR,A
+    142          }
+   \   000014   02....       LJMP    ?BRET
+    143          
+    144          //显示机型
+    145          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    146          void menu_model_ledseg(void)
+   \                     menu_model_ledseg:
+    147          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    148              temp_1629[1] = CHAR_M;
+   \   000000   12....       LCALL   ?Subroutine26
+    149              temp_1629[2] = CHAR__;
+   \                     ??CrossCallReturnLabel_120:
+   \   000003   E4           CLR     A
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   740A         MOV     A,#0xa
+   \   000008   12....       LCALL   ?Subroutine49
+    150              temp_1629[3] = CHAR_3;
+   \                     ??CrossCallReturnLabel_110:
+   \   00000B   742C         MOV     A,#0x2c
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   A3           INC     DPTR
+   \   00000F   740B         MOV     A,#0xb
+   \   000011   12....       LCALL   ??Subroutine30_0
+    151              temp_1629[4] = CHAR_2;
+   \                     ??CrossCallReturnLabel_91:
+   \   000014   7424         MOV     A,#0x24
+   \   000016   F0           MOVX    @DPTR,A
+   \   000017   A3           INC     DPTR
+   \   000018   741B         MOV     A,#0x1b
+   \   00001A   F0           MOVX    @DPTR,A
+    152              temp_1629[5] = CHAR_8;   
+   \   00001B   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   00001E   742C         MOV     A,#0x2c
+   \   000020   F0           MOVX    @DPTR,A
+   \   000021   A3           INC     DPTR
+   \   000022   745B         MOV     A,#0x5b
+   \   000024   80..         SJMP    ?Subroutine46
+    153              temp_1629[6] = CHAR_MASK;
+    154              temp_1629[7] = CHAR_MASK;
+    155          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine50:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000004   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine26:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000003   744D         MOV     A,#0x4d
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   74D0         MOV     A,#-0x30
+   \   000009   02....       LJMP    ?Subroutine50
+    156          //显示机型
+    157          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    158          void menu_dim_ledseg(void)
+   \                     menu_dim_ledseg:
+    159          {    
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    160              temp_1629[0] = CHAR_D;
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   74AD         MOV     A,#-0x53
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7401         MOV     A,#0x1
+   \   000009   12....       LCALL   ?Subroutine8
+    161              temp_1629[1] = CHAR_I;
+    162              temp_1629[2] = CHAR_M;
+   \                     ??CrossCallReturnLabel_122:
+   \   00000C   744D         MOV     A,#0x4d
+   \   00000E   F0           MOVX    @DPTR,A
+   \   00000F   A3           INC     DPTR
+   \   000010   74D0         MOV     A,#-0x30
+   \   000012   12....       LCALL   ?Subroutine49
+    163              temp_1629[3] = CHAR_MASK;
+   \                     ??CrossCallReturnLabel_111:
+   \   000015   E4           CLR     A
+   \   000016   F0           MOVX    @DPTR,A
+   \   000017   A3           INC     DPTR
+   \   000018   F0           MOVX    @DPTR,A
+    164              temp_1629[4] = tbl_ledseg_num[sys_ctl.dim_level / 10];
+   \   000019   90....       MOV     DPTR,#(sys_ctl + 58)
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   FC           MOV     R4,A
+   \   00001E   F8           MOV     R0,A
+   \   00001F   33           RLC     A
+   \   000020   95E0         SUBB    A,0xE0 /* A   */
+   \   000022   F9           MOV     R1,A
+   \   000023   7A0A         MOV     R2,#0xa
+   \   000025   7B00         MOV     R3,#0x0
+   \   000027   12....       LCALL   ?S_DIV_MOD
+   \   00002A   E8           MOV     A,R0
+   \   00002B   C3           CLR     C
+   \   00002C   12....       LCALL   ?Subroutine2
+    165              temp_1629[5] = tbl_ledseg_num[sys_ctl.dim_level % 10];       
+   \                     ??CrossCallReturnLabel_6:
+   \   00002F   75F00A       MOV     B,#0xa
+   \   000032   12....       LCALL   ?SC_DIV_MOD
+   \   000035   E5F0         MOV     A,B
+   \   000037   F8           MOV     R0,A
+   \   000038   33           RLC     A
+   \   000039   95E0         SUBB    A,0xE0 /* A   */
+   \   00003B   F9           MOV     R1,A
+   \   00003C   E8           MOV     A,R0
+   \   00003D   C3           CLR     C
+   \   00003E   33           RLC     A
+   \   00003F   F8           MOV     R0,A
+   \   000040   E9           MOV     A,R1
+   \   000041   33           RLC     A
+   \   000042   F9           MOV     R1,A
+   \   000043   E8           MOV     A,R0
+   \   000044   24..         ADD     A,#(tbl_ledseg_num & 0xff)
+   \   000046   F582         MOV     DPL,A
+   \   000048   E9           MOV     A,R1
+   \   000049   12....       LCALL   ??Subroutine1_0
+    166          }
+   \                     ??CrossCallReturnLabel_3:
+   \   00004C   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine8:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000004   74A1         MOV     A,#-0x5f
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   A3           INC     DPTR
+   \   000008   7401         MOV     A,#0x1
+   \   00000A   02....       LJMP    ?Subroutine50
+    167          
+    168          //音量显示
+    169          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    170          void menu_vol_ledseg(void)
+   \                     menu_vol_ledseg:
+    171          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    172              s8 vol;
+    173              switch(sys_ctl.Vol_tyle)
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for menu_vol_ledseg>_0`:
+   \   000007   01           DB        1
+   \   000008   03           DB        3
+   \   000009   ....         DW        ??menu_vol_ledseg_0
+   \   00000B   ....         DW        ??menu_vol_ledseg_1
+   \   00000D   ....         DW        ??menu_vol_ledseg_2
+   \   00000F   ....         DW        ??menu_vol_ledseg_3
+   \   000011   ....         DW        ??menu_vol_ledseg_4
+    174              {
+    175                  case STATE_MAIN:
+    176                      temp_1629[0]=CHAR_V;
+   \                     ??menu_vol_ledseg_1:
+   \   000013   90....       MOV     DPTR,#temp_1629
+   \   000016   7440         MOV     A,#0x40
+   \   000018   F0           MOVX    @DPTR,A
+   \   000019   A3           INC     DPTR
+   \   00001A   7470         MOV     A,#0x70
+   \   00001C   F0           MOVX    @DPTR,A
+    177                      temp_1629[1]=CHAR_O;  
+   \   00001D   12....       LCALL   ?Subroutine11
+    178                      temp_1629[2]=CHAR_L;
+   \                     ??CrossCallReturnLabel_124:
+   \   000020   12....       LCALL   ?Subroutine23
+   \                     ??CrossCallReturnLabel_42:
+   \   000023   F0           MOVX    @DPTR,A
+    179                      vol = sys_ctl.main_vol;
+   \   000024   90....       MOV     DPTR,#(sys_ctl + 65)
+   \   000027   8021         SJMP    ??menu_vol_ledseg_5
+    180                      break;
+    181                  case STATE_TREBLE:
+    182                      temp_1629[1]=CHAR_T;
+   \                     ??menu_vol_ledseg_4:
+   \   000029   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   00002C   12....       LCALL   ?Subroutine16
+    183                      //temp_1629[1]=CHAR_MASK;   
+    184                      vol = sys_ctl.Trable_vol;
+   \                     ??CrossCallReturnLabel_102:
+   \   00002F   90....       MOV     DPTR,#(sys_ctl + 66)
+   \   000032   8016         SJMP    ??menu_vol_ledseg_5
+    185                      break;
+    186                  case STATE_SUB:
+    187                      temp_1629[0]=CHAR_S;
+   \                     ??menu_vol_ledseg_2:
+   \   000034   12....       LCALL   ?Subroutine25
+    188                      temp_1629[1]=CHAR_U;  
+   \                     ??CrossCallReturnLabel_47:
+   \   000037   740C         MOV     A,#0xc
+   \   000039   12....       LCALL   ??Subroutine11_0
+    189                      temp_1629[2]=CHAR_B;
+   \                     ??CrossCallReturnLabel_126:
+   \   00003C   12....       LCALL   ??Subroutine19_0
+    190                      vol = sys_ctl.Sub_vol;
+   \                     ??CrossCallReturnLabel_26:
+   \   00003F   90....       MOV     DPTR,#(sys_ctl + 67)
+   \   000042   8006         SJMP    ??menu_vol_ledseg_5
+    191                      break;
+    192                  case STATE_BASS:
+    193                      temp_1629[1]=CHAR_B;
+   \                     ??menu_vol_ledseg_3:
+   \   000044   12....       LCALL   ?Subroutine19
+    194                      //temp_1629[1]=CHAR_MASK;   
+    195                      vol = sys_ctl.Bass_vol;
+   \                     ??CrossCallReturnLabel_27:
+   \   000047   90....       MOV     DPTR,#(sys_ctl + 68)
+   \                     ??menu_vol_ledseg_5:
+   \   00004A   E0           MOVX    A,@DPTR
+   \   00004B   F9           MOV     R1,A
+    196                      break;
+    197              }
+    198              Write_Display_Digtial_1629(vol);
+   \                     ??menu_vol_ledseg_0:
+   \   00004C                ; Setup parameters for call to function Write_Display_Digtial_1629
+   \   00004C   90....       MOV     DPTR,#(Write_Display_Digtial_1629 & 0xffff)
+   \   00004F   74..         MOV     A,#((Write_Display_Digtial_1629 >> 16) & 0xff)
+   \   000051   02....       LJMP    ??Subroutine42_1
+    199          #if 0
+    200              temp_1629[0] = CHAR_V;
+    201              temp_1629[1] = CHAR_O;
+    202              temp_1629[2] = CHAR_L;
+    203              temp_1629[3] = CHAR__;
+    204              temp_1629[4] = tbl_ledseg_num[sys_ctl.main_vol / 10];//tbl_ledseg_num[sys_ctl.volume / 10];sys_ctl.main_vol
+    205              temp_1629[5] = tbl_ledseg_num[sys_ctl.main_vol % 10];     
+    206          #endif    
+    207          #if 0
+    208              disp_buf[0] = LEDSEG_U;
+    209              //暂时这样写，虽然封装很不好，后期再做整理
+    210          #if BT_CALL_PRIVATE
+    211              disp_buf[2] = tbl_ledseg_num[sys_ctl.volume / 10];
+    212              disp_buf[3] = tbl_ledseg_num[sys_ctl.volume % 10];
+    213          #else
+    214              if (sys_ctl.bt_sta >= BT_STA_INCOMING){
+    215                  disp_buf[2] = tbl_ledseg_num[sys_ctl.hshf_vol / 10];
+    216                  disp_buf[3] = tbl_ledseg_num[sys_ctl.hshf_vol % 10];
+    217              } else {
+    218                  disp_buf[2] = tbl_ledseg_num[sys_ctl.volume / 10];
+    219                  disp_buf[3] = tbl_ledseg_num[sys_ctl.volume % 10];
+    220              }
+    221          #endif
+    222          #if TASK_MUSIC_EN
+    223              if(task_ctl.work_sta == TASK_MUSIC) {
+    224                  if(t_msc.pause) {
+    225                      //disp_buf[4] |= (ICON_PAUSE | ICON_MP3);
+    226                  } else {
+    227                      //disp_buf[4] |= (ICON_PLAY | ICON_MP3);
+    228                  }
+    229              }
+    230          #endif
+    231              ledseg_disp_device();
+    232          #endif
+    233          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine25:
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   7428         MOV     A,#0x28
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   744B         MOV     A,#0x4b
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   00000D   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine42:
+   \   000000   FB           MOV     R3,A
+   \                     ??Subroutine42_0:
+   \   000001   90....       MOV     DPTR,#(ledseg_disp_num & 0xffff)
+   \   000004   74..         MOV     A,#((ledseg_disp_num >> 16) & 0xff)
+   \                     ??Subroutine42_1:
+   \   000006   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000009   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine11:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000003   742C         MOV     A,#0x2c
+   \                     ??Subroutine11_0:
+   \   000005   12....       LCALL   ??Subroutine34_0
+   \                     ??CrossCallReturnLabel_69:
+   \   000008                REQUIRE ?Subroutine50
+   \   000008                ; // Fall through to label ?Subroutine50
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine16:
+   \   000000   74A1         MOV     A,#-0x5f
+   \                     ??Subroutine16_0:
+   \   000002   F0           MOVX    @DPTR,A
+   \   000003   A3           INC     DPTR
+   \   000004   E4           CLR     A
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   22           RET
+    234          //显示机型
+    235          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    236          void menu_menu_ledseg(void)
+   \                     menu_menu_ledseg:
+    237          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    238          #if 1
+    239              switch(sys_ctl.Vol_tyle)
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for menu_menu_ledseg>_0`:
+   \   000007   01           DB        1
+   \   000008   03           DB        3
+   \   000009   ....         DW        ??menu_menu_ledseg_0
+   \   00000B   ....         DW        ??menu_menu_ledseg_1
+   \   00000D   ....         DW        ??menu_menu_ledseg_2
+   \   00000F   ....         DW        ??menu_menu_ledseg_3
+   \   000011   ....         DW        ??menu_menu_ledseg_4
+    240              {
+    241                  case STATE_MAIN:            
+    242                      temp_1629[1]=CHAR_M;   
+   \                     ??menu_menu_ledseg_1:
+   \   000013   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000016   744D         MOV     A,#0x4d
+   \   000018   F0           MOVX    @DPTR,A
+   \   000019   A3           INC     DPTR
+   \   00001A   74D0         MOV     A,#-0x30
+   \                     ??menu_menu_ledseg_5:
+   \   00001C   F0           MOVX    @DPTR,A
+    243                      temp_1629[2]=CHAR_V;
+   \   00001D   12....       LCALL   ?Subroutine24
+    244                      temp_1629[3]=CHAR_O; 
+   \                     ??CrossCallReturnLabel_108:
+   \   000020   12....       LCALL   ?Subroutine22
+    245                      temp_1629[4]=CHAR_L; 
+   \                     ??CrossCallReturnLabel_38:
+   \   000023   12....       LCALL   ?Subroutine23
+   \                     ??CrossCallReturnLabel_43:
+   \   000026   8042         SJMP    ??menu_menu_ledseg_6
+    246                      break;
+    247                      
+    248                  case STATE_TREBLE:
+    249                      temp_1629[0]=CHAR_T;
+   \                     ??menu_menu_ledseg_4:
+   \   000028   90....       MOV     DPTR,#temp_1629
+   \   00002B   12....       LCALL   ?Subroutine16
+    250                      temp_1629[1]=CHAR_R;   
+   \                     ??CrossCallReturnLabel_103:
+   \   00002E   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000031   12....       LCALL   ?Subroutine20
+   \                     ??CrossCallReturnLabel_29:
+   \   000034   12....       LCALL   ?Subroutine6
+    251                      temp_1629[2]=CHAR_A;
+    252                      temp_1629[3]=CHAR_B; 
+   \                     ??CrossCallReturnLabel_13:
+   \   000037   12....       LCALL   ??Subroutine19_0
+    253                      temp_1629[4]=CHAR_L;     
+   \                     ??CrossCallReturnLabel_28:
+   \   00003A   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   00003D   E4           CLR     A
+   \   00003E   12....       LCALL   ?Subroutine15
+    254                      temp_1629[4]=CHAR_E;
+   \                     ??CrossCallReturnLabel_19:
+   \   000041   745B         MOV     A,#0x5b
+   \   000043   8025         SJMP    ??menu_menu_ledseg_6
+    255                      break;
+    256                      
+    257                  case STATE_SUB:
+    258                      temp_1629[0]=CHAR_S;
+   \                     ??menu_menu_ledseg_2:
+   \   000045   12....       LCALL   ?Subroutine25
+    259                      temp_1629[1]=CHAR__;   
+   \                     ??CrossCallReturnLabel_48:
+   \   000048   E4           CLR     A
+   \   000049   F0           MOVX    @DPTR,A
+   \   00004A   A3           INC     DPTR
+   \   00004B   740A         MOV     A,#0xa
+   \   00004D   80CD         SJMP    ??menu_menu_ledseg_5
+    260                      temp_1629[2]=CHAR_V;
+    261                      temp_1629[3]=CHAR_O; 
+    262                      temp_1629[4]=CHAR_L;             
+    263                      break;
+    264                      
+    265                  case STATE_BASS:
+    266                      temp_1629[1]=CHAR_B;   
+   \                     ??menu_menu_ledseg_3:
+   \   00004F   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000052   74AD         MOV     A,#-0x53
+   \   000054   F0           MOVX    @DPTR,A
+   \   000055   A3           INC     DPTR
+   \   000056   7409         MOV     A,#0x9
+   \   000058   12....       LCALL   ?Subroutine6
+    267                      temp_1629[2]=CHAR_A;
+    268                      temp_1629[3]=CHAR_S; 
+   \                     ??CrossCallReturnLabel_14:
+   \   00005B   7428         MOV     A,#0x28
+   \   00005D   F0           MOVX    @DPTR,A
+   \   00005E   A3           INC     DPTR
+   \   00005F   744B         MOV     A,#0x4b
+   \   000061   12....       LCALL   ??Subroutine30_0
+    269                      temp_1629[4]=CHAR_S;   
+   \                     ??CrossCallReturnLabel_92:
+   \   000064   7428         MOV     A,#0x28
+   \   000066   F0           MOVX    @DPTR,A
+   \   000067   A3           INC     DPTR
+   \   000068   744B         MOV     A,#0x4b
+   \                     ??menu_menu_ledseg_6:
+   \   00006A   F0           MOVX    @DPTR,A
+    270                      break;            
+    271              } 
+    272          #endif
+    273          #if 0
+    274              temp_1629[1] = CHAR_M;
+    275              temp_1629[2] = CHAR__;
+    276              temp_1629[3] = CHAR_2;
+    277              temp_1629[4] = CHAR_0;
+    278              temp_1629[5] = CHAR_0; 
+    279          #endif    
+    280          }
+   \                     ??menu_menu_ledseg_0:
+   \   00006B   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   F0           MOVX    @DPTR,A
+   \                     ??Subroutine6_0:
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000004   742C         MOV     A,#0x2c
+   \                     ??Subroutine6_1:
+   \   000006   12....       LCALL   ?Subroutine35
+   \                     ??CrossCallReturnLabel_118:
+   \   000009   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine35:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   A3           INC     DPTR
+   \   000002   745A         MOV     A,#0x5a
+   \   000004                REQUIRE ?Subroutine49
+   \   000004                ; // Fall through to label ?Subroutine49
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine22:
+   \   000000   12....       LCALL   ?Subroutine34
+   \                     ??CrossCallReturnLabel_71:
+   \   000003   12....       LCALL   ??Subroutine30_0
+   \                     ??CrossCallReturnLabel_94:
+   \   000006   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine15:
+   \   000000   12....       LCALL   ??Subroutine34_0
+   \                     ??CrossCallReturnLabel_70:
+   \   000003   12....       LCALL   ??Subroutine30_0
+   \                     ??CrossCallReturnLabel_95:
+   \   000006   7420         MOV     A,#0x20
+   \   000008   F0           MOVX    @DPTR,A
+   \   000009   A3           INC     DPTR
+   \   00000A   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine20:
+   \   000000   7434         MOV     A,#0x34
+   \                     ??Subroutine20_0:
+   \   000002   F0           MOVX    @DPTR,A
+   \   000003   A3           INC     DPTR
+   \   000004   745A         MOV     A,#0x5a
+   \   000006   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine24:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000003   7440         MOV     A,#0x40
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7470         MOV     A,#0x70
+   \   000009   02....       LJMP    ?Subroutine49
+    281          
+    282          //FM频率显示
+    283          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    284          void menu_freq_ledseg(void)
+   \                     menu_freq_ledseg:
+    285          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    286              ledseg_disp_num(t_fm.freq / 10);
+   \   000000                ; Setup parameters for call to function ledseg_disp_num
+   \   000000   90....       MOV     DPTR,#(t_fm + 9)
+   \   000003   12....       LCALL   ?Subroutine38
+   \                     ??CrossCallReturnLabel_78:
+   \   000006   12....       LCALL   ?US_DIV_MOD
+   \   000009   E8           MOV     A,R0
+   \   00000A   FA           MOV     R2,A
+   \   00000B   E9           MOV     A,R1
+   \   00000C   02....       LJMP    ?Subroutine42
+    287          #if 0    
+    288              if(disp_buf[0] == LEDSEG_0) {
+    289                  disp_buf[0] = LEDSEG_OFF;
+    290              }
+    291              disp_buf[4] |= ICON_FM;
+    292          #if FM_RECORD_EN
+    293              if (t_fm.fm_sta == FM_REC_PAUSE) {
+    294                  disp_buf[4] |= ICON_PAUSE;
+    295              }
+    296              if (device_is_online(DEVICE_SDMMC) || device_is_online(DEVICE_UDISK)) {
+    297                  ledseg_disp_device();
+    298              }
+    299          #endif
+    300          #endif
+    301          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine38:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F8           MOV     R0,A
+   \   000002   A3           INC     DPTR
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F9           MOV     R1,A
+   \   000005   7A0A         MOV     R2,#0xa
+   \   000007   7B00         MOV     R3,#0x0
+   \   000009   22           RET
+    302          
+    303          //FM频道显示
+    304          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    305          void menu_freq_chan_ledseg(void)
+   \                     menu_freq_chan_ledseg:
+    306          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+    307              ledseg_disp_num(t_fm.ch_sel);
+   \   000002                ; Setup parameters for call to function ledseg_disp_num
+   \   000002   90....       MOV     DPTR,#(t_fm + 12)
+   \   000005   E0           MOVX    A,@DPTR
+   \   000006   FA           MOV     R2,A
+   \   000007   7B00         MOV     R3,#0x0
+   \   000009   90....       MOV     DPTR,#(ledseg_disp_num & 0xffff)
+   \   00000C   74..         MOV     A,#((ledseg_disp_num >> 16) & 0xff)
+   \   00000E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    308              temp_1629[2] = CHAR_MASK;
+   \   000011   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000014   E4           CLR     A
+   \   000015   F0           MOVX    @DPTR,A
+   \   000016   A3           INC     DPTR
+   \   000017   12....       LCALL   ?Subroutine49
+    309              temp_1629[3] = CHAR_P;
+   \                     ??CrossCallReturnLabel_112:
+   \   00001A   7424         MOV     A,#0x24
+   \   00001C   12....       LCALL   ??Subroutine20_0
+   \                     ??CrossCallReturnLabel_30:
+   \   00001F   F0           MOVX    @DPTR,A
+    310          }
+   \   000020   D0..         POP     ?V0 + 0
+   \   000022   02....       LJMP    ?BRET
+    311          
+    312          //输入数字显示
+    313          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    314          void menu_numsel_ledseg(void)
+   \                     menu_numsel_ledseg:
+    315          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    316              ledseg_disp_num(disp_sel_num);
+   \   000000                ; Setup parameters for call to function ledseg_disp_num
+   \   000000   90....       MOV     DPTR,#disp_sel_num
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   FA           MOV     R2,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   02....       LJMP    ?Subroutine42
+    317              ledseg_disp_device();
+    318          }
+    319          
+    320          //音乐播放状态显示
+    321          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    322          void menu_play_ledseg(void)
+   \                     menu_play_ledseg:
+    323          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    324              temp_1629[2] = tbl_ledseg_num[t_msc.cur_time.min / 10];
+   \   000000   12....       LCALL   ?Subroutine0
+    325              temp_1629[3] = tbl_ledseg_num[t_msc.cur_time.min % 10];
+    326              temp_1629[4] = tbl_ledseg_num[t_msc.cur_time.sec / 10];
+    327              temp_1629[5] = tbl_ledseg_num[t_msc.cur_time.sec % 10];   
+    328              
+    329              temp_1629[6] |= CHAR_USB|CHAR_PLAY;
+   \                     ??CrossCallReturnLabel_0:
+   \   000003   12....       LCALL   ??Subroutine28_0
+   \                     ??CrossCallReturnLabel_52:
+   \   000006   4441         ORL     A,#0x41
+   \   000008                REQUIRE ?Subroutine47
+   \   000008                ; // Fall through to label ?Subroutine47
+    330              temp_1629[7] |= CHAR_MP3|CHAR_DOT2;
+    331              
+    332          #if 0
+    333              if(0/*(sys_ctl.mute_flag) && (flicker_500ms_cnt % 2)*/) {    //MUTE时闪烁
+    334                  disp_buf[0] = LEDSEG_OFF;
+    335                  disp_buf[1] = LEDSEG_OFF;
+    336                  disp_buf[2] = LEDSEG_OFF;
+    337                  disp_buf[3] = LEDSEG_OFF;
+    338                  disp_buf[4] = LEDSEG_OFF;
+    339              }
+    340              else
+    341          
+    342              {
+    343              
+    344                  disp_buf[0] = tbl_ledseg_num[t_msc.cur_time.min / 10];
+    345                  disp_buf[1] = tbl_ledseg_num[t_msc.cur_time.min % 10];
+    346                  disp_buf[2] = tbl_ledseg_num[t_msc.cur_time.sec / 10];
+    347                  disp_buf[3] = tbl_ledseg_num[t_msc.cur_time.sec % 10];
+    348                  //disp_buf[4] |= ICON_PLAY | ICON_MP3 | ICON_DOT2;
+    349                  disp_buf[4] |= ICON_DOT2;
+    350                  ledseg_disp_device();
+    351              }
+    352          #endif
+    353          
+    354          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine47:
+   \   000000   12....       LCALL   ?Subroutine13
+   \                     ??CrossCallReturnLabel_99:
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine13:
+   \   000000   12....       LCALL   ?Subroutine32
+   \                     ??CrossCallReturnLabel_100:
+   \   000003   4480         ORL     A,#0x80
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   90....       MOV     DPTR,#(t_msc + 11)
+   \   000003   12....       LCALL   ?Subroutine36
+   \                     ??CrossCallReturnLabel_73:
+   \   000006   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000009   12....       LCALL   ?Subroutine29
+   \                     ??CrossCallReturnLabel_58:
+   \   00000C   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   00000F   12....       LCALL   ??Subroutine33_0
+   \                     ??CrossCallReturnLabel_63:
+   \   000012   90....       MOV     DPTR,#(t_msc + 12)
+   \   000015   12....       LCALL   ?Subroutine36
+   \                     ??CrossCallReturnLabel_74:
+   \   000018   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   00001B   12....       LCALL   ?Subroutine29
+   \                     ??CrossCallReturnLabel_59:
+   \   00001E   12....       LCALL   ?Subroutine33
+   \                     ??CrossCallReturnLabel_64:
+   \   000021   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000024   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine36:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   FA           MOV     R2,A
+   \   000002   75F00A       MOV     B,#0xa
+   \   000005   84           DIV     AB
+   \   000006   12....       LCALL   ?Subroutine39
+   \                     ??CrossCallReturnLabel_81:
+   \   000009   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine29:
+   \   000000   E8           MOV     A,R0
+   \   000001   F0           MOVX    @DPTR,A
+   \   000002   A3           INC     DPTR
+   \   000003   E9           MOV     A,R1
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   EA           MOV     A,R2
+   \   000006   75F00A       MOV     B,#0xa
+   \   000009   84           DIV     AB
+   \   00000A   E5F0         MOV     A,B
+   \   00000C   12....       LCALL   ?Subroutine39
+   \                     ??CrossCallReturnLabel_80:
+   \   00000F   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine39:
+   \   000000   33           RLC     A
+   \   000001   F8           MOV     R0,A
+   \   000002   E4           CLR     A
+   \   000003   33           RLC     A
+   \   000004   F9           MOV     R1,A
+   \   000005   E8           MOV     A,R0
+   \   000006   24..         ADD     A,#(tbl_ledseg_num & 0xff)
+   \   000008   F582         MOV     DPL,A
+   \   00000A   E9           MOV     A,R1
+   \   00000B   12....       LCALL   ?Subroutine40
+   \                     ??CrossCallReturnLabel_83:
+   \   00000E   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine28:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 12)
+   \                     ??Subroutine28_0:
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine32:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   000004   E0           MOVX    A,@DPTR
+   \   000005   4420         ORL     A,#0x20
+   \   000007   F0           MOVX    @DPTR,A
+   \   000008   A3           INC     DPTR
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   22           RET
+    355          
+    356          //音乐暂停状态显示
+    357          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    358          void menu_pause_ledseg(void)
+   \                     menu_pause_ledseg:
+    359          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    360              temp_1629[2] = tbl_ledseg_num[t_msc.cur_time.min / 10];
+   \   000000   12....       LCALL   ?Subroutine0
+    361              temp_1629[3] = tbl_ledseg_num[t_msc.cur_time.min % 10];
+    362              temp_1629[4] = tbl_ledseg_num[t_msc.cur_time.sec / 10];
+    363              temp_1629[5] = tbl_ledseg_num[t_msc.cur_time.sec % 10];   
+    364              
+    365              temp_1629[6] = CHAR_USB|CHAR_STOP;
+   \                     ??CrossCallReturnLabel_1:
+   \   000003   E4           CLR     A
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   7481         MOV     A,#-0x7f
+   \   000008   80..         SJMP    ?Subroutine47
+    366              temp_1629[7] |= CHAR_MP3|CHAR_DOT2;
+    367          #if 0    
+    368                  disp_buf[0] = tbl_ledseg_num[t_msc.cur_time.min / 10];
+    369                  disp_buf[1] = tbl_ledseg_num[t_msc.cur_time.min % 10];
+    370                  disp_buf[2] = tbl_ledseg_num[t_msc.cur_time.sec / 10];
+    371                  disp_buf[3] = tbl_ledseg_num[t_msc.cur_time.sec % 10];
+    372                  //disp_buf[4] |= ICON_PLAY | ICON_MP3 | ICON_DOT2;
+    373                  disp_buf[4] |= ICON_DOT2;
+    374                  ledseg_disp_device();
+    375              ledseg_disp_device();
+    376          #endif    
+    377          }
+    378          
+    379          //数字及设备显示
+    380          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    381          void menu_num_ledseg(void)
+   \                     menu_num_ledseg:
+    382          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    383              u16 num = (ledseg_ocx.number > 9999)? 9999 : ledseg_ocx.number;
+   \   000000   90....       MOV     DPTR,#(ledseg_ocx + 3)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F8           MOV     R0,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   F9           MOV     R1,A
+   \   000008   C3           CLR     C
+   \   000009   E8           MOV     A,R0
+   \   00000A   9410         SUBB    A,#0x10
+   \   00000C   E9           MOV     A,R1
+   \   00000D   9427         SUBB    A,#0x27
+   \   00000F   4006         JC      ??menu_num_ledseg_0
+   \   000011   7A0F         MOV     R2,#0xf
+   \   000013   7B27         MOV     R3,#0x27
+   \   000015   8004         SJMP    ??menu_num_ledseg_1
+   \                     ??menu_num_ledseg_0:
+   \   000017   E8           MOV     A,R0
+   \   000018   FA           MOV     R2,A
+   \   000019   E9           MOV     A,R1
+   \   00001A   FB           MOV     R3,A
+    384              ledseg_disp_num(num);
+   \                     ??menu_num_ledseg_1:
+   \   00001B                ; Setup parameters for call to function ledseg_disp_num
+   \   00001B   80..         SJMP    ??Subroutine42_0
+    385              ledseg_disp_device();
+    386          }
+    387          
+    388          //AUX模式显示
+    389          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    390          void menu_aux_ledseg(void)
+   \                     menu_aux_ledseg:
+    391          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    392              temp_1629[2] = CHAR_A;
+   \   000000   12....       LCALL   ??Subroutine6_0
+    393              temp_1629[3] = CHAR_U;
+   \                     ??CrossCallReturnLabel_15:
+   \   000003   740C         MOV     A,#0xc
+   \   000005   12....       LCALL   ??Subroutine23_0
+   \                     ??CrossCallReturnLabel_44:
+   \   000008   12....       LCALL   ?Subroutine9
+    394              temp_1629[4] = CHAR_X;
+    395              temp_1629[6] = CHAR_AUX; 
+   \                     ??CrossCallReturnLabel_129:
+   \   00000B   7404         MOV     A,#0x4
+   \   00000D                REQUIRE ?Subroutine48
+   \   00000D                ; // Fall through to label ?Subroutine48
+    396          #if 0
+    397              disp_buf[0] = LEDSEG_OFF;
+    398              disp_buf[1] = LEDSEG_A;
+    399              disp_buf[2] = LEDSEG_U;
+    400              disp_buf[3] = LEDSEG_H;
+    401              disp_buf[4] = ICON_AUX;
+    402              //disp_buf[4] = ICON_K1;
+    403              /*if (t_rec.rec_sta == REC_STA_PAUSE) {
+    404                  disp_buf[4] |= ICON_PAUSE;
+    405              }*/
+    406          #if AUX_RECORD_EN
+    407              ledseg_disp_device();
+    408              if (!device_is_online(DEVICE_SDMMC) && !device_is_online(DEVICE_UDISK)) {
+    409                  disp_buf[4] = ICON_AUX;
+    410              }
+    411          #endif
+    412          #endif
+    413          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine48:
+   \   000000   12....       LCALL   ??Subroutine16_0
+   \                     ??CrossCallReturnLabel_107:
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine9:
+   \   000000   12....       LCALL   ??Subroutine30_0
+   \                     ??CrossCallReturnLabel_93:
+   \   000003   7450         MOV     A,#0x50
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   74A0         MOV     A,#-0x60
+   \   000009                REQUIRE ?Subroutine51
+   \   000009                ; // Fall through to label ?Subroutine51
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine51:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000004   22           RET
+    414          
+    415          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    416          void menu_aux_opt_ledseg(void)
+   \                     menu_aux_opt_ledseg:
+    417          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    418              temp_1629[1] = CHAR_O;
+   \   000000   12....       LCALL   ?Subroutine11
+    419              temp_1629[2] = CHAR_P;
+   \                     ??CrossCallReturnLabel_125:
+   \   000003   7424         MOV     A,#0x24
+   \   000005   12....       LCALL   ??Subroutine6_1
+    420              temp_1629[3] = CHAR_T;
+   \                     ??CrossCallReturnLabel_16:
+   \   000008   74A1         MOV     A,#-0x5f
+   \   00000A   F0           MOVX    @DPTR,A
+   \   00000B   A3           INC     DPTR
+   \   00000C   E4           CLR     A
+   \   00000D   12....       LCALL   ?Subroutine12
+    421              temp_1629[4] = CHAR_I;
+    422              //temp_1629[6] = CHAR_OPT;
+    423          }
+   \                     ??CrossCallReturnLabel_85:
+   \   000010   02....       LJMP    ?BRET
+    424          
+    425          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    426          void menu_aux_coax_ledseg(void)
+   \                     menu_aux_coax_ledseg:
+    427          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    428              temp_1629[1] = CHAR_C;
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000003   7420         MOV     A,#0x20
+   \   000005   12....       LCALL   ?Subroutine5
+    429              temp_1629[2] = CHAR_O;
+    430              temp_1629[3] = CHAR_A;
+   \                     ??CrossCallReturnLabel_115:
+   \   000008   742C         MOV     A,#0x2c
+   \   00000A   12....       LCALL   ??Subroutine20_0
+   \                     ??CrossCallReturnLabel_31:
+   \   00000D   12....       LCALL   ?Subroutine9
+    431              temp_1629[4] = CHAR_X;
+    432              temp_1629[6] = CHAR_COAX;
+   \                     ??CrossCallReturnLabel_130:
+   \   000010   7408         MOV     A,#0x8
+   \   000012   80..         SJMP    ?Subroutine48
+    433             
+    434          }
+    435          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    436          void menu_aux_hd_ledseg(void)
+   \                     menu_aux_hd_ledseg:
+    437          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    438              disp_buf[0] = LEDSEG_OFF;
+   \   000000   E4           CLR     A
+   \   000001   90....       MOV     DPTR,#disp_buf
+   \   000004   F0           MOVX    @DPTR,A
+    439              disp_buf[1] = LEDSEG_H;
+   \   000005   7476         MOV     A,#0x76
+   \   000007   90....       MOV     DPTR,#(disp_buf + 1)
+   \   00000A   F0           MOVX    @DPTR,A
+    440              disp_buf[2] = LEDSEG_D;
+   \   00000B   745E         MOV     A,#0x5e
+   \   00000D   90....       MOV     DPTR,#(disp_buf + 2)
+   \   000010   F0           MOVX    @DPTR,A
+    441              disp_buf[3] = LEDSEG_OFF;
+   \   000011   E4           CLR     A
+   \   000012                REQUIRE ?Subroutine41
+   \   000012                ; // Fall through to label ?Subroutine41
+    442              disp_buf[4] = ICON_AUX;
+    443             
+    444          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine41:
+   \   000000   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   7404         MOV     A,#0x4
+   \   000006   90....       MOV     DPTR,#(disp_buf + 4)
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   02....       LJMP    ?BRET
+    445          
+    446          //AUX EQ模式显示
+    447          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    448          void menu_aux_eq_ledseg(void)
+   \                     menu_aux_eq_ledseg:
+    449          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    450              disp_buf[0] = LEDSEG_L;
+   \   000000   7438         MOV     A,#0x38
+   \   000002   90....       MOV     DPTR,#disp_buf
+   \   000005   F0           MOVX    @DPTR,A
+    451              disp_buf[1] = LEDSEG_I;
+   \   000006   7406         MOV     A,#0x6
+   \   000008   90....       MOV     DPTR,#(disp_buf + 1)
+   \   00000B   F0           MOVX    @DPTR,A
+    452              disp_buf[2] = LEDSEG_N;
+   \   00000C   7437         MOV     A,#0x37
+   \   00000E   90....       MOV     DPTR,#(disp_buf + 2)
+   \   000011   F0           MOVX    @DPTR,A
+    453              disp_buf[3] = LEDSEG_E;
+   \   000012   7479         MOV     A,#0x79
+   \   000014   80..         SJMP    ?Subroutine41
+    454              disp_buf[4] = ICON_AUX;
+    455          }
+    456          
+    457          //扩音器模式显示
+    458          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    459          void menu_speaker_ledseg(void)
+   \                     menu_speaker_ledseg:
+    460          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    461              disp_buf[0] = LEDSEG_O;
+   \   000000   743F         MOV     A,#0x3f
+   \   000002   90....       MOV     DPTR,#disp_buf
+   \   000005   F0           MOVX    @DPTR,A
+    462              disp_buf[1] = LEDSEG__;
+   \   000006   7440         MOV     A,#0x40
+   \   000008   90....       MOV     DPTR,#(disp_buf + 1)
+   \   00000B   F0           MOVX    @DPTR,A
+    463              disp_buf[2] = LEDSEG__;
+   \   00000C   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00000F   F0           MOVX    @DPTR,A
+    464              disp_buf[3] = LEDSEG_O;
+   \   000010   743F         MOV     A,#0x3f
+   \   000012                REQUIRE ?Subroutine44
+   \   000012                ; // Fall through to label ?Subroutine44
+    465          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine44:
+   \   000000   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   02....       LJMP    ?BRET
+    466          
+    467          //USB DEVICE模式显示
+    468          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    469          void menu_pc_ledseg(void)
+   \                     menu_pc_ledseg:
+    470          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    471              disp_buf[1] = LEDSEG_P;
+   \   000000   7473         MOV     A,#0x73
+   \   000002   90....       MOV     DPTR,#(disp_buf + 1)
+   \   000005   F0           MOVX    @DPTR,A
+    472              disp_buf[2] = LEDSEG_C;
+   \   000006   7439         MOV     A,#0x39
+   \   000008                REQUIRE ?Subroutine45
+   \   000008                ; // Fall through to label ?Subroutine45
+    473          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine45:
+   \   000000   90....       MOV     DPTR,#(disp_buf + 2)
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   02....       LJMP    ?BRET
+    474          
+    475          //蓝牙模式显示
+    476          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    477          void menu_bt_ledseg(void)
+   \                     menu_bt_ledseg:
+    478          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    479          #if TASK_BTHID_EN
+    480              if(task_hid_flag) {
+    481                  disp_buf[1] = LEDSEG_H;
+    482                  disp_buf[2] = LEDSEG_I;
+    483                  disp_buf[3] = LEDSEG_D;
+    484              } else
+    485          #endif
+    486              {
+    487                  temp_1629[2] = CHAR_B;
+   \   000000   12....       LCALL   ?Subroutine7
+    488                  temp_1629[3] = CHAR_T;
+    489                  temp_1629[6] |= CHAR_BT;
+   \                     ??CrossCallReturnLabel_127:
+   \   000003   12....       LCALL   ??Subroutine28_0
+   \                     ??CrossCallReturnLabel_53:
+   \   000006   4404         ORL     A,#0x4
+   \   000008   F0           MOVX    @DPTR,A
+    490          #if 0    
+    491                  temp_1629[1] = CHAR_B;
+    492                  temp_1629[2] = CHAR_U;
+    493                  temp_1629[3] = CHAR_L;    
+    494                  temp_1629[4] = CHAR_E;        
+    495                  temp_1629[6] |= CHAR_BT;
+    496          #endif 
+    497                  if(sys_ctl.bt_sta >= BT_STA_CONNECTED){
+   \   000009   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00000C   E0           MOVX    A,@DPTR
+   \   00000D   C3           CLR     C
+   \   00000E   9405         SUBB    A,#0x5
+   \   000010   4016         JC      ??menu_bt_ledseg_0
+    498                      if (sys_ctl.bt_playing_flag) {
+   \   000012   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   000015   E0           MOVX    A,@DPTR
+   \   000016   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000019   6007         JZ      ??menu_bt_ledseg_1
+    499                          temp_1629[6] |= CHAR_PLAY;
+   \   00001B   12....       LCALL   ??Subroutine28_0
+   \                     ??CrossCallReturnLabel_54:
+   \   00001E   4440         ORL     A,#0x40
+   \   000020   8005         SJMP    ??menu_bt_ledseg_2
+    500                      } else {
+    501                          temp_1629[6] |= CHAR_STOP; 
+   \                     ??menu_bt_ledseg_1:
+   \   000022   12....       LCALL   ??Subroutine28_0
+   \                     ??CrossCallReturnLabel_55:
+   \   000025   4480         ORL     A,#0x80
+   \                     ??menu_bt_ledseg_2:
+   \   000027   F0           MOVX    @DPTR,A
+    502                      }
+    503                  }        
+    504          #if 0
+    505                  if(sys_ctl.bt_sta >= BT_STA_CONNECTED)
+    506                  {
+    507                      if(sys_ctl.bt_sta == BT_STA_PLAYING)temp_1629[6] |= CHAR_STOP;
+    508                      else temp_1629[6] |= CHAR_PLAY;    
+    509                  }
+    510          #endif        
+    511          #if 0    
+    512                  disp_buf[0] = LEDSEG_B;
+    513                  disp_buf[1] = LEDSEG_L;
+    514                  disp_buf[2] = LEDSEG_U;
+    515                  disp_buf[3] = LEDSEG_E;
+    516                  disp_buf[4] = ICON_BT;
+    517          #endif        
+    518          #if BT_HID_MANU
+    519                  if(t_bt.hid_enable){
+    520                      disp_buf[4] = ICON_DOT2;
+    521                  }else{
+    522                      disp_buf[4] = ICON_NULL;
+    523                  }
+    524          #endif
+    525              }
+    526          }
+   \                     ??menu_bt_ledseg_0:
+   \   000028   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine7:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000003   74AD         MOV     A,#-0x53
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7409         MOV     A,#0x9
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   00000D   74A1         MOV     A,#-0x5f
+   \   00000F   F0           MOVX    @DPTR,A
+   \   000010   A3           INC     DPTR
+   \   000011   E4           CLR     A
+   \   000012   02....       LJMP    ?Subroutine51
+    527          
+    528          //RTC模式闪烁控制
+    529          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    530          void menu_rtc_time_blick_ledseg(void)
+   \                     menu_rtc_time_blick_ledseg:
+    531          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    532          #if 0
+    533              if(t_clock.sub_sta == STA_SHOW_CLOCK) {
+    534                  disp_buf[4] &= ~ICON_DOT2;
+    535              }
+    536              else if((t_clock.sub_sta == STA_SET_CLOCK) || (t_clock.sub_sta == STA_SET_ALARM)) {
+    537                  if (ledseg_ocx.show_time && ocx_show_cnt >= ledseg_ocx.show_time) {
+    538                      if(t_clock.set_sta == STA_SET_TIME_HOUR) {
+    539                          disp_buf[0] = LEDSEG_OFF;
+    540                          disp_buf[1] = LEDSEG_OFF;
+    541                      }
+    542                      else if(STA_SET_TIME_MIN == t_clock.set_sta) {
+    543                          disp_buf[2] = LEDSEG_OFF;
+    544                          disp_buf[3] = LEDSEG_OFF;
+    545                      }
+    546                  }
+    547              }
+    548          #endif    
+    549          }
+   \   000000   02....       LJMP    ?BRET
+    550          
+    551          //RTC模式显示
+    552          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    553          void menu_rtc_time_ledseg(void)
+   \                     menu_rtc_time_ledseg:
+    554          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    555          #if 0
+    556              disp_buf[0] = tbl_ledseg_num[t_time.hour / 10];
+    557              disp_buf[1] = tbl_ledseg_num[t_time.hour % 10];
+    558              disp_buf[2] = tbl_ledseg_num[t_time.minute / 10];
+    559              disp_buf[3] = tbl_ledseg_num[t_time.minute % 10];
+    560              disp_buf[4] |= ICON_DOT2;
+    561          
+    562              if(sys_ctl.alarm_switch){
+    563                  disp_buf[4] |= ICON_PLAY;
+    564              }else{
+    565                  disp_buf[4] &= ~ICON_PLAY;
+    566              }
+    567          
+    568              if(task_ctl.work_sta == TASK_SHOW_TIME) {
+    569                  if(flicker_500ms_cnt % 2) {
+    570                      disp_buf[4] &= ~ICON_DOT2;
+    571                  }
+    572              } else { //SetTime or SetAlarm
+    573                  if(flicker_500ms_cnt % 2) {
+    574                      menu_rtc_time_blick_ledseg();
+    575                  }
+    576              }
+    577          #endif    
+    578          }
+   \   000000   02....       LJMP    ?BRET
+    579          
+    580          //闹钟模式显示
+    581          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    582          void menu_alarm_ledseg(void)
+   \                     menu_alarm_ledseg:
+    583          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    584          #if 0
+    585              disp_buf[0] = tbl_ledseg_num[sys_ctl.alarm_hour / 10];
+    586              disp_buf[1] = tbl_ledseg_num[sys_ctl.alarm_hour % 10];
+    587              disp_buf[2] = tbl_ledseg_num[sys_ctl.alarm_min / 10];
+    588              disp_buf[3] = tbl_ledseg_num[sys_ctl.alarm_min % 10];
+    589              disp_buf[4] |= ICON_DOT2;
+    590          #endif    
+    591          }
+   \   000000   02....       LJMP    ?BRET
+    592          
+    593          //闹钟开关状态显示
+    594          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    595          void menu_alarm_status_ledseg(void)
+   \                     menu_alarm_status_ledseg:
+    596          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    597          #if 0
+    598              if(sys_ctl.alarm_switch == 0) {
+    599                  disp_buf[1] = LEDSEG_O;
+    600                  disp_buf[2] = LEDSEG_F;
+    601                  disp_buf[3] = LEDSEG_F;
+    602              }
+    603              else if(sys_ctl.alarm_switch == 1) {
+    604                  disp_buf[1] = LEDSEG_O;
+    605                  disp_buf[2] = LEDSEG_N;
+    606              }
+    607          #endif    
+    608          }
+   \   000000   02....       LJMP    ?BRET
+    609          
+    610          //汤姆猫模式显示
+    611          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    612          void menu_tomcat_ledseg(void)
+   \                     menu_tomcat_ledseg:
+    613          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    614          #if 0
+    615              disp_buf[1] = LEDSEG_C;
+    616              disp_buf[2] = LEDSEG_A;
+    617              disp_buf[3] = LEDSEG_T;
+    618          #endif    
+    619          }
+   \   000000   02....       LJMP    ?BRET
+    620          
+    621          //音乐EQ效果显示
+    622          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    623          void menu_eq_ledseg(void)
+   \                     menu_eq_ledseg:
+    624          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    625          #if 1
+    626              //sys_ctl.Eq_tyle = STATUS_MUSIC; 
+    627              switch(sys_ctl.Eq_tyle)
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for menu_eq_ledseg>_0`:
+   \   000007   00           DB        0
+   \   000008   02           DB        2
+   \   000009   ....         DW        ??menu_eq_ledseg_0
+   \   00000B   ....         DW        ??menu_eq_ledseg_1
+   \   00000D   ....         DW        ??menu_eq_ledseg_2
+   \   00000F   ....         DW        ??menu_eq_ledseg_3
+    628              {
+    629                  case STATUS_TV:
+    630                      temp_1629[0] = CHAR_D;
+   \                     ??menu_eq_ledseg_2:
+   \   000011   12....       LCALL   ?Subroutine4
+    631                      temp_1629[1] = CHAR_S;
+    632                      temp_1629[2] = CHAR_P;
+    633                      temp_1629[3] = CHAR__;
+    634                      temp_1629[4] = CHAR_1;
+   \                     ??CrossCallReturnLabel_10:
+   \   000014   7481         MOV     A,#-0x7f
+   \   000016   12....       LCALL   ??Subroutine16_0
+    635                      temp_1629[7] |= CHAR_TV;
+   \                     ??CrossCallReturnLabel_104:
+   \   000019   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   4404         ORL     A,#0x4
+   \                     ??menu_eq_ledseg_4:
+   \   00001F   F0           MOVX    @DPTR,A
+   \   000020   A3           INC     DPTR
+   \   000021   E0           MOVX    A,@DPTR
+   \   000022   801F         SJMP    ??CrossCallReturnLabel_49
+    636                      break;
+    637                      
+    638                  case STATUS_MUSIC:
+    639                      temp_1629[0] = CHAR_D;
+   \                     ??menu_eq_ledseg_1:
+   \   000024   12....       LCALL   ?Subroutine4
+    640                      temp_1629[1] = CHAR_S;
+    641                      temp_1629[2] = CHAR_P;
+    642                      temp_1629[3] = CHAR__;
+    643                      temp_1629[4] = CHAR_2;
+   \                     ??CrossCallReturnLabel_11:
+   \   000027   7424         MOV     A,#0x24
+   \   000029   F0           MOVX    @DPTR,A
+   \   00002A   A3           INC     DPTR
+   \   00002B   741B         MOV     A,#0x1b
+   \   00002D   F0           MOVX    @DPTR,A
+    644                      temp_1629[7] |= CHAR_MUSIC;
+   \   00002E   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   000031   E0           MOVX    A,@DPTR
+   \   000032   4408         ORL     A,#0x8
+   \   000034   80E9         SJMP    ??menu_eq_ledseg_4
+    645                      break;
+    646                      
+    647                  case STATUS_MOVIE:
+    648                      temp_1629[0] = CHAR_D;
+   \                     ??menu_eq_ledseg_3:
+   \   000036   12....       LCALL   ?Subroutine4
+    649                      temp_1629[1] = CHAR_S;
+    650                      temp_1629[2] = CHAR_P;
+    651                      temp_1629[3] = CHAR__;
+    652                      temp_1629[4] = CHAR_3;
+   \                     ??CrossCallReturnLabel_12:
+   \   000039   742C         MOV     A,#0x2c
+   \   00003B   F0           MOVX    @DPTR,A
+   \   00003C   A3           INC     DPTR
+   \   00003D   740B         MOV     A,#0xb
+   \   00003F   F0           MOVX    @DPTR,A
+    653                      temp_1629[7] |= CHAR_MOVIE;
+   \   000040   12....       LCALL   ?Subroutine27
+   \                     ??CrossCallReturnLabel_49:
+   \   000043   F0           MOVX    @DPTR,A
+    654                      break;
+    655              }
+    656              //ledseg_disp_device();
+    657          #endif    
+    658          #if 0
+    659          #if IIS_EN
+    660              disp_buf[1] = LEDSEG_E;
+    661              disp_buf[2] = LEDSEG_Q;
+    662              disp_buf[3] = tbl_ledseg_num[eq_flag]; 
+    663          //#elif !EQ_DISPLAY_NUM
+    664          #else
+    665              disp_buf[1] = eq_table[sys_ctl.eq_num][0];
+    666              disp_buf[2] = eq_table[sys_ctl.eq_num][1];
+    667              disp_buf[3] = eq_table[sys_ctl.eq_num][2];
+    668          /*#else
+    669              disp_buf[1] = LEDSEG_E;
+    670              disp_buf[2] = LEDSEG_Q;
+    671              disp_buf[3] = tbl_ledseg_num[sys_ctl.eq_num];*/
+    672          #endif
+    673              ledseg_disp_device();
+    674          #endif
+    675          }
+   \                     ??menu_eq_ledseg_0:
+   \   000044   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine27:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 14)
+   \                     ??Subroutine27_0:
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   4401         ORL     A,#0x1
+   \   000009   22           RET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   74AD         MOV     A,#-0x53
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   7401         MOV     A,#0x1
+   \   000009   12....       LCALL   ?Subroutine31
+   \                     ??CrossCallReturnLabel_61:
+   \   00000C   F0           MOVX    @DPTR,A
+   \   00000D   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000010   7424         MOV     A,#0x24
+   \   000012   12....       LCALL   ?Subroutine35
+   \                     ??CrossCallReturnLabel_119:
+   \   000015   12....       LCALL   ?Subroutine30
+   \                     ??CrossCallReturnLabel_89:
+   \   000018   22           RET
+    676          
+    677          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    678          void menu_3d_ledseg(void)
+   \                     menu_3d_ledseg:
+    679          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    680          #if 1
+    681              temp_1629[0] = CHAR_3;
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   742C         MOV     A,#0x2c
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   740B         MOV     A,#0xb
+   \   000009   F0           MOVX    @DPTR,A
+    682              temp_1629[1] = CHAR_D;
+   \   00000A   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   00000D   74AD         MOV     A,#-0x53
+   \   00000F   12....       LCALL   ??Subroutine12_0
+    683              if(!sys_ctl.m3d_Mode)
+   \                     ??CrossCallReturnLabel_86:
+   \   000012   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000015   E0           MOVX    A,@DPTR
+   \   000016   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   000019   7012         JNZ     ??menu_3d_ledseg_0
+    684              {
+    685                  temp_1629[3] = CHAR_O;
+   \   00001B   742C         MOV     A,#0x2c
+   \   00001D   12....       LCALL   ?Subroutine15
+    686                  temp_1629[4] = CHAR_F;
+   \                     ??CrossCallReturnLabel_20:
+   \   000020   745A         MOV     A,#0x5a
+   \   000022   F0           MOVX    @DPTR,A
+    687                  temp_1629[5] = CHAR_F;
+   \   000023   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   000026   7420         MOV     A,#0x20
+   \   000028   12....       LCALL   ??Subroutine20_0
+   \                     ??CrossCallReturnLabel_32:
+   \   00002B   8009         SJMP    ??menu_3d_ledseg_1
+    688              }
+    689              else
+    690              {
+    691                  temp_1629[3] = CHAR_O;
+   \                     ??menu_3d_ledseg_0:
+   \   00002D   12....       LCALL   ?Subroutine22
+    692                  temp_1629[4] = CHAR_N;
+   \                     ??CrossCallReturnLabel_39:
+   \   000030   741C         MOV     A,#0x1c
+   \   000032   F0           MOVX    @DPTR,A
+   \   000033   A3           INC     DPTR
+   \   000034   74D0         MOV     A,#-0x30
+   \                     ??menu_3d_ledseg_1:
+   \   000036   F0           MOVX    @DPTR,A
+    693              }    
+    694              temp_1629[6] = CHAR_3D;
+   \   000037   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   00003A   7420         MOV     A,#0x20
+   \   00003C   02....       LJMP    ?Subroutine48
+    695          #endif    
+    696          }
+    697          
+    698          //音乐播放模式显示
+    699          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    700          void menu_mode_play_ledseg(void)
+   \                     menu_mode_play_ledseg:
+    701          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    702              temp_1629[1] = play_mode_table[sys_ctl.mode_play][0];
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 4)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   75F006       MOV     B,#0x6
+   \   000007   A4           MUL     AB
+   \   000008   24..         ADD     A,#(play_mode_table & 0xff)
+   \   00000A   F8           MOV     R0,A
+   \   00000B   E5F0         MOV     A,B
+   \   00000D   34..         ADDC    A,#((play_mode_table >> 8) & 0xff)
+   \   00000F   F9           MOV     R1,A
+   \   000010   8882         MOV     DPL,R0
+   \   000012   8983         MOV     DPH,R1
+   \   000014   E4           CLR     A
+   \   000015   93           MOVC    A,@A+DPTR
+   \   000016   FA           MOV     R2,A
+   \   000017   7401         MOV     A,#0x1
+   \   000019   93           MOVC    A,@A+DPTR
+   \   00001A   FB           MOV     R3,A
+   \   00001B   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   00001E   12....       LCALL   ?Subroutine17
+    703              temp_1629[2] = play_mode_table[sys_ctl.mode_play][1];
+   \                     ??CrossCallReturnLabel_21:
+   \   000021   E4           CLR     A
+   \   000022   93           MOVC    A,@A+DPTR
+   \   000023   FA           MOV     R2,A
+   \   000024   7401         MOV     A,#0x1
+   \   000026   93           MOVC    A,@A+DPTR
+   \   000027   FB           MOV     R3,A
+   \   000028   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   00002B   12....       LCALL   ?Subroutine17
+    704              temp_1629[3] = play_mode_table[sys_ctl.mode_play][2];
+   \                     ??CrossCallReturnLabel_22:
+   \   00002E   A3           INC     DPTR
+   \   00002F   A3           INC     DPTR
+   \   000030   E4           CLR     A
+   \   000031   93           MOVC    A,@A+DPTR
+   \   000032   F8           MOV     R0,A
+   \   000033   7401         MOV     A,#0x1
+   \   000035   93           MOVC    A,@A+DPTR
+   \   000036   F9           MOV     R1,A
+   \   000037   90....       MOV     DPTR,#(temp_1629 + 6)
+   \   00003A   12....       LCALL   ??Subroutine33_0
+    705              //ledseg_disp_device();
+    706          }
+   \                     ??CrossCallReturnLabel_62:
+   \   00003D   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine17:
+   \   000000   EA           MOV     A,R2
+   \   000001   F0           MOVX    @DPTR,A
+   \   000002   A3           INC     DPTR
+   \   000003   EB           MOV     A,R3
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   8882         MOV     DPL,R0
+   \   000007   8983         MOV     DPH,R1
+   \   000009   A3           INC     DPTR
+   \   00000A   A3           INC     DPTR
+   \   00000B   22           RET
+    707          
+    708          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    709          void menu_mode_stop_ledseg(void)
+   \                     menu_mode_stop_ledseg:
+    710          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    711          #if 0
+    712              disp_buf[0] = LEDSEG_S;
+    713              disp_buf[1] = LEDSEG_T;
+    714              disp_buf[2] = LEDSEG_O;
+    715              disp_buf[3] = LEDSEG_P;
+    716          #endif    
+    717          }
+   \   000000   02....       LJMP    ?BRET
+    718          
+    719          //清屏显示
+    720          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    721          void ledseg_disp_buf_clr(void)
+   \                     ledseg_disp_buf_clr:
+    722          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    723          //    memset((u8*)disp_buf,0x00,5);
+    724              memset((u16*)temp_1629,0x0000,8);
+   \   000000                ; Setup parameters for call to function my_memset
+   \   000000   7C08         MOV     R4,#0x8
+   \   000002   7D00         MOV     R5,#0x0
+   \   000004   7900         MOV     R1,#0x0
+   \   000006   7A..         MOV     R2,#(temp_1629 & 0xff)
+   \   000008   7B..         MOV     R3,#((temp_1629 >> 8) & 0xff)
+   \   00000A   12....       LCALL   my_memset & 0xFFFF
+    725          }
+   \   00000D   02....       LJMP    ?BRET
+    726          
+    727          //MIC录音模式显示
+    728          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    729          void menu_mic_ledseg(void)
+   \                     menu_mic_ledseg:
+    730          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    731          #if 0
+    732              disp_buf[1] = LEDSEG_R;
+    733              disp_buf[2] = LEDSEG_E;
+    734              disp_buf[3] = LEDSEG_C;
+    735              if (t_rec.rec_sta == REC_STA_PAUSE) {
+    736                  disp_buf[4] |= ICON_PAUSE;
+    737              }
+    738              ledseg_disp_device();
+    739          #endif    
+    740          }
+   \   000000   02....       LJMP    ?BRET
+    741          
+    742          //MIC录音中显示
+    743          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    744          void menu_recording_ledseg(void)
+   \                     menu_recording_ledseg:
+    745          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    746          #if 0
+    747              u8 min, sec;
+    748              u32 rec_time=0;
+    749          
+    750          #if (TASK_MIC_EN || (TASK_AUX_EN && AUX_RECORD_EN))
+    751              rec_time = t_rec.rec_time;
+    752          #endif
+    753          #if (TASK_FM_EN && FM_RECORD_EN)
+    754              if (task_ctl.work_sta == TASK_FM) {
+    755                  rec_time = t_fm_rec.rec_time;
+    756              }
+    757          #endif
+    758          
+    759              if(rec_time < 3600) {
+    760                  min =rec_time/60;
+    761                  sec = rec_time%60;
+    762                  disp_buf[4] = ICON_DOT2;
+    763              } else {
+    764                  min = (rec_time/60)/60;
+    765                  sec = (rec_time/60)%60;
+    766              }
+    767          
+    768              disp_buf[0] = tbl_ledseg_num[min / 10];
+    769              disp_buf[1] = tbl_ledseg_num[min % 10];
+    770              disp_buf[2] = tbl_ledseg_num[sec / 10];
+    771              disp_buf[3] = tbl_ledseg_num[sec % 10];
+    772          
+    773              if(flicker_500ms_cnt % 2) {
+    774                  if(fs_cur_dev() == DEVICE_SDMMC) {
+    775                      disp_buf[4] |= ICON_SD | ICON_DOT2;
+    776                  } else if (fs_cur_dev() == DEVICE_UDISK) {
+    777                      disp_buf[4] |= ICON_USB | ICON_DOT2;
+    778                  }
+    779              }
+    780          #endif    
+    781          }
+   \   000000   02....       LJMP    ?BRET
+    782          
+    783          //无设备显示
+    784          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    785          void menu_no_device_ledseg(void)
+   \                     menu_no_device_ledseg:
+    786          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    787          #if 0
+    788              disp_buf[1] = LEDSEG_N;
+    789              disp_buf[2] = LEDSEG_O;
+    790          #endif    
+    791          }
+   \   000000   02....       LJMP    ?BRET
+    792          
+    793          //删除显示
+    794          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    795          void menu_del_ledseg(void)
+   \                     menu_del_ledseg:
+    796          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    797          #if 0
+    798              disp_buf[1] = LEDSEG_D;
+    799              disp_buf[2] = LEDSEG_E;
+    800              disp_buf[3] = LEDSEG_L;
+    801          #endif    
+    802          }
+   \   000000   02....       LJMP    ?BRET
+    803          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    804          void menu_code_version_ledseg(void)
+   \                     menu_code_version_ledseg:
+    805          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    806              temp_1629[2] = CHAR_V;
+   \   000000   12....       LCALL   ?Subroutine24
+    807              temp_1629[3] = CHAR__;     
+   \                     ??CrossCallReturnLabel_109:
+   \   000003   12....       LCALL   ?Subroutine30
+    808              temp_1629[4] = CHAR_1;
+   \                     ??CrossCallReturnLabel_90:
+   \   000006   7481         MOV     A,#-0x7f
+   \   000008   12....       LCALL   ??Subroutine16_0
+    809              temp_1629[5] = CHAR_5;
+   \                     ??CrossCallReturnLabel_105:
+   \   00000B   90....       MOV     DPTR,#(temp_1629 + 10)
+   \   00000E   7428         MOV     A,#0x28
+   \   000010   F0           MOVX    @DPTR,A
+   \   000011   A3           INC     DPTR
+   \   000012   744B         MOV     A,#0x4b
+   \   000014   F0           MOVX    @DPTR,A
+    810          }
+   \   000015   02....       LJMP    ?BRET
+    811          
+    812          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    813          void menu_file_ledseg(void)
+   \                     menu_file_ledseg:
+    814          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    815              temp_1629[0]=CHAR_F; 
+   \   000000   90....       MOV     DPTR,#temp_1629
+   \   000003   7420         MOV     A,#0x20
+   \   000005   12....       LCALL   ??Subroutine20_0
+   \                     ??CrossCallReturnLabel_33:
+   \   000008   12....       LCALL   ?Subroutine8
+    816              temp_1629[1]=CHAR_I;   
+    817              temp_1629[2]=CHAR_L;
+   \                     ??CrossCallReturnLabel_123:
+   \   00000B   12....       LCALL   ?Subroutine23
+   \                     ??CrossCallReturnLabel_45:
+   \   00000E   12....       LCALL   ?Subroutine18
+    818              temp_1629[3]=CHAR_E; 
+   \                     ??CrossCallReturnLabel_24:
+   \   000011   12....       LCALL   ?Subroutine14
+    819          
+    820              temp_1629[4]=tbl_ledseg_num[t_msc.dir_num / 10]; 
+   \                     ??CrossCallReturnLabel_17:
+   \   000014   12....       LCALL   ?US_DIV_MOD
+   \   000017   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_9:
+   \   00001A   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   00001D   E8           MOV     A,R0
+   \   00001E   F0           MOVX    @DPTR,A
+   \   00001F   A3           INC     DPTR
+   \   000020   E9           MOV     A,R1
+   \   000021   12....       LCALL   ?Subroutine14
+    821              temp_1629[5]=tbl_ledseg_num[t_msc.dir_num % 10];
+   \                     ??CrossCallReturnLabel_18:
+   \   000024   12....       LCALL   ?US_DIV_MOD
+   \   000027   12....       LCALL   ?Subroutine1
+    822              temp_1629[6] = CHAR_USB;    
+   \                     ??CrossCallReturnLabel_4:
+   \   00002A                REQUIRE ?Subroutine43
+   \   00002A                ; // Fall through to label ?Subroutine43
+    823          }
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine43:
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000003   E4           CLR     A
+   \   000004   12....       LCALL   ??Subroutine12_0
+   \                     ??CrossCallReturnLabel_88:
+   \   000007   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   \                     ?Subroutine14:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   90....       MOV     DPTR,#(t_msc + 35)
+   \   000004   12....       LCALL   ?Subroutine38
+   \                     ??CrossCallReturnLabel_79:
+   \   000007   22           RET
+    824          
+    825          //磁盘满显示
+    826          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    827          void menu_full_ledseg(void)
+   \                     menu_full_ledseg:
+    828          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    829          #if 0
+    830              disp_buf[0] = LEDSEG_F;
+    831              disp_buf[1] = LEDSEG_U;
+    832              disp_buf[2] = LEDSEG_L;
+    833              disp_buf[3] = LEDSEG_L;
+    834          #endif    
+    835          }
+   \   000000   02....       LJMP    ?BRET
+    836          
+    837          //出错显示
+    838          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    839          void menu_err_ledseg(void)
+   \                     menu_err_ledseg:
+    840          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    841              temp_1629[2] = CHAR_E;
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 4)
+   \   000003   7420         MOV     A,#0x20
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   745B         MOV     A,#0x5b
+   \   000009   12....       LCALL   ?Subroutine49
+    842              temp_1629[3] = CHAR_R;
+   \                     ??CrossCallReturnLabel_113:
+   \   00000C   12....       LCALL   ?Subroutine20
+   \                     ??CrossCallReturnLabel_34:
+   \   00000F   12....       LCALL   ??Subroutine30_0
+    843              temp_1629[4] = CHAR_R;    
+   \                     ??CrossCallReturnLabel_96:
+   \   000012   12....       LCALL   ?Subroutine20
+   \                     ??CrossCallReturnLabel_35:
+   \   000015   F0           MOVX    @DPTR,A
+    844          }
+   \   000016   02....       LJMP    ?BRET
+    845          
+    846          //mute显示
+    847          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    848          void menu_mute_ledseg(void)
+   \                     menu_mute_ledseg:
+    849          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    850              temp_1629[1] = CHAR_M;
+   \   000000   12....       LCALL   ?Subroutine26
+    851              temp_1629[2] = CHAR_U;
+   \                     ??CrossCallReturnLabel_121:
+   \   000003   740C         MOV     A,#0xc
+   \   000005   12....       LCALL   ??Subroutine23_0
+   \                     ??CrossCallReturnLabel_46:
+   \   000008   12....       LCALL   ?Subroutine49
+    852              temp_1629[3] = CHAR_T;
+   \                     ??CrossCallReturnLabel_114:
+   \   00000B   12....       LCALL   ?Subroutine16
+    853              temp_1629[4] = CHAR_E;
+   \                     ??CrossCallReturnLabel_106:
+   \   00000E   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   000011   7420         MOV     A,#0x20
+   \   000013   F0           MOVX    @DPTR,A
+   \   000014   A3           INC     DPTR
+   \   000015   745B         MOV     A,#0x5b
+   \   000017   F0           MOVX    @DPTR,A
+    854          }
+   \   000018   02....       LJMP    ?BRET
+    855          //灭屏
+    856          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    857          void menu_null_ledseg(void)
+   \                     menu_null_ledseg:
+    858          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    859              temp_1629[2] = CHAR_B;
+   \   000000   12....       LCALL   ?Subroutine7
+    860              temp_1629[3] = CHAR_T;
+    861              temp_1629[6] = CHAR_MASK;
+   \                     ??CrossCallReturnLabel_128:
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   A3           INC     DPTR
+   \   000005   F0           MOVX    @DPTR,A
+    862          #if 0    
+    863              disp_buf[0] = LEDSEG_OFF;
+    864              disp_buf[1] = LEDSEG_OFF;
+    865              disp_buf[2] = LEDSEG_OFF;
+    866              disp_buf[3] = LEDSEG_OFF;
+    867          #endif    
+    868          }
+   \   000006   02....       LJMP    ?BRET
+    869          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    870          void menu_usbsd_ledseg(void)
+   \                     menu_usbsd_ledseg:
+    871          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    872              disp_buf[1] = LEDSEG_U;
+   \   000000   743E         MOV     A,#0x3e
+   \   000002   90....       MOV     DPTR,#(disp_buf + 1)
+   \   000005   F0           MOVX    @DPTR,A
+    873              disp_buf[2] = LEDSEG_S;
+   \   000006   746D         MOV     A,#0x6d
+   \   000008   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00000B   F0           MOVX    @DPTR,A
+    874              disp_buf[3] = LEDSEG_B;
+   \   00000C   747C         MOV     A,#0x7c
+   \   00000E   02....       LJMP    ?Subroutine44
+    875          }
+    876          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    877          void menu_tf_ledseg(void)
+   \                     menu_tf_ledseg:
+    878          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    879              disp_buf[1] = LEDSEG_T;
+   \   000000   7478         MOV     A,#0x78
+   \   000002   90....       MOV     DPTR,#(disp_buf + 1)
+   \   000005   F0           MOVX    @DPTR,A
+    880              disp_buf[2] = LEDSEG_F;
+   \   000006   7471         MOV     A,#0x71
+   \   000008   02....       LJMP    ?Subroutine45
+    881          }
+    882          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    883          void menu_lode_ledseg(void)
+   \                     menu_lode_ledseg:
+    884          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    885              temp_1629[1] = CHAR_L;
+   \   000000   90....       MOV     DPTR,#(temp_1629 + 2)
+   \   000003   E4           CLR     A
+   \   000004   12....       LCALL   ?Subroutine5
+    886              temp_1629[2] = CHAR_O;
+    887              temp_1629[3] = CHAR_D;
+   \                     ??CrossCallReturnLabel_116:
+   \   000007   74AD         MOV     A,#-0x53
+   \   000009   12....       LCALL   ??Subroutine12_0
+    888              temp_1629[4] = CHAR_E;
+   \                     ??CrossCallReturnLabel_87:
+   \   00000C   90....       MOV     DPTR,#(temp_1629 + 8)
+   \   00000F   7420         MOV     A,#0x20
+   \   000011   F0           MOVX    @DPTR,A
+   \   000012   A3           INC     DPTR
+   \   000013   745B         MOV     A,#0x5b
+   \   000015   F0           MOVX    @DPTR,A
+    889              
+    890              temp_1629[6] = CHAR_USB;
+   \   000016   02....       LJMP    ?Subroutine43
+    891          //    temp_1629[7] = CHAR_E;
+    892          }
+    893          
+    894          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+    895          void menu_input_mask(void)
+   \                     menu_input_mask:
+    896          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    897              switch(task_ctl.work_sta)
+   \   000000   90....       MOV     DPTR,#task_ctl
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for menu_input_mask>_0`:
+   \   000007   00           DB        0
+   \   000008   05           DB        5
+   \   000009   02           DB        2
+   \   00000A   ....         DW        ??menu_input_mask_0
+   \   00000C   03           DB        3
+   \   00000D   ....         DW        ??menu_input_mask_1
+   \   00000F   04           DB        4
+   \   000010   ....         DW        ??menu_input_mask_2
+   \   000012   05           DB        5
+   \   000013   ....         DW        ??menu_input_mask_3
+   \   000015   0D           DB        13
+   \   000016   ....         DW        ??menu_input_mask_4
+   \   000018   ....         DW        ??menu_input_mask_5
+    898              {
+    899                  case TASK_AUX:
+    900                      temp_1629[6] |= CHAR_AUX;
+   \                     ??menu_input_mask_0:
+   \   00001A   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   00001D   E0           MOVX    A,@DPTR
+   \   00001E   4404         ORL     A,#0x4
+   \                     ??menu_input_mask_6:
+   \   000020   F0           MOVX    @DPTR,A
+   \   000021   A3           INC     DPTR
+   \   000022   E0           MOVX    A,@DPTR
+   \   000023   803D         SJMP    ??menu_input_mask_7
+    901                      break;
+    902                      
+    903                  case TASK_COAX:
+    904                      temp_1629[6] |= CHAR_COAX;
+   \                     ??menu_input_mask_1:
+   \   000025   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000028   E0           MOVX    A,@DPTR
+   \   000029   4408         ORL     A,#0x8
+   \   00002B   80F3         SJMP    ??menu_input_mask_6
+    905                      break;   
+    906                      
+    907                  case TASK_OPTI:
+    908                      temp_1629[6] |= CHAR_OPT;
+   \                     ??menu_input_mask_2:
+   \   00002D   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000030   E0           MOVX    A,@DPTR
+   \   000031   4402         ORL     A,#0x2
+   \   000033   80EB         SJMP    ??menu_input_mask_6
+    909                      break;   
+    910                      
+    911                  case TASK_MUSIC:
+    912                      temp_1629[6] |= CHAR_USB;
+   \                     ??menu_input_mask_3:
+   \   000035   90....       MOV     DPTR,#(temp_1629 + 12)
+   \   000038   12....       LCALL   ??Subroutine27_0
+   \                     ??CrossCallReturnLabel_50:
+   \   00003B   12....       LCALL   ?Subroutine32
+    913                      temp_1629[7] |= CHAR_MP3;            
+   \                     ??CrossCallReturnLabel_101:
+   \   00003E   F0           MOVX    @DPTR,A
+    914                      if(sys_ctl.mode_play == ITEM_LOOP_RAMDOM)
+   \   00003F   90....       MOV     DPTR,#(sys_ctl + 4)
+   \   000042   E0           MOVX    A,@DPTR
+   \   000043   FA           MOV     R2,A
+   \   000044   7404         MOV     A,#0x4
+   \   000046   6A           XRL     A,R2
+   \   000047   700D         JNZ     ??menu_input_mask_8
+    915                      {
+    916                          if(sys_ctl.bonoff_1s)temp_1629[6] |= CHAR_BT_PLAY;
+   \   000049   90....       MOV     DPTR,#(sys_ctl + 55)
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   6014         JZ      ??menu_input_mask_5
+   \                     ??menu_input_mask_9:
+   \   00004F   12....       LCALL   ?Subroutine28
+   \                     ??CrossCallReturnLabel_56:
+   \   000052   4410         ORL     A,#0x10
+   \   000054   800C         SJMP    ??menu_input_mask_7
+    917                      }            
+    918                      else if(sys_ctl.mode_play == ITEM_LOOP_SINGLE)
+   \                     ??menu_input_mask_8:
+   \   000056   7401         MOV     A,#0x1
+   \   000058   6A           XRL     A,R2
+   \   000059   7008         JNZ     ??menu_input_mask_5
+    919                      {
+    920                          temp_1629[6] |= CHAR_BT_PLAY;
+   \   00005B   80F2         SJMP    ??menu_input_mask_9
+    921                      }          
+    922                      break; 
+    923                      
+    924                  case TASK_BT:
+    925                      temp_1629[6] |= CHAR_BT;
+   \                     ??menu_input_mask_4:
+   \   00005D   12....       LCALL   ?Subroutine28
+   \                     ??CrossCallReturnLabel_57:
+   \   000060   4404         ORL     A,#0x4
+   \                     ??menu_input_mask_7:
+   \   000062   F0           MOVX    @DPTR,A
+    926                      break;    
+    927              }
+    928              if(task_ctl.work_sta != TASK_POWEROFF)
+   \                     ??menu_input_mask_5:
+   \   000063   90....       MOV     DPTR,#task_ctl
+   \   000066   E0           MOVX    A,@DPTR
+   \   000067   641A         XRL     A,#0x1a
+   \   000069   6028         JZ      ??menu_input_mask_10
+    929              {
+    930                  switch(sys_ctl.Eq_tyle)
+   \   00006B   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   00006E   E0           MOVX    A,@DPTR
+   \   00006F   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for menu_input_mask>_1`:
+   \   000072   00           DB        0
+   \   000073   02           DB        2
+   \   000074   ....         DW        ??menu_input_mask_10
+   \   000076   ....         DW        ??menu_input_mask_11
+   \   000078   ....         DW        ??menu_input_mask_12
+   \   00007A   ....         DW        ??menu_input_mask_13
+    931                  {     
+    932                      case STATUS_TV:                
+    933                          temp_1629[7] |= CHAR_TV;
+   \                     ??menu_input_mask_12:
+   \   00007C   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   00007F   E0           MOVX    A,@DPTR
+   \   000080   4404         ORL     A,#0x4
+   \                     ??menu_input_mask_14:
+   \   000082   F0           MOVX    @DPTR,A
+   \   000083   A3           INC     DPTR
+   \   000084   E0           MOVX    A,@DPTR
+   \   000085   800B         SJMP    ??CrossCallReturnLabel_51
+    934                          break;
+    935                          
+    936                      case STATUS_MUSIC:                
+    937                          temp_1629[7] |= CHAR_MUSIC;
+   \                     ??menu_input_mask_11:
+   \   000087   90....       MOV     DPTR,#(temp_1629 + 14)
+   \   00008A   E0           MOVX    A,@DPTR
+   \   00008B   4408         ORL     A,#0x8
+   \   00008D   80F3         SJMP    ??menu_input_mask_14
+    938                          break;
+    939                          
+    940                      case STATUS_MOVIE:              
+    941                          temp_1629[7] |= CHAR_MOVIE;
+   \                     ??menu_input_mask_13:
+   \   00008F   12....       LCALL   ?Subroutine27
+   \                     ??CrossCallReturnLabel_51:
+   \   000092   F0           MOVX    @DPTR,A
+    942                          break;          
+    943                  }
+    944              }
+    945          }
+   \                     ??menu_input_mask_10:
+   \   000093   02....       LJMP    ?BRET
+    946          
+    947          
+    948          #pragma constseg=DISP_LEDSEG_CONST
+
+   \                                 In segment DISP_LEDSEG_CONST, align 1
+    949          const H menu_ledseg[] =
+   \                     menu_ledseg:
+   \   000000   ........     DT menu_welcome_ledseg, menu_model_ledseg, menu_vol_ledseg
+   \            ........
+   \            ..      
+   \   000009   ........     DT menu_dim_ledseg, menu_menu_ledseg, 0H, 0H, menu_numsel_ledseg
+   \            ....0000
+   \            00000000
+   \            ......  
+   \   000018   ........     DT menu_play_ledseg, menu_pause_ledseg, menu_num_ledseg
+   \            ........
+   \            ..      
+   \   000021   ........     DT menu_aux_ledseg, menu_aux_coax_ledseg, menu_aux_opt_ledseg
+   \            ........
+   \            ..      
+   \   00002A   ........     DT menu_aux_eq_ledseg, menu_speaker_ledseg, menu_pc_ledseg
+   \            ........
+   \            ..      
+   \   000033   ........     DT menu_bt_ledseg, menu_usbsd_ledseg, menu_tf_ledseg, menu_lode_ledseg
+   \            ........
+   \            ........
+   \   00003F   00000000     DT 0H, 0H, 0H, menu_eq_ledseg, menu_3d_ledseg, menu_mode_play_ledseg
+   \            00000000
+   \            00......
+   \            ........
+   \            ....    
+   \   000051   ......00     DT menu_mode_stop_ledseg, 0H, 0H, 0H, menu_poweroff_ledseg
+   \            00000000
+   \            00000000
+   \            ......  
+   \   000060   ........     DT menu_standby_ledseg, menu_no_device_ledseg, menu_del_ledseg
+   \            ........
+   \            ..      
+   \   000069   ........     DT menu_code_version_ledseg, menu_file_ledseg, menu_full_ledseg
+   \            ........
+   \            ..      
+   \   000072   ........     DT menu_err_ledseg, menu_null_ledseg, menu_mute_ledseg
+   \            ........
+   \            ..      
+    950          {
+    951              menu_welcome_ledseg,
+    952              menu_model_ledseg,    
+    953              menu_vol_ledseg,
+    954              menu_dim_ledseg,
+    955              menu_menu_ledseg,
+    956          #if TASK_FM_EN
+    957              menu_freq_ledseg,
+    958              menu_freq_chan_ledseg,
+    959          #else
+    960              0,
+    961              0,
+    962          #endif
+    963              menu_numsel_ledseg,
+    964          #if TASK_MUSIC_EN
+    965              menu_play_ledseg,
+    966          #else
+    967              0,
+    968          #endif
+    969              menu_pause_ledseg,
+    970              menu_num_ledseg,
+    971          #if TASK_AUX_EN
+    972              menu_aux_ledseg,
+    973          #else
+    974              0,
+    975          #endif
+    976              menu_aux_coax_ledseg,
+    977          
+    978              menu_aux_opt_ledseg,
+    979          //    menu_aux_lin_ledseg,
+    980          //    menu_aux_hd_ledseg,
+    981          
+    982              menu_aux_eq_ledseg,
+    983              menu_speaker_ledseg,
+    984              menu_pc_ledseg,
+    985          #if TASK_BT_EN
+    986              menu_bt_ledseg,
+    987          #else
+    988              0,
+    989          #endif
+    990          
+    991              menu_usbsd_ledseg,
+    992              menu_tf_ledseg,
+    993              menu_lode_ledseg,
+    994          #if TASK_RTC_EN
+    995              menu_rtc_time_ledseg,
+    996          #else
+    997              0,
+    998          #endif
+    999          #if ALARM_EN
+   1000              menu_alarm_ledseg,
+   1001              menu_alarm_status_ledseg,
+   1002          #else
+   1003              0,
+   1004              0,
+   1005          #endif
+   1006              menu_eq_ledseg,
+   1007              menu_3d_ledseg,
+   1008              menu_mode_play_ledseg,
+   1009              
+   1010              menu_mode_stop_ledseg,
+   1011              
+   1012          #if TASK_MIC_EN
+   1013              menu_mic_ledseg,
+   1014          #else
+   1015              0,
+   1016          #endif
+   1017          #if (TASK_MIC_EN || (TASK_AUX_EN && AUX_RECORD_EN) || (TASK_FM_EN && FM_RECORD_EN))
+   1018              menu_recording_ledseg,
+   1019          #else
+   1020              0,
+   1021          #endif
+   1022          #if TASK_TOMCAT_EN
+   1023              menu_tomcat_ledseg,
+   1024          #else
+   1025              0,
+   1026          #endif
+   1027              menu_poweroff_ledseg,
+   1028              menu_standby_ledseg,
+   1029              menu_no_device_ledseg,
+   1030              menu_del_ledseg,
+   1031              menu_code_version_ledseg,
+   1032              menu_file_ledseg,
+   1033              menu_full_ledseg,
+   1034              menu_err_ledseg,
+   1035              menu_null_ledseg,
+   1036              menu_mute_ledseg,
+   1037              
+   1038          };
+   1039          #pragma constseg=default
+   1040          
+   1041          #pragma location="DISP_LEDSEG_SEG"
+
+   \                                 In segment DISP_LEDSEG_SEG, align 1, keep-with-next
+   1042          void ledseg_disp (u8 menu_number)
+   \                     ledseg_disp:
+   1043          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+   1044          #if 0
+   1045              void (*p)(void);
+   1046              ledseg_disp_buf_clr();
+   1047              p = menu_ledseg[menu_number];
+   1048              (*p)();
+   1049              ledseg_value_set();
+   1050          #endif
+   1051              void (*p)(void);
+   1052              //ledseg_disp_buf_clr();
+   1053              MENU_DISPLAY_MASK();
+   \   000005                ; Setup parameters for call to function MENU_DISPLAY_MASK
+   \   000005   90....       MOV     DPTR,#(MENU_DISPLAY_MASK & 0xffff)
+   \   000008   74..         MOV     A,#((MENU_DISPLAY_MASK >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1054              menu_input_mask();
+   \   00000D                ; Setup parameters for call to function menu_input_mask
+   \   00000D   90....       MOV     DPTR,#(menu_input_mask & 0xffff)
+   \   000010   74..         MOV     A,#((menu_input_mask >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1055              p = menu_ledseg[menu_number];
+   1056              (*p)();
+   \   000015                ; Setup parameters for indirect call
+   \   000015   EE           MOV     A,R6
+   \   000016   75F003       MOV     B,#0x3
+   \   000019   A4           MUL     AB
+   \   00001A   24..         ADD     A,#(menu_ledseg & 0xff)
+   \   00001C   F582         MOV     DPL,A
+   \   00001E   E5F0         MOV     A,B
+   \   000020   34..         ADDC    A,#((menu_ledseg >> 8) & 0xff)
+   \   000022   F583         MOV     DPH,A
+   \   000024   E4           CLR     A
+   \   000025   93           MOVC    A,@A+DPTR
+   \   000026   F9           MOV     R1,A
+   \   000027   7401         MOV     A,#0x1
+   \   000029   93           MOVC    A,@A+DPTR
+   \   00002A   FA           MOV     R2,A
+   \   00002B   7402         MOV     A,#0x2
+   \   00002D   93           MOVC    A,@A+DPTR
+   \   00002E   8982         MOV     DPL,R1
+   \   000030   8A83         MOV     DPH,R2
+   \   000032   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1057              ShowCHAR();    
+   \   000035                ; Setup parameters for call to function ShowCHAR
+   \   000035   90....       MOV     DPTR,#(ShowCHAR & 0xffff)
+   \   000038   74..         MOV     A,#((ShowCHAR >> 16) & 0xff)
+   \   00003A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   1058          }
+   \   00003D   D0E0         POP     A
+   \   00003F   FE           MOV     R6,A
+   \   000040   02....       LJMP    ?BRET
+   1059          
+   1060          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                       EXT_STACK PSTACK XSTACK
+     --------                       --------- ------ ------
+     ledseg_disp                           1      0      0
+       -> MENU_DISPLAY_MASK                2      0      0
+       -> menu_input_mask                  2      0      0
+       -> ShowCHAR                         2      0      0
+     ledseg_disp_buf_clr                   0      0      0
+       -> my_memset                        0      0      0
+     ledseg_disp_device                    0      0      0
+     ledseg_disp_num                       1      0      0
+     menu_3d_ledseg                        0      0      0
+     menu_alarm_ledseg                     0      0      0
+     menu_alarm_status_ledseg              0      0      0
+     menu_aux_coax_ledseg                  0      0      0
+     menu_aux_eq_ledseg                    0      0      0
+     menu_aux_hd_ledseg                    0      0      0
+     menu_aux_ledseg                       0      0      0
+     menu_aux_opt_ledseg                   0      0      0
+     menu_bt_ledseg                        0      0      0
+     menu_code_version_ledseg              0      0      0
+     menu_del_ledseg                       0      0      0
+     menu_dim_ledseg                       0      0      0
+     menu_eq_ledseg                        0      0      0
+     menu_err_ledseg                       0      0      0
+     menu_file_ledseg                      0      0      0
+     menu_freq_chan_ledseg                 1      0      0
+       -> ledseg_disp_num                  2      0      0
+     menu_freq_ledseg                      0      0      0
+       -> ledseg_disp_num                  0      0      0
+     menu_full_ledseg                      0      0      0
+     menu_input_mask                       1      0      0
+     menu_lode_ledseg                      0      0      0
+     menu_menu_ledseg                      0      0      0
+     menu_mic_ledseg                       0      0      0
+     menu_mode_play_ledseg                 0      0      0
+     menu_mode_stop_ledseg                 0      0      0
+     menu_model_ledseg                     0      0      0
+     menu_mute_ledseg                      0      0      0
+     menu_no_device_ledseg                 0      0      0
+     menu_null_ledseg                      0      0      0
+     menu_num_ledseg                       0      0      0
+       -> ledseg_disp_num                  0      0      0
+     menu_numsel_ledseg                    0      0      0
+       -> ledseg_disp_num                  0      0      0
+     menu_pause_ledseg                     0      0      0
+     menu_pc_ledseg                        0      0      0
+     menu_play_ledseg                      0      0      0
+     menu_poweroff_ledseg                  0      0      0
+     menu_recording_ledseg                 0      0      0
+     menu_rtc_time_blick_ledseg            0      0      0
+     menu_rtc_time_ledseg                  0      0      0
+     menu_speaker_ledseg                   0      0      0
+     menu_standby_ledseg                   0      0      0
+     menu_tf_ledseg                        0      0      0
+     menu_tomcat_ledseg                    0      0      0
+     menu_usbsd_ledseg                     0      0      0
+     menu_vol_ledseg                       0      0      0
+       -> Write_Display_Digtial_1629
+                                           0      0      0
+     menu_welcome_ledseg                   0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label             Bytes
+     --------------             -----
+     disp_buf                      5
+     disp_sel_num                  2
+     flicker_500ms_cnt             1
+     tbl_ledseg_num               20
+     eq_table                     21
+     play_mode_table              36
+     ledseg_disp_device            3
+     ledseg_disp_num              89
+     ?Subroutine21                 8
+     ?Subroutine1                 19
+     ?Subroutine33                 9
+     ?Subroutine2                 11
+     ?Subroutine3                  5
+     ?Subroutine37                15
+     ?Subroutine40                12
+     menu_welcome_ledseg          31
+     ?Subroutine46                 6
+     ?Subroutine10                15
+     ?Subroutine23                 5
+     ?Subroutine49                 5
+     ?Subroutine5                 12
+     ?Subroutine34                 7
+     ?Subroutine31                11
+     ?Subroutine30                10
+     ?Subroutine12                11
+     menu_poweroff_ledseg         19
+     ?Subroutine19                11
+     ?Subroutine18                11
+     menu_standby_ledseg          23
+     menu_model_ledseg            38
+     ?Subroutine50                 5
+     ?Subroutine26                12
+     menu_dim_ledseg              79
+     ?Subroutine8                 13
+     menu_vol_ledseg              84
+     ?Subroutine25                14
+     ?Subroutine42                12
+     ?Subroutine11                 8
+     ?Subroutine16                 7
+     menu_menu_ledseg            110
+     ?Subroutine6                 10
+     ?Subroutine35                 4
+     ?Subroutine22                 7
+     ?Subroutine15                11
+     ?Subroutine20                 7
+     ?Subroutine24                12
+     menu_freq_ledseg             15
+     ?Subroutine38                10
+     menu_freq_chan_ledseg        37
+     menu_numsel_ledseg           10
+     menu_play_ledseg              8
+     ?Subroutine47                 6
+     ?Subroutine13                 7
+     ?Subroutine0                 37
+     ?Subroutine36                10
+     ?Subroutine29                16
+     ?Subroutine39                15
+     ?Subroutine28                 8
+     ?Subroutine32                11
+     menu_pause_ledseg            10
+     menu_num_ledseg              29
+     menu_aux_ledseg              13
+     ?Subroutine48                 6
+     ?Subroutine9                  9
+     ?Subroutine51                 5
+     menu_aux_opt_ledseg          19
+     menu_aux_coax_ledseg         20
+     menu_aux_hd_ledseg           18
+     ?Subroutine41                13
+     menu_aux_eq_ledseg           22
+     menu_speaker_ledseg          18
+     ?Subroutine44                 7
+     menu_pc_ledseg                8
+     ?Subroutine45                 7
+     menu_bt_ledseg               43
+     ?Subroutine7                 21
+     menu_rtc_time_blick_ledseg    3
+     menu_rtc_time_ledseg          3
+     menu_alarm_ledseg             3
+     menu_alarm_status_ledseg      3
+     menu_tomcat_ledseg            3
+     menu_eq_ledseg               71
+     ?Subroutine27                10
+     ?Subroutine4                 25
+     menu_3d_ledseg               63
+     menu_mode_play_ledseg        64
+     ?Subroutine17                12
+     menu_mode_stop_ledseg         3
+     ledseg_disp_buf_clr          16
+     menu_mic_ledseg               3
+     menu_recording_ledseg         3
+     menu_no_device_ledseg         3
+     menu_del_ledseg               3
+     menu_code_version_ledseg     24
+     menu_file_ledseg             42
+     ?Subroutine43                10
+     ?Subroutine14                 8
+     menu_full_ledseg              3
+     menu_err_ledseg              25
+     menu_mute_ledseg             27
+     menu_null_ledseg              9
+     menu_usbsd_ledseg            17
+     menu_tf_ledseg               11
+     menu_lode_ledseg             25
+     menu_input_mask             150
+     menu_ledseg                 123
+     ledseg_disp                  67
+
+ 
+   123 bytes in segment DISP_LEDSEG_CONST
+ 1 948 bytes in segment DISP_LEDSEG_SEG
+    77 bytes in segment DISP_LEDSEG_TBL
+     5 bytes in segment XDATA_N
+     3 bytes in segment XDATA_Z
+ 
+ 2 148 bytes of CODE  memory
+     8 bytes of XDATA memory
+
+Errors: none
+Warnings: none

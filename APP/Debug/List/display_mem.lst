@@ -1,0 +1,155 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:51 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\display_mem.c                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\display_mem.c                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\display_mem.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\display_mem.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\display_mem.c
+      1          /*****************************************************************************
+      2          * Module    : Display
+      3          * File      : display_mem.c
+      4          * Author    : Hanny
+      5          * Function  : 用于将SPI的资源拷入Memory中进行管理。部分不允许读Flash的任务会用到
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "display_mem.h"
+     10          
+     11          type_dispmem_ctl dispmem_ctl;
+     12          
+     13          extern u32 calc_res_addr(u32 res_addr);         //计算资源的绝对地址
+     14          
+     15          IAR_XDATA_A char disp_mem_buf[256] @ 0x22B80;    //录音时用于存放少量显示资源的Buffer
+     16          
+     17          //初始化管理
+     18          #pragma location="DISPLAY_MEM"
+     19          void dispmem_init(void *buf, u16 len)
+     20          {
+     21              dispmem_ctl.buf = buf;
+     22              dispmem_ctl.len = len;
+     23              dispmem_ctl.num_buf = NULL;
+     24              dispmem_ctl.num_len = 0;
+     25          }
+     26          
+     27          //将一个资源加入，返回memory地址
+     28          #pragma location="DISPLAY_MEM"
+     29          char *dispmem_add(u16 imageindex)
+     30          {
+     31              type_mem_res *ptr = (type_mem_res *)dispmem_ctl.buf;
+     32              u32 res_addr;
+     33              u8 icon_width, icon_line;                   //宽高应该都在256以内
+     34              u32 icon_addr;
+     35              u16 icon_size;
+     36          //    u16 icon_length;                            //大小最大为128x64 = 8192
+     37          
+     38              res_addr = calc_res_addr(imageindex * ICON_FILE_HEAD + 4);
+     39          
+     40              icon_width = spi_read16(res_addr);          //宽
+     41              icon_line = spi_read16(res_addr+2) >> 3;    //行
+     42              icon_size = icon_width * icon_line;
+     43              icon_addr = spi_read32(res_addr+8);         //资源起始
+     44              icon_addr = calc_res_addr(icon_addr);
+     45          
+     46              if (icon_line > 8) {
+     47                  return NULL;
+     48              }
+     49              if (icon_size + 2 > dispmem_ctl.len) {
+     50                  return NULL;
+     51              }
+     52              dispmem_ctl.len -= icon_size + 2;
+     53              ptr->width = icon_width;
+     54              ptr->line = icon_line;
+     55              spi_read(ptr->buf, icon_addr, icon_size);
+     56              dispmem_ctl.buf += icon_size + 2;
+     57              return (char *)ptr;
+     58          }
+     59          
+     60          //将数字加入。大号 480Byte, 中号 160Byte，小号80Byte
+     61          #pragma location="DISPLAY_MEM"
+     62          char *dispmem_addnum(u16 imageindex, u8 num)
+     63          {
+     64              u8 i;
+     65              dispmem_ctl.num_buf = dispmem_ctl.buf;
+     66              dispmem_add(imageindex);
+     67              dispmem_ctl.num_len = dispmem_ctl.buf - dispmem_ctl.num_buf;
+     68              for (i=1; i!=num; i++) {
+     69                  dispmem_add(imageindex+i);
+     70              }
+     71              return dispmem_ctl.num_buf;
+     72          }
+     73          
+     74          //显示一个数字的演示程序
+     75          #pragma location="DISPLAY_MEM"
+     76          void dispmem_drawnum(u8 num, u8 x, u8 line)
+     77          {
+     78              u8 ten, one;
+     79              if (num > 99) {
+     80                  num = 99;
+     81              }
+     82              ten = num / 10;
+     83              one = num % 10;
+     84              dispmem_draw(dispmem_ctl.num_buf + ten * dispmem_ctl.num_len, x, line);
+     85              dispmem_draw(dispmem_ctl.num_buf + one * dispmem_ctl.num_len, x + 14, line);
+     86          }
+     87          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

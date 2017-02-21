@@ -1,0 +1,194 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:54 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\numbox.c                                    #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\numbox.c                                    #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\numbox.lst                                   #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\numbox.r51                                    #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\numbox.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : numbox.c
+      4           * Author    : Hanny
+      5           * Function  : 数选框控件，用于数选功能。最大支持输入4位数字
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "task.h"
+     10          
+     11          //list box controller
+     12          IAR_XDATA_A struct {
+     13              u8 cnt;                             //已输入的数字位数
+     14              u16 value;                          //已输入的数字值
+     15              u16 disp_value;                     //当前显示的数值
+     16              u8 ok_flag;                         //是否按下确定键
+     17          } t_num @ "OCX_XDATA";
+     18          
+     19          #pragma location="NUM_BOX_SEG"
+     20          void numbox_event(void)
+     21          {
+     22              if (!comm_event()) {
+     23                  t_num.ok_flag = 0xff;
+     24              }
+     25              if (ocx_show_cnt >= 30) {
+     26                  t_num.ok_flag = 1;
+     27              }
+     28          }
+     29          
+     30          //数选框处理消息
+     31          #pragma location="NUM_BOX_SEG"
+     32          void numbox_deal_msg(void)
+     33          {
+     34              u8 msg = get_msg();
+     35              switch(msg) {
+     36                  //确定
+     37              case KU_OK:
+     38                  t_num.ok_flag = 1;
+     39                  break;
+     40          
+     41          #if THEME_SELECT==THEME_LCD_DEFAULT
+     42              case KL_PLAY_POWER:
+     43                  task_ctl.work_sta = TASK_EXIT;
+     44                  break;
+     45          
+     46                  //取消
+     47              case KU_PLAY_POWER:
+     48          #else
+     49              case KU_BACK:
+     50          #endif
+     51                  t_num.ok_flag = 0xff;
+     52                  break;
+     53          
+     54              case T_KEY_NUM_0:
+     55              case T_KEY_NUM_1:
+     56              case T_KEY_NUM_2:
+     57              case T_KEY_NUM_3:
+     58              case T_KEY_NUM_4:
+     59              case T_KEY_NUM_5:
+     60              case T_KEY_NUM_6:
+     61              case T_KEY_NUM_7:
+     62              case T_KEY_NUM_8:
+     63              case T_KEY_NUM_9:
+     64                  if (t_num.cnt >= 4) {
+     65                      t_num.value = 0;
+     66                  }
+     67                  if (t_num.value == 0) {
+     68                      t_num.cnt = 0;
+     69                  }
+     70                  t_num.value = t_num.value * 10 + (msg - T_KEY_NUM_0);
+     71                  t_num.cnt++;
+     72                  break;
+     73          
+     74                  //调用公共消息函数
+     75              default:
+     76                  deal_msg(msg);
+     77                  break;
+     78              }
+     79          }
+     80          
+     81          //数选框显示接口
+     82          #pragma location="NUM_BOX_SEG"
+     83          void numbox_display(void)
+     84          {
+     85             // char *msg_ptr;
+     86              if (t_num.disp_value == t_num.value) {
+     87                  return;
+     88              }
+     89              t_num.disp_value = t_num.value;
+     90          
+     91              //由于使用小显存，不足内存使用disp_来更新内容，改使用draw_img
+     92              u8 v;
+     93              v = t_num.disp_value / 1000;
+     94              draw_img(RES_BIGNUM_0_BMP+v, 24, 3);
+     95              v = (t_num.disp_value / 100) % 10;
+     96              draw_img(RES_BIGNUM_0_BMP+v, 24 + 20, 3);
+     97              v = (t_num.disp_value / 10) % 10;
+     98              draw_img(RES_BIGNUM_0_BMP+v, 24 + 20 * 2, 3);
+     99              v = t_num.disp_value % 10;
+    100              draw_img(RES_BIGNUM_0_BMP+v, 24 + 20 * 3, 3);
+    101          }
+    102          
+    103          //value初始值; mode为模式
+    104          //返回选中值
+    105          #pragma location="NUM_BOX_SEG"
+    106          u16 numbox(u8 value, u8 mode)
+    107          {
+    108              t_num.disp_value = 0xffff;
+    109              t_num.ok_flag = 0;
+    110              t_num.value = value;
+    111              t_num.cnt = 1;
+    112              ocx_show_cnt = 0;
+    113          
+    114              draw_clear();               //清屏
+    115              while (!t_num.ok_flag) {
+    116                  numbox_event();
+    117                  numbox_deal_msg();
+    118                  numbox_display();
+    119              }
+    120          
+    121              if (t_num.ok_flag == 1) {
+    122                  return t_num.value;                     //按下确定键，返回选择的值
+    123              }
+    124              return 0xffff;                              //返回无效值
+    125          }
+    126          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

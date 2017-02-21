@@ -1,0 +1,1326 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:02 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_iis\user_tas5711.c                            #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_iis\user_tas5711.c                            #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_tas5711.lst                             #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_tas5711.r51                              #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_iis\user_tas5711.c
+      1          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x80
+   \   unsigned char volatile __sfr P0
+   \                     P0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0x90
+   \   unsigned char volatile __sfr P1
+   \                     P1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xba
+   \   unsigned char volatile __sfr P0DIR
+   \                     P0DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+      2          #include "user_iis.h"
+      3          #include "user_fm.h"
+      4          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+      5          u8 eq_flag;
+   \                     eq_flag:
+   \   000000                DS 1
+      6          /*const __code u8 TAS5731M_Volume_Table[VOLUME_MAX+1] ={
+      7          	255,180,140,120,110,105,100, 95, 90, 85,
+      8          	 82, 79, 76, 73, 70, 67, 64, 62, 60, 58,
+      9          	 56, 54, 52, 50, 48, 46, 44, 42, 40, 38, 
+     10          	 36, 34, 32, 
+     11          };
+     12          */
+
+   \                                 In segment CODE_C, align 1
+     13          const __code u8 TAS5731M_Volume_Table[VOLUME_MAX+1] ={
+   \                     TAS5731M_Volume_Table:
+   \   000000   FFA07864     DB 255, 160, 120, 100, 90, 85, 80, 75, 70, 65, 61, 57, 53, 50, 47, 44
+   \            5A55504B
+   \            46413D39
+   \            35322F2C
+   \   000010   29262320     DB 41, 38, 35, 32, 29, 26, 23, 20, 17, 14, 12, 10, 8, 6, 4, 2, 0
+   \            1D1A1714
+   \            110E0C0A
+   \            08060402
+   \            00      
+     14          	255,160,120,100,90,85,80, 75, 70, 65,
+     15          	 61, 57, 53, 50, 47, 44, 41, 38, 35, 32,
+     16          	 29, 26, 23, 20, 17, 14, 12, 10, 8, 6, 
+     17          	 4, 2, 0, 
+     18          };
+     19          
+     20          
+     21          #if 0
+     22          #pragma constseg = "DSP_DATA"
+     23          const __code u8 TAS5731M_EQ_60[8] ={0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x00};
+     24          const __code u8 TAS5731M_EQ_61[8] ={0x00,0x40,0x00,0x00,0x00,0x40,0x00,0x00};
+     25          const __code u8 TAS5731M_EQ_53[16]={0x00,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x00};
+     26          const __code u8 TAS5731M_EQ_20[20]={0x00,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+     27          const __code u8 TAS5731M_EQ_5A[20]={0x00,0x00,0x03,0x8a,0x00,0x00,0x07,0x14,0x00,0x00,0x03,0x8a,0x00,0xFc,0x35,0x5d,0x0F,0x83,0xbc,0x79};
+     28          
+     29          const __code u8 EQ1_29[20]={0x00,0x7D,0xA6,0xE3,0x0F,0x04,0xB2,0x39,0x00,0x7D,0xA6,0xE3,0x00,0xFB,0x42,0xC1,0x0F,0x84,0xA7,0x33};
+     30          const __code u8 EQ1_5B[20]={0x00,0x82,0x7b,0x30,0x0F,0x01,0xad,0xb9,0x00,0x7b,0xDa,0xa9,0x00,0xFe,0x52,0x47,0x0F,0x81,0xaa,0x27};
+     31          
+     32          const __code u8 EQ1_2A[20]={0x00,0x80,0xF7,0xA6,0x0F,0x03,0x64,0xff,0x00,0x7B,0xB9,0x85,0x00,0xFC,0x9b,0x01,0x0F,0x83,0x4E,0xD4};
+     33          const __code u8 EQ1_2B[20]={0x00,0xCE,0x9B,0xD7,0x0F,0xEC,0x28,0x8E,0x0F,0xC9,0x67,0x53,0x00,0x13,0xD7,0x72,0x0F,0xE7,0xFC,0xD6};
+     34          const __code u8 EQ1_2C[20]={0x00,0x80,0xb4,0x1f,0x0F,0x05,0x9e,0xa9,0x00,0x7a,0x26,0xb7,0x00,0xfa,0x61,0x57,0x0F,0x85,0x25,0x29};
+     35          const __code u8 EQ1_2D[20]={0x00,0x80,0x97,0x27,0x0F,0x0c,0xb5,0xee,0x00,0x75,0xBB,0x45,0x00,0xf3,0x4a,0x12,0x0f,0x89,0xad,0x93};
+     36          const __code u8 EQ1_2E[20]={0x00,0x81,0xA2,0x6D,0x0F,0x2e,0x9b,0x5f,0x00,0x63,0x93,0x25,0x00,0xd1,0x64,0xa1,0x0F,0x9a,0xCa,0x6d};
+     37          
+     38          const __code u8 EQ2_2B[20]={0x00,0xC7,0x06,0x46,0x0F,0xF1,0x36,0xF5,0x0F,0xAA,0x40,0x12,0x00,0x0E,0xC9,0x0B,0x00,0x0E,0xB9,0xA7};
+     39          const __code u8 EQ2_2C[20]={0x00,0x80,0x97,0xa6,0x0F,0x05,0x9e,0xa9,0x00,0x7a,0x43,0x30,0x00,0xfa,0x61,0x57,0x0F,0x85,0x25,0x29};
+     40          const __code u8 EQ2_2D[20]={0x00,0x81,0x40,0xc0,0x0F,0x0c,0xb5,0xee,0x00,0x75,0x11,0xac,0x00,0xf3,0x4a,0x12,0x0f,0x89,0xad,0x93};
+     41          const __code u8 EQ2_2E[20]={0x00,0x83,0x15,0xa3,0x0F,0x2e,0x9b,0x5f,0x00,0x62,0x1f,0xef,0x00,0xd1,0x64,0xa1,0x0F,0x9a,0xCa,0x6d};
+     42          const __code u8 EQ2_2F[20]={0x00,0x85,0x19,0x51,0x0F,0x71,0x3c,0x0c,0x00,0x44,0xcd,0x4b,0x00,0x8e,0xc3,0xf4,0x0f,0xb6,0x19,0x63};
+     43          
+     44          const __code u8 EQ3_2B[20]={0x00,0x80,0xD8,0x81,0x0F,0x07,0xE6,0x2F,0x00,0x78,0x9F,0x2A,0x00,0xF8,0x19,0xD1,0x0F,0x86,0x88,0x55};
+     45          const __code u8 EQ3_2C[20]={0x00,0x81,0x77,0xF1,0x0F,0x06,0x64,0x4F,0x00,0x78,0x9C,0xDF,0x00,0xF9,0x9B,0xB1,0x0F,0x85,0xEB,0x30};
+     46          const __code u8 EQ3_2E[20]={0x00,0x80,0xCB,0x31,0x0F,0x2E,0x9B,0x5F,0x00,0x64,0x6A,0x61,0x00,0xD1,0x64,0xA1,0x0F,0x9A,0xCA,0x6D};
+     47          const __code u8 EQ3_2F[20]={0x00,0x20,0x70,0x4E,0x00,0x20,0x70,0x4E,0x00,0x00,0x00,0x00,0x00,0x3F,0x1F,0x63,0x00,0x00,0x00,0x00};
+     48          
+     49          const __code u8 EQ4_60[8] ={0x00,0x00,0x00,0x00,0x00,0x4e,0x00,0xd2};
+     50          const __code u8 EQ4_61[8] ={0x00,0x80,0x00,0x00,0x00,0x80,0x00,0x00};
+     51          const __code u8 EQ4_29[20]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+     52          const __code u8 EQ4_2B[20]={0x00,0x80,0xC9,0xAF,0x03,0x02,0x1C,0x8F,0x00,0x7D,0x30,0x09,0x00,0xFD,0xE3,0x71,0x03,0x82,0x06,0x48};
+     53          const __code u8 EQ4_2C[20]={0x00,0x80,0xAA,0x86,0x03,0x05,0x9E,0xA8,0x00,0x7A,0x30,0x51,0x00,0xFA,0x61,0x58,0x03,0x85,0x25,0x29};
+     54          const __code u8 EQ4_2D[20]={0x00,0x81,0x50,0x4F,0x03,0x07,0x96,0xB0,0x00,0x7A,0x31,0xB4,0x00,0xF8,0x69,0x50,0x03,0x84,0x7D,0xFD};
+     55          const __code u8 EQ4_2E[20]={0x00,0x82,0x5C,0xE2,0x03,0x1E,0xD5,0x00,0x00,0x74,0x1D,0x3D,0x00,0xE1,0x2B,0x00,0x03,0x89,0x85,0xE2};
+     56          const __code u8 EQ4_2F[20]={0x00,0x85,0x19,0x52,0x03,0x71,0x3C,0x0C,0x00,0x44,0xCD,0x4B,0x00,0x8E,0xC3,0xF4,0x03,0xB6,0x19,0x63};
+     57          const __code u8 EQ4_58[20]={0x00,0xBC,0x0F,0x9E,0x03,0xEE,0x56,0xC9,0x03,0xCB,0x3E,0xC3,0x00,0x11,0xA9,0x37,0x03,0xF8,0xB1,0x9F};
+     58          const __code u8 EQ4_59[20]={0x00,0x7D,0x6B,0x64,0x03,0x05,0x29,0x39,0x00,0x7D,0x6B,0x64,0x00,0xFA,0xC9,0x76,0x03,0x85,0x1B,0xE8};
+     59          const __code u8 EQ4_5A[20]={0x00,0x00,0x02,0x89,0x00,0x00,0x05,0x12,0x00,0x00,0x02,0x89,0x00,0xFD,0xB7,0xE6,0x03,0x82,0x3D,0xF5};
+     60          const __code u8 EQ4_5B[20]={0x00,0x82,0x53,0x85,0x03,0x01,0x93,0x1B,0x00,0x7C,0x1C,0xF3,0x00,0xFE,0x6C,0xE5,0x03,0x81,0x8F,0x88};
+     61          const __code u8 EQ4_53[16]={0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x00,0x00,0x60,0x00,0x00,0x00,0xa0,0x00,0x00};
+     62          const __code u8 EQ4_54[16]={0x0F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x0f,0x60,0x00,0x00};
+     63          const __code u8 EQ4_55[12]={0x00,0x00,0x00,0x00,0x00,0x40,0x00,0x00,0x0F,0xC0,0x00,0x00};
+     64          const __code u8 EQ4_5E[20]={0x00,0x7e,0x61,0x1e,0x0f,0x81,0x9e,0xe2,0x00,0x00,0x00,0x00,0x00,0x7c,0xc2,0x3c,0x00,0x00,0x00,0x00};
+     65          #endif
+     66          //1us Delay
+     67          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+     68          void audio_delay(void)
+   \                     audio_delay:
+     69          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     70             u8 i;
+     71             i = 10; //sys_clk = 24m
+   \   000000   7A0A         MOV     R2,#0xa
+     72             for (; i!=0; i--) {  //SysCLK_12M //60-- 35K   //10--86k  //10
+     73                  asm("nop");
+   \                     ??audio_delay_0:
+   \   000002   00           nop
+     74              }
+   \   000003   1A           DEC     R2
+   \   000004   EA           MOV     A,R2
+   \   000005   70FB         JNZ     ??audio_delay_0
+     75          }
+   \   000007   02....       LJMP    ?BRET
+     76          
+     77          //2us Delay
+     78          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+     79          void audio_delay_2(void)
+   \                     audio_delay_2:
+     80          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     81              u8 i;
+     82             i = 15;  //sys_clk = 24m
+   \   000000   7A0F         MOV     R2,#0xf
+     83              for (; i!=0; i--) {
+     84                  asm("nop");
+   \                     ??audio_delay_2_0:
+   \   000002   00           nop
+     85              }
+   \   000003   1A           DEC     R2
+   \   000004   EA           MOV     A,R2
+   \   000005   70FB         JNZ     ??audio_delay_2_0
+     86          }
+   \   000007   02....       LJMP    ?BRET
+     87          
+     88          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+     89          void audio_start(void)
+   \                     audio_start:
+     90          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     91              AUDIO_DATA_CLK_OUT();
+   \   000000   907840       MOV     DPTR,#0x7840
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   C2E6         CLR     0xE0 /* A   */.6
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   907841       MOV     DPTR,#0x7841
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   C2E4         CLR     0xE0 /* A   */.4
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   53BABF       ANL     0xba,#0xbf
+   \   000011   53BBEF       ANL     0xbb,#0xef
+   \   000014                ; Setup parameters for call to function delay
+   \   000014   7A0A         MOV     R2,#0xa
+   \   000016   7B00         MOV     R3,#0x0
+   \   000018   12....       LCALL   delay & 0xFFFF
+     92              AUDIO_DATA_CLK_HIGH();
+   \   00001B   D294         SETB    0x90.4
+   \   00001D   D286         SETB    0x80.6
+     93              audio_delay();
+   \   00001F                ; Setup parameters for call to function audio_delay
+   \   00001F   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   000022   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   000024   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     94              AUDIO_DATA_LOW();
+   \   000027   C286         CLR     0x80.6
+     95              audio_delay();
+   \   000029                ; Setup parameters for call to function audio_delay
+   \   000029   02....       LJMP    ??Subroutine3_0
+     96              AUDIO_CLK_LOW();
+     97          }
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   D294         SETB    0x90.4
+   \   000005                ; Setup parameters for call to function audio_delay
+   \   000005                ; Setup parameters for call to function audio_delay
+   \                     ??Subroutine3_0:
+   \   000005   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   000008   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000D   C294         CLR     0x90.4
+   \   00000F   02....       LJMP    ?BRET
+     98          
+     99          //结束一次IIC通信
+    100          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    101          void audio_stop(void)
+   \                     audio_stop:
+    102          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    103              AUDIO_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine0
+    104              AUDIO_DATA_LOW();
+    105              audio_delay_2();
+   \                     ??CrossCallReturnLabel_0:
+   \   000003   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    106              AUDIO_CLK_HIGH();
+   \   000006   D294         SETB    0x90.4
+    107              audio_delay();
+   \   000008                ; Setup parameters for call to function audio_delay
+   \   000008   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   00000B   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    108              AUDIO_DATA_HIGH();
+   \   000010   D286         SETB    0x80.6
+    109          }
+   \   000012   02....       LJMP    ?BRET
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_5:
+   \   000003   C286         CLR     0x80.6
+   \   000005                ; Setup parameters for call to function audio_delay_2
+   \   000005                ; Setup parameters for call to function audio_delay_2
+   \   000005   90....       MOV     DPTR,#(audio_delay_2 & 0xffff)
+   \   000008   74..         MOV     A,#((audio_delay_2 >> 16) & 0xff)
+   \   00000A   22           RET
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   907840       MOV     DPTR,#0x7840
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   D2E6         SETB    0xE0 /* A   */.6
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   53BABF       ANL     0xba,#0xbf
+   \   00000A   22           RET
+    110          
+    111          //IIC总线发送1byte
+    112          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    113          void audio_sendbyte(u8 val)
+   \                     audio_sendbyte:
+    114          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   E9           MOV     A,R1
+   \   000007   FF           MOV     R7,A
+    115              u8 i;
+    116              AUDIO_DATA_OUT();
+   \   000008   12....       LCALL   ?Subroutine2
+    117              for (i=8; i!=0; i--) {
+   \                     ??CrossCallReturnLabel_4:
+   \   00000B   7E08         MOV     R6,#0x8
+    118                  if (val & BIT(7)) {
+   \                     ??audio_sendbyte_0:
+   \   00000D   EF           MOV     A,R7
+   \   00000E   A2E7         MOV     C,0xE0 /* A   */.7
+   \   000010   5004         JNC     ??audio_sendbyte_1
+    119                      AUDIO_DATA_HIGH();
+   \   000012   D286         SETB    0x80.6
+   \   000014   8002         SJMP    ??audio_sendbyte_2
+    120                  } else {
+    121                      AUDIO_DATA_LOW();
+   \                     ??audio_sendbyte_1:
+   \   000016   C286         CLR     0x80.6
+    122                  }
+    123                  audio_delay_2();
+   \                     ??audio_sendbyte_2:
+   \   000018                ; Setup parameters for call to function audio_delay_2
+   \   000018   90....       MOV     DPTR,#(audio_delay_2 & 0xffff)
+   \   00001B   74..         MOV     A,#((audio_delay_2 >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    124                  AUDIO_CLK_HIGH();
+   \   000020   D294         SETB    0x90.4
+    125                  audio_delay();
+   \   000022                ; Setup parameters for call to function audio_delay
+   \   000022   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   000025   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    126                  AUDIO_CLK_LOW();
+   \   00002A   C294         CLR     0x90.4
+    127                  val <<= 1;
+   \   00002C   EF           MOV     A,R7
+   \   00002D   C3           CLR     C
+   \   00002E   33           RLC     A
+   \   00002F   FF           MOV     R7,A
+    128              }
+   \   000030   1E           DEC     R6
+   \   000031   EE           MOV     A,R6
+   \   000032   70D9         JNZ     ??audio_sendbyte_0
+    129          }
+   \   000034   02....       LJMP    ?Subroutine4
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   D0E0         POP     A
+   \   000002   FF           MOV     R7,A
+   \                     ??Subroutine4_0:
+   \   000003   D0E0         POP     A
+   \   000005   FE           MOV     R6,A
+   \   000006   02....       LJMP    ?BRET
+    130          
+    131          //IIC总线接收1byte
+    132          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    133          u8 audio_getbyte(void)
+   \                     audio_getbyte:
+    134          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+    135              u8 i;
+    136              u8 val = 0;
+   \   000006   7F00         MOV     R7,#0x0
+    137              AUDIO_DATA_IN();
+   \   000008   12....       LCALL   ?Subroutine1
+    138              for (i=8; i!=0; i--) {
+   \                     ??CrossCallReturnLabel_2:
+   \   00000B   7E08         MOV     R6,#0x8
+    139                  audio_delay_2();
+   \                     ??audio_getbyte_0:
+   \   00000D                ; Setup parameters for call to function audio_delay_2
+   \   00000D   90....       MOV     DPTR,#(audio_delay_2 & 0xffff)
+   \   000010   74..         MOV     A,#((audio_delay_2 >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    140                  AUDIO_CLK_HIGH();
+   \   000015   D294         SETB    0x90.4
+    141                  audio_delay();
+   \   000017                ; Setup parameters for call to function audio_delay
+   \   000017   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   00001A   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    142                  val <<= 1;
+   \   00001F   EF           MOV     A,R7
+   \   000020   C3           CLR     C
+   \   000021   33           RLC     A
+   \   000022   FF           MOV     R7,A
+    143                  if (AUDIO_DATA_IS_HIGH()) {
+   \   000023   A286         MOV     C,0x80.6
+   \   000025   5003         JNC     ??audio_getbyte_1
+    144                      val |= BIT(0);
+   \   000027   D2E0         SETB    0xE0 /* A   */.0
+   \   000029   FF           MOV     R7,A
+    145                  }
+    146                  AUDIO_CLK_LOW();
+   \                     ??audio_getbyte_1:
+   \   00002A   C294         CLR     0x90.4
+    147              }
+   \   00002C   1E           DEC     R6
+   \   00002D   EE           MOV     A,R6
+   \   00002E   70DD         JNZ     ??audio_getbyte_0
+    148              return val;
+   \   000030   EF           MOV     A,R7
+   \   000031   F9           MOV     R1,A
+   \   000032   02....       LJMP    ?Subroutine4
+    149          }
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   43BA40       ORL     0xba,#0x40
+   \   000003   907840       MOV     DPTR,#0x7840
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   D2E6         SETB    0xE0 /* A   */.6
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   22           RET
+    150          
+    151          //IIC总线发送ACK
+    152          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    153          void audio_sendack(void)
+   \                     audio_sendack:
+    154          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    155              AUDIO_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine0
+    156              AUDIO_DATA_LOW();
+    157              audio_delay_2();
+   \                     ??CrossCallReturnLabel_1:
+   \   000003                REQUIRE ?Subroutine3
+   \   000003                ; // Fall through to label ?Subroutine3
+    158              AUDIO_CLK_HIGH();
+    159              audio_delay();
+    160              AUDIO_CLK_LOW();
+    161          }
+    162          
+    163          //IIC总线发送NACK
+    164          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    165          void audio_sendnack(void)
+   \                     audio_sendnack:
+    166          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    167              AUDIO_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine2
+    168              AUDIO_DATA_HIGH();
+   \                     ??CrossCallReturnLabel_6:
+   \   000003   D286         SETB    0x80.6
+    169              audio_delay_2();
+   \   000005                ; Setup parameters for call to function audio_delay_2
+   \   000005   90....       MOV     DPTR,#(audio_delay_2 & 0xffff)
+   \   000008   74..         MOV     A,#((audio_delay_2 >> 16) & 0xff)
+   \   00000A   80..         SJMP    ?Subroutine3
+    170              AUDIO_CLK_HIGH();
+    171              audio_delay();
+    172              AUDIO_CLK_LOW();
+    173          }
+    174          
+    175          //IIC总线获取ACK状态
+    176          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    177          bool audio_getack(void)
+   \                     audio_getack:
+    178          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+    179              bool ack = false;
+   \   000002   C2..         CLR     ?VB.0
+    180              AUDIO_DATA_IN();
+   \   000004   12....       LCALL   ?Subroutine1
+    181              audio_delay_2();
+   \                     ??CrossCallReturnLabel_3:
+   \   000007                ; Setup parameters for call to function audio_delay_2
+   \   000007   90....       MOV     DPTR,#(audio_delay_2 & 0xffff)
+   \   00000A   74..         MOV     A,#((audio_delay_2 >> 16) & 0xff)
+   \   00000C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    182              AUDIO_CLK_HIGH();
+   \   00000F   D294         SETB    0x90.4
+    183              audio_delay();
+   \   000011                ; Setup parameters for call to function audio_delay
+   \   000011   90....       MOV     DPTR,#(audio_delay & 0xffff)
+   \   000014   74..         MOV     A,#((audio_delay >> 16) & 0xff)
+   \   000016   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    184              if (!AUDIO_DATA_IS_HIGH()) {
+   \   000019   A286         MOV     C,0x80.6
+   \   00001B   4002         JC      ??audio_getack_0
+    185                  //printf("t\n");
+    186                  ack = true;
+   \   00001D   D2..         SETB    ?VB.0
+    187              }
+    188              AUDIO_CLK_LOW();
+   \                     ??audio_getack_0:
+   \   00001F   C294         CLR     0x90.4
+    189             // printf("f\n");
+    190              return ack;
+   \   000021   A2..         MOV     C,?VB.0
+   \   000023   D0..         POP     ?VB
+   \   000025   02....       LJMP    ?BRET
+    191          }
+    192          
+    193          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    194          void tas5711_write_byte(u8 adr, u8 value)
+   \                     tas5711_write_byte:
+    195          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   E9           MOV     A,R1
+   \   000007   FE           MOV     R6,A
+   \   000008   EA           MOV     A,R2
+   \   000009   FF           MOV     R7,A
+    196            // to be filled by user API
+    197              audio_start();                //I2C启动
+   \   00000A                ; Setup parameters for call to function audio_start
+   \   00000A   90....       MOV     DPTR,#(audio_start & 0xffff)
+   \   00000D   74..         MOV     A,#((audio_start >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    198          #if A_SEL
+    199              audio_sendbyte(0x36);         //写命令
+    200          #else
+    201              audio_sendbyte(0x34);         //写命令
+   \   000012                ; Setup parameters for call to function audio_sendbyte
+   \   000012   7934         MOV     R1,#0x34
+   \   000014   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000017   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    202          #endif
+    203              audio_getack();
+   \   00001C                ; Setup parameters for call to function audio_getack
+   \   00001C   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00001F   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000021   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    204          
+    205              audio_sendbyte(adr);   //写地址
+   \   000024                ; Setup parameters for call to function audio_sendbyte
+   \   000024   EE           MOV     A,R6
+   \   000025   F9           MOV     R1,A
+   \   000026   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000029   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   00002B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    206              audio_getack();
+   \   00002E                ; Setup parameters for call to function audio_getack
+   \   00002E   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000031   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000033   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    207          
+    208              audio_sendbyte(value);      //写数据
+   \   000036                ; Setup parameters for call to function audio_sendbyte
+   \   000036   EF           MOV     A,R7
+   \   000037   F9           MOV     R1,A
+   \   000038   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00003B   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   00003D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    209              audio_getack();
+   \   000040                ; Setup parameters for call to function audio_getack
+   \   000040   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000043   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000045   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    210          
+    211              audio_stop();                 //I2C停止时序
+   \   000048                ; Setup parameters for call to function audio_stop
+   \   000048   90....       MOV     DPTR,#(audio_stop & 0xffff)
+   \   00004B   74..         MOV     A,#((audio_stop >> 16) & 0xff)
+   \   00004D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    212              delay_5ms(1);
+   \   000050                ; Setup parameters for call to function delay_5ms
+   \   000050   7901         MOV     R1,#0x1
+   \   000052   12....       LCALL   delay_5ms & 0xFFFF
+    213          }
+   \   000055                REQUIRE ?Subroutine4
+   \   000055                ; // Fall through to label ?Subroutine4
+    214          
+    215          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    216          void tas5711_write_4byte(u8 adr, u8 value0, u8 value1, u8 value2, u8 value3)
+   \                     tas5711_write_4byte:
+    217          {
+   \   000000   7403         MOV     A,#0x3
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 6
+   \   000005                ; Auto size: 0
+   \   000005   E9           MOV     A,R1
+   \   000006   FE           MOV     R6,A
+   \   000007   EA           MOV     A,R2
+   \   000008   FF           MOV     R7,A
+   \   000009   8B..         MOV     ?V0 + 0,R3
+   \   00000B   8C..         MOV     ?V0 + 1,R4
+   \   00000D   8D..         MOV     ?V0 + 2,R5
+    218              // to be filled by user API
+    219              audio_start();                //I2C启动
+   \   00000F                ; Setup parameters for call to function audio_start
+   \   00000F   90....       MOV     DPTR,#(audio_start & 0xffff)
+   \   000012   74..         MOV     A,#((audio_start >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    220          #if A_SEL
+    221              audio_sendbyte(0x36);         //写命令
+    222          #else
+    223              audio_sendbyte(0x34);         //写命令
+   \   000017                ; Setup parameters for call to function audio_sendbyte
+   \   000017   7934         MOV     R1,#0x34
+   \   000019   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00001C   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   00001E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    224          #endif
+    225              audio_getack();
+   \   000021                ; Setup parameters for call to function audio_getack
+   \   000021   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000024   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000026   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    226          
+    227              audio_sendbyte(adr);   //写地址
+   \   000029                ; Setup parameters for call to function audio_sendbyte
+   \   000029   EE           MOV     A,R6
+   \   00002A   F9           MOV     R1,A
+   \   00002B   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00002E   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000030   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    228              audio_getack();
+   \   000033                ; Setup parameters for call to function audio_getack
+   \   000033   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000036   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000038   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    229          
+    230              audio_sendbyte(value0);      //写数据0
+   \   00003B                ; Setup parameters for call to function audio_sendbyte
+   \   00003B   EF           MOV     A,R7
+   \   00003C   F9           MOV     R1,A
+   \   00003D   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000040   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000042   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    231              audio_getack();
+   \   000045                ; Setup parameters for call to function audio_getack
+   \   000045   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000048   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00004A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    232          
+    233              audio_sendbyte(value1);      //写数据1
+   \   00004D                ; Setup parameters for call to function audio_sendbyte
+   \   00004D   A9..         MOV     R1,?V0 + 0
+   \   00004F   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000052   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000054   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    234              audio_getack();
+   \   000057                ; Setup parameters for call to function audio_getack
+   \   000057   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00005A   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00005C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    235          
+    236              audio_sendbyte(value2);      //写数据2
+   \   00005F                ; Setup parameters for call to function audio_sendbyte
+   \   00005F   A9..         MOV     R1,?V0 + 1
+   \   000061   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000064   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000066   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    237              audio_getack();
+   \   000069                ; Setup parameters for call to function audio_getack
+   \   000069   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00006C   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00006E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    238          
+    239              audio_sendbyte(value3);      //写数据3
+   \   000071                ; Setup parameters for call to function audio_sendbyte
+   \   000071   A9..         MOV     R1,?V0 + 2
+   \   000073   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000076   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000078   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    240              audio_getack();
+   \   00007B                ; Setup parameters for call to function audio_getack
+   \   00007B   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00007E   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000080   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    241          
+    242              audio_stop();                 //I2C停止时序
+   \   000083                ; Setup parameters for call to function audio_stop
+   \   000083   90....       MOV     DPTR,#(audio_stop & 0xffff)
+   \   000086   74..         MOV     A,#((audio_stop >> 16) & 0xff)
+   \   000088   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    243              delay_5ms(1);
+   \   00008B                ; Setup parameters for call to function delay_5ms
+   \   00008B   7901         MOV     R1,#0x1
+   \   00008D   12....       LCALL   delay_5ms & 0xFFFF
+    244          }
+   \   000090   7F03         MOV     R7,#0x3
+   \   000092   02....       LJMP    ?BANKED_LEAVE_SP
+    245          
+    246          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    247          void tas5711_write_20byte(u8 adr, const __code u8 buffer[20], u8 len)
+   \                     tas5711_write_20byte:
+    248          {
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+   \   000005   89..         MOV     ?V0 + 0,R1
+   \   000007   EA           MOV     A,R2
+   \   000008   FE           MOV     R6,A
+   \   000009   EB           MOV     A,R3
+   \   00000A   FF           MOV     R7,A
+   \   00000B   8C..         MOV     ?V0 + 1,R4
+    249              // to be filled by user API
+    250              u8 i;
+    251              audio_start();                //I2C启动
+   \   00000D                ; Setup parameters for call to function audio_start
+   \   00000D   90....       MOV     DPTR,#(audio_start & 0xffff)
+   \   000010   74..         MOV     A,#((audio_start >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    252          #if A_SEL
+    253              audio_sendbyte(0x36);         //写命令
+    254          #else
+    255              audio_sendbyte(0x34);         //写命令
+   \   000015                ; Setup parameters for call to function audio_sendbyte
+   \   000015   7934         MOV     R1,#0x34
+   \   000017   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00001A   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    256          #endif
+    257              audio_getack();
+   \   00001F                ; Setup parameters for call to function audio_getack
+   \   00001F   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000022   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000024   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    258          
+    259              audio_sendbyte(adr);   //写地址
+   \   000027                ; Setup parameters for call to function audio_sendbyte
+   \   000027   A9..         MOV     R1,?V0 + 0
+   \   000029   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00002C   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    260              audio_getack();
+   \   000031                ; Setup parameters for call to function audio_getack
+   \   000031   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000034   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000036   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    261          
+    262               for(i=0;i<len;i++)
+   \   000039   75..00       MOV     ?V0 + 0,#0x0
+   \   00003C   8022         SJMP    ??tas5711_write_20byte_0
+    263              {
+    264                  audio_sendbyte(buffer[i]);  //写数据    ////先写权小的字节
+   \                     ??tas5711_write_20byte_1:
+   \   00003E                ; Setup parameters for call to function audio_sendbyte
+   \   00003E   85....       MOV     ?V0 + 2,?V0 + 0
+   \   000041   EE           MOV     A,R6
+   \   000042   25..         ADD     A,?V0 + 2
+   \   000044   F582         MOV     DPL,A
+   \   000046   EF           MOV     A,R7
+   \   000047   3400         ADDC    A,#0x0
+   \   000049   F583         MOV     DPH,A
+   \   00004B   E4           CLR     A
+   \   00004C   93           MOVC    A,@A+DPTR
+   \   00004D   F9           MOV     R1,A
+   \   00004E   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000051   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000053   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    265                  audio_getack();
+   \   000056                ; Setup parameters for call to function audio_getack
+   \   000056   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000059   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00005B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    266              }
+   \   00005E   05..         INC     ?V0 + 0
+   \                     ??tas5711_write_20byte_0:
+   \   000060   E5..         MOV     A,?V0 + 0
+   \   000062   C3           CLR     C
+   \   000063   95..         SUBB    A,?V0 + 1
+   \   000065   40D7         JC      ??tas5711_write_20byte_1
+    267          
+    268              audio_stop();                 //I2C停止时序
+   \   000067                ; Setup parameters for call to function audio_stop
+   \   000067   90....       MOV     DPTR,#(audio_stop & 0xffff)
+   \   00006A   74..         MOV     A,#((audio_stop >> 16) & 0xff)
+   \   00006C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    269              delay_5ms(1);
+   \   00006F                ; Setup parameters for call to function delay_5ms
+   \   00006F   7901         MOV     R1,#0x1
+   \   000071   12....       LCALL   delay_5ms & 0xFFFF
+    270          }
+   \   000074   7F04         MOV     R7,#0x4
+   \   000076   02....       LJMP    ?BANKED_LEAVE_SP
+    271          
+    272          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    273          u8 tas5711_read_byte(u8 adr)
+   \                     tas5711_read_byte:
+    274          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    275              u8 I2CReadResult;
+    276          
+    277              audio_start();                //I2C启动
+   \   000005                ; Setup parameters for call to function audio_start
+   \   000005   90....       MOV     DPTR,#(audio_start & 0xffff)
+   \   000008   74..         MOV     A,#((audio_start >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    278          
+    279          #if A_SEL
+    280              audio_sendbyte(0x36);         //写命令
+    281          #else
+    282              audio_sendbyte(0x34);         //写命令
+   \   00000D                ; Setup parameters for call to function audio_sendbyte
+   \   00000D   7934         MOV     R1,#0x34
+   \   00000F   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000012   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    283          #endif
+    284              audio_getack();
+   \   000017                ; Setup parameters for call to function audio_getack
+   \   000017   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00001A   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    285          
+    286              audio_sendbyte(adr);         //写地址
+   \   00001F                ; Setup parameters for call to function audio_sendbyte
+   \   00001F   EE           MOV     A,R6
+   \   000020   F9           MOV     R1,A
+   \   000021   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   000024   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000026   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    287              audio_getack();
+   \   000029                ; Setup parameters for call to function audio_getack
+   \   000029   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   00002C   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    288          
+    289              audio_start();                    //写转为读命令，需要再次启动I2C
+   \   000031                ; Setup parameters for call to function audio_start
+   \   000031   90....       MOV     DPTR,#(audio_start & 0xffff)
+   \   000034   74..         MOV     A,#((audio_start >> 16) & 0xff)
+   \   000036   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    290          
+    291          #if A_SEL
+    292              audio_sendbyte(0x36 | 0x01);         //读命令
+    293          #else
+    294              audio_sendbyte(0x34 | 0x01);         //读命令
+   \   000039                ; Setup parameters for call to function audio_sendbyte
+   \   000039   7935         MOV     R1,#0x35
+   \   00003B   90....       MOV     DPTR,#(audio_sendbyte & 0xffff)
+   \   00003E   74..         MOV     A,#((audio_sendbyte >> 16) & 0xff)
+   \   000040   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    295          #endif
+    296              audio_getack();
+   \   000043                ; Setup parameters for call to function audio_getack
+   \   000043   90....       MOV     DPTR,#(audio_getack & 0xffff)
+   \   000046   74..         MOV     A,#((audio_getack >> 16) & 0xff)
+   \   000048   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    297          
+    298              I2CReadResult = audio_getbyte();
+   \   00004B                ; Setup parameters for call to function audio_getbyte
+   \   00004B   90....       MOV     DPTR,#(audio_getbyte & 0xffff)
+   \   00004E   74..         MOV     A,#((audio_getbyte >> 16) & 0xff)
+   \   000050   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000053   E9           MOV     A,R1
+   \   000054   FE           MOV     R6,A
+    299              audio_sendnack();                      //发送ack命令
+   \   000055                ; Setup parameters for call to function audio_sendnack
+   \   000055   90....       MOV     DPTR,#(audio_sendnack & 0xffff)
+   \   000058   74..         MOV     A,#((audio_sendnack >> 16) & 0xff)
+   \   00005A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    300          
+    301              audio_stop();                     //I2C停止
+   \   00005D                ; Setup parameters for call to function audio_stop
+   \   00005D   90....       MOV     DPTR,#(audio_stop & 0xffff)
+   \   000060   74..         MOV     A,#((audio_stop >> 16) & 0xff)
+   \   000062   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    302              delay_5ms(1);
+   \   000065                ; Setup parameters for call to function delay_5ms
+   \   000065   7901         MOV     R1,#0x1
+   \   000067   12....       LCALL   delay_5ms & 0xFFFF
+    303          
+    304              return I2CReadResult;
+   \   00006A   EE           MOV     A,R6
+   \   00006B   F9           MOV     R1,A
+   \   00006C   02....       LJMP    ??Subroutine4_0
+    305          }
+    306          
+    307          #pragma location="DSP_IIC"
+
+   \                                 In segment DSP_IIC, align 1, keep-with-next
+    308          void get_5711_err_sta(void)
+   \                     get_5711_err_sta:
+    309          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+    310              u8 sta = tas5711_read_byte(0x02);
+   \   000004                ; Setup parameters for call to function tas5711_read_byte
+   \   000004   7902         MOV     R1,#0x2
+   \   000006   90....       MOV     DPTR,#(tas5711_read_byte & 0xffff)
+   \   000009   74..         MOV     A,#((tas5711_read_byte >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000E   E9           MOV     A,R1
+   \   00000F   F5..         MOV     ?V0 + 0,A
+    311              if(sta){
+   \   000011   600C         JZ      ??get_5711_err_sta_0
+    312                  tas5711_write_byte(0x02,0x00);
+   \   000013                ; Setup parameters for call to function tas5711_write_byte
+   \   000013   7A00         MOV     R2,#0x0
+   \   000015   7902         MOV     R1,#0x2
+   \   000017   90....       MOV     DPTR,#(tas5711_write_byte & 0xffff)
+   \   00001A   74..         MOV     A,#((tas5711_write_byte >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    313              }
+    314              printf("sta = 0x%X\n",sta);
+   \                     ??get_5711_err_sta_0:
+   \   00001F                ; Setup parameters for call to function my_printf
+   \   00001F   75..00       MOV     ?V0 + 1,#0x0
+   \   000022   C0..         PUSH    ?V0 + 0
+   \   000024   C0..         PUSH    ?V0 + 1
+   \   000026   7A..         MOV     R2,#(`?<Constant "sta = 0x%X\\n">` & 0xff)
+   \   000028   7B..         MOV     R3,#((`?<Constant "sta = 0x%X\\n">` >> 8) & 0xff)
+   \   00002A   12....       LCALL   my_printf & 0xFFFF
+   \   00002D   D0E0         POP     A
+   \   00002F   D0E0         POP     A
+    315          
+    316          }
+   \   000031   D0..         POP     ?V0 + 1
+   \   000033   D0..         POP     ?V0 + 0
+   \   000035   02....       LJMP    ?BRET
+
+   \                                 In segment CODE_C, align 1
+   \                     `?<Constant "sta = 0x%X\\n">`:
+   \   000000   73746120     DB "sta = 0x%X\012"
+   \            3D203078
+   \            25580A00
+    317          #if 0
+    318          #pragma location="DSP_CODE"
+    319          void TAS5731M_EQ_SETUP(void)
+    320          {
+    321          	if(eq_flag!=4)
+    322          	{
+    323          		tas5711_write_20byte(0x29,EQ1_29,20);
+    324          		tas5711_write_20byte(0x30,EQ1_29,20);
+    325          	}
+    326          	else
+    327          	{
+    328          		tas5711_write_20byte(0x29,EQ4_29,20);
+    329          		tas5711_write_20byte(0x30,EQ4_29,20);
+    330          	}
+    331          
+    332          	if(eq_flag==1)
+    333          	{
+    334          		/*	  EQ mode change ------  0x29 to 0x5d	 */
+    335          		//Led_Counter = 2;
+    336          		//TAS5731M_Write_long(0x29,EQ1_29,20);
+    337          		//TAS5731M_Write_long(0x30,EQ1_29,20);
+    338          		tas5711_write_20byte(0x2A,EQ1_2A,20);
+    339          		tas5711_write_20byte(0x2B,EQ1_2B,20);
+    340          		tas5711_write_20byte(0x2C,EQ1_2C,20);
+    341          		tas5711_write_20byte(0x2D,EQ1_2D,20);
+    342          		tas5711_write_20byte(0x2E,EQ1_2E,20);
+    343          		tas5711_write_20byte(0x2F,TAS5731M_EQ_20,20);
+    344          		tas5711_write_20byte(0x58,TAS5731M_EQ_20,20);
+    345          		tas5711_write_20byte(0x59,TAS5731M_EQ_20,20);
+    346          		tas5711_write_20byte(0x31,EQ1_2A,20);
+    347          		tas5711_write_20byte(0x32,EQ1_2B,20);
+    348          		tas5711_write_20byte(0x33,EQ1_2C,20);
+    349          		tas5711_write_20byte(0x34,EQ1_2D,20);
+    350          		tas5711_write_20byte(0x35,EQ1_2E,20);
+    351          		tas5711_write_20byte(0x36,TAS5731M_EQ_20,20);
+    352          		tas5711_write_20byte(0x5C,TAS5731M_EQ_20,20);
+    353          		tas5711_write_20byte(0x5D,TAS5731M_EQ_20,20);
+    354          	}
+    355          #if 1    
+    356          	else if(eq_flag==2)
+    357          	{
+    358          		//Led_Counter = 4;
+    359          		//TAS5731M_Write_long(0x29,EQ2_29,20);
+    360          		//TAS5731M_Write_long(0x30,EQ2_29,20);
+    361          		tas5711_write_20byte(0x2A,EQ1_2A,20);
+    362          		tas5711_write_20byte(0x2B,EQ2_2B,20);
+    363          		tas5711_write_20byte(0x2C,EQ2_2C,20);
+    364          		tas5711_write_20byte(0x2D,EQ2_2D,20);
+    365          		tas5711_write_20byte(0x2E,EQ2_2E,20);
+    366          		tas5711_write_20byte(0x2F,EQ2_2F,20);
+    367          		tas5711_write_20byte(0x58,TAS5731M_EQ_20,20);
+    368          		tas5711_write_20byte(0x59,TAS5731M_EQ_20,20);
+    369          		tas5711_write_20byte(0x31,EQ1_2A,20);
+    370          		tas5711_write_20byte(0x32,EQ2_2B,20);
+    371          		tas5711_write_20byte(0x33,EQ2_2C,20);
+    372          		tas5711_write_20byte(0x34,EQ2_2D,20);
+    373          		tas5711_write_20byte(0x35,EQ2_2E,20);
+    374          		tas5711_write_20byte(0x36,EQ2_2F,20);
+    375          		tas5711_write_20byte(0x5C,TAS5731M_EQ_20,20);
+    376          		tas5711_write_20byte(0x5D,TAS5731M_EQ_20,20);
+    377          	}
+    378          	else if(eq_flag==3)
+    379          	{
+    380          		//Led_Counter = 6;
+    381          		//TAS5731M_Write_long(0x29,EQ3_29,20);
+    382          		//TAS5731M_Write_long(0x30,EQ3_29,20);
+    383          		tas5711_write_20byte(0x2A,EQ1_2A,20);
+    384          		tas5711_write_20byte(0x2B,EQ3_2B,20);
+    385          		tas5711_write_20byte(0x2C,EQ3_2C,20);
+    386          		tas5711_write_20byte(0x2D,EQ2_2D,20);
+    387          		tas5711_write_20byte(0x2E,EQ3_2E,20);
+    388          		tas5711_write_20byte(0x2F,EQ3_2F,20);
+    389          		tas5711_write_20byte(0x58,TAS5731M_EQ_20,20);
+    390          		tas5711_write_20byte(0x59,TAS5731M_EQ_20,20);
+    391          		tas5711_write_20byte(0x31,EQ1_2A,20);
+    392          		tas5711_write_20byte(0x32,EQ3_2B,20);
+    393          		tas5711_write_20byte(0x33,EQ3_2C,20);
+    394          		tas5711_write_20byte(0x34,EQ2_2D,20);
+    395          		tas5711_write_20byte(0x35,EQ3_2E,20);
+    396          		tas5711_write_20byte(0x36,EQ3_2F,20);
+    397          		tas5711_write_20byte(0x5C,TAS5731M_EQ_20,20);
+    398          		tas5711_write_20byte(0x5D,TAS5731M_EQ_20,20);
+    399          	}
+    400          	else if(eq_flag == 4)
+    401          	{
+    402          		tas5711_write_20byte(0x2A,EQ4_29,20);
+    403          		tas5711_write_20byte(0x2B,EQ4_2B,20);
+    404          		tas5711_write_20byte(0x2C,EQ4_2C,20);
+    405          		tas5711_write_20byte(0x2D,EQ4_2D,20);
+    406          		tas5711_write_20byte(0x2E,EQ4_2E,20);
+    407          		tas5711_write_20byte(0x2F,EQ4_2F,20);
+    408          		tas5711_write_20byte(0x58,EQ4_58,20);
+    409          		tas5711_write_20byte(0x59,EQ4_59,20);
+    410          		tas5711_write_20byte(0x31,EQ4_29,20);
+    411          		tas5711_write_20byte(0x32,EQ4_2B,20);
+    412          		tas5711_write_20byte(0x33,EQ4_2C,20);
+    413          		tas5711_write_20byte(0x34,EQ4_2D,20);
+    414          		tas5711_write_20byte(0x35,EQ4_2E,20);
+    415          		tas5711_write_20byte(0x36,EQ4_2F,20);
+    416          		tas5711_write_20byte(0x5C,EQ4_58,20);
+    417          		tas5711_write_20byte(0x5D,EQ4_59,20);
+    418          	}
+    419          	if(eq_flag==4)
+    420          	{		
+    421          		tas5711_write_20byte(0x5a,EQ4_5A,20);
+    422          		tas5711_write_20byte(0x5B,EQ4_5B,20);
+    423          
+    424          		tas5711_write_20byte(0x60,EQ4_60,8);
+    425          		tas5711_write_20byte(0x61,EQ4_61,8);
+    426          		tas5711_write_20byte(0x53,EQ4_53,16);
+    427          		tas5711_write_20byte(0x54,EQ4_54,16);
+    428          		tas5711_write_20byte(0x55,EQ4_55,12);
+    429          		tas5711_write_20byte(0x5e,EQ4_5E,20);
+    430          	}
+    431          	else
+    432          #endif
+    433          	{
+    434          		tas5711_write_20byte(0x5a,TAS5731M_EQ_5A,20);
+    435          		tas5711_write_20byte(0x5B,EQ1_5B,20);
+    436          
+    437          		tas5711_write_20byte(0x60,TAS5731M_EQ_60,8);
+    438          		tas5711_write_20byte(0x61,TAS5731M_EQ_61,8);
+    439          		tas5711_write_20byte(0x53,TAS5731M_EQ_53,16);
+    440          		tas5711_write_20byte(0x54,TAS5731M_EQ_53,16);
+    441          		tas5711_write_20byte(0x55,TAS5731M_EQ_53,12);
+    442          		tas5711_write_20byte(0x5e,TAS5731M_EQ_20,20);
+    443          	}
+    444          }
+    445          #pragma location="DSP_CODE"
+    446          void TAS5731M_EQ_Set(void)
+    447          {
+    448              tas5711_write_byte(0x06,0xff);
+    449              TAS5731M_EQ_SETUP();
+    450              delay_5ms(4);
+    451              tas5711_write_byte(0x06,0x00);
+    452          }
+    453          #pragma location="DSP_CODE"
+    454          void TAS5711_AMP_Mute_Set(u8 con)
+    455          {
+    456              if(con)
+    457              {
+    458                  tas5711_write_byte(0x06,0xff);
+    459              }
+    460              else
+    461              {
+    462          	    tas5711_write_byte(0x06,0x00);
+    463              }
+    464          }
+    465          
+    466          #pragma location="DSP_CODE"
+    467          void TAS5711_AMP_Volume_Set(u8 volume)
+    468          {
+    469              tas5711_write_byte(0x07,TAS5731M_Volume_Table[volume]);
+    470          }
+    471          
+    472          
+    473          #pragma location="DSP_CODE"
+    474          void tas5711_init(void)
+    475          {
+    476              //printf("tas5711_init...\n");
+    477          
+    478              PDN_PIN_DIR();
+    479              PDN_HIGH();
+    480              delay_5ms(20);
+    481              RST_PIN_DIR();
+    482              RST_PIN_DIR();
+    483              RST_LOW();
+    484              delay_ms(1);
+    485              RST_HIGH();
+    486              delay_5ms(2);
+    487              #if 0
+    488              tas5711_write_byte(0x1B, 0x00);  //bit1: Select factory trim, autodetect of clock rates
+    489              tas5711_write_byte(0x00, 0x60);  //fs = 44.1/48-kHz sample rate, MCLK frequency = 64 × fs
+    490              tas5711_write_byte(0x04, 0x03);  //word length 16bit
+    491          
+    492          // 默认为2.0 BTL AD MODE
+    493          
+    494          // 2.0 BTL BD MODE
+    495              tas5711_write_4byte(0x20, 0x00, 0x89, 0x77, 0x72);
+    496              tas5711_write_byte(0x11, 0xb8);
+    497              tas5711_write_byte(0x12, 0x60);
+    498              tas5711_write_byte(0x13, 0xa0);
+    499              tas5711_write_byte(0x14, 0x48);
+    500          
+    501          // PBTL模式，单声道
+    502          //    tas5711_write_4byte(0x25, 0x01, 0x10, 0x32, 0x45);
+    503          //    tas5711_write_byte(0x19, 0x3a);
+    504          
+    505              tas5711_write_byte(0x06, 0x00);  //soft unmute channels
+    506              tas5711_write_byte(0x07, 0x50);  //master volume, 0xff(soft mute), 0x30(0dB)
+    507              tas5711_write_byte(0x05, 0x80);  //hard unmute
+    508          
+    509          //    printf("%02x\n",tas5711_read_byte(0x1b));
+    510          //    get_5711_err_sta();
+    511              #else
+    512              tas5711_write_byte(0x1B, 0x00);  //bit1: Select factory trim, autodetect of clock rates
+    513              tas5711_write_byte(0x00, 0x60);  //fs = 44.1/48-kHz sample rate, MCLK frequency = 64 × fs
+    514              tas5711_write_byte(0x04, 0x03);  //word length 16bit
+    515          
+    516              tas5711_write_byte(0x06,0x3f);
+    517              tas5711_write_byte(0x1a,0x98);
+    518          	tas5711_write_byte(0x07,0xff);
+    519          //  tas5711_write_byte(0x0a,0x30);
+    520          //  tas5711_write_byte(0x09,0x30);
+    521          //  tas5711_write_byte(0x08,0x30);
+    522              tas5711_write_byte(0x14,0x54);
+    523              tas5711_write_byte(0x13,0xac);
+    524              tas5711_write_byte(0x12,0x54);
+    525              tas5711_write_byte(0x11,0xac);
+    526              tas5711_write_byte(0x0e,0xd1);
+    527              
+    528              tas5711_write_4byte(0x20, 0x00, 0x01, 0x77, 0x72);
+    529              tas5711_write_4byte(0x21, 0x00, 0x00, 0x42, 0x03);
+    530              
+    531              tas5711_write_byte(0x10,0x07);
+    532              tas5711_write_byte(0x0b,0x00);
+    533              tas5711_write_byte(0x10,0x07);
+    534              tas5711_write_byte(0x1c,0x02);
+    535              tas5711_write_byte(0x19,0x30);
+    536              
+    537              tas5711_write_4byte(0x25, 0x01, 0x01, 0x32, 0x45);
+    538              tas5711_write_4byte(0x50, 0x00, 0x00, 0x00, 0x00);
+    539          
+    540              /*	  EQ mode change ------  0x29 to 0x5d	 */
+    541          	TAS5731M_EQ_SETUP();
+    542          
+    543          	tas5711_write_byte(0x1a,0x98);
+    544          	tas5711_write_byte(0x07,0xff);
+    545          	tas5711_write_byte(0x05,0x84);
+    546              #endif
+    547          }
+    548          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                EXT_STACK PSTACK XSTACK
+     --------                --------- ------ ------
+     audio_delay                    2      0      0
+     audio_delay_2                  2      0      0
+     audio_getack                   8      0      0
+       -> audio_delay_2             2      0      0
+       -> audio_delay               2      0      0
+     audio_getbyte                  3      0      0
+       -> audio_delay_2             4      0      0
+       -> audio_delay               4      0      0
+     audio_sendack                  0      0      0
+       -> audio_delay_2             0      0      0
+       -> audio_delay               0      0      0
+     audio_sendbyte                 9      0      0
+       -> audio_delay_2             4      0      0
+       -> audio_delay               4      0      0
+     audio_sendnack                 1      0      0
+       -> audio_delay_2             0      0      0
+       -> audio_delay               0      0      0
+     audio_start                    7      0      0
+       -> delay                     0      0      0
+       -> audio_delay               0      0      0
+       -> audio_delay               0      0      0
+     audio_stop                     7      0      0
+       -> audio_delay_2             0      0      0
+       -> audio_delay               0      0      0
+     get_5711_err_sta               4      0      0
+       -> tas5711_read_byte         4      0      0
+       -> tas5711_write_byte        4      0      0
+       -> my_printf                 8      0      0
+     tas5711_read_byte              3      0      0
+       -> audio_start               2      0      0
+       -> audio_sendbyte            2      0      0
+       -> audio_getack              2      0      0
+       -> audio_sendbyte            2      0      0
+       -> audio_getack              2      0      0
+       -> audio_start               2      0      0
+       -> audio_sendbyte            2      0      0
+       -> audio_getack              2      0      0
+       -> audio_getbyte             2      0      0
+       -> audio_sendnack            2      0      0
+       -> audio_stop                2      0      0
+       -> delay_5ms                 2      0      0
+     tas5711_write_20byte           7      0      0
+       -> audio_start              14      0      0
+       -> audio_sendbyte           14      0      0
+       -> audio_getack             14      0      0
+       -> audio_sendbyte           14      0      0
+       -> audio_getack             14      0      0
+       -> audio_sendbyte           14      0      0
+       -> audio_getack             14      0      0
+       -> audio_stop               14      0      0
+       -> delay_5ms                14      0      0
+     tas5711_write_4byte            6      0      0
+       -> audio_start              12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_sendbyte           12      0      0
+       -> audio_getack             12      0      0
+       -> audio_stop               12      0      0
+       -> delay_5ms                12      0      0
+     tas5711_write_byte             4      0      0
+       -> audio_start               4      0      0
+       -> audio_sendbyte            4      0      0
+       -> audio_getack              4      0      0
+       -> audio_sendbyte            4      0      0
+       -> audio_getack              4      0      0
+       -> audio_sendbyte            4      0      0
+       -> audio_getack              4      0      0
+       -> audio_stop                4      0      0
+       -> delay_5ms                 4      0      0
+
+
+   Segment part sizes:
+
+     Function/Label             Bytes
+     --------------             -----
+     P0                            1
+     P1                            1
+     P0DIR                         1
+     P1DIR                         1
+     eq_flag                       1
+     TAS5731M_Volume_Table        33
+     audio_delay                  10
+     audio_delay_2                10
+     audio_start                  44
+     ?Subroutine3                 18
+     audio_stop                   21
+     ?Subroutine0                 11
+     ?Subroutine2                 11
+     audio_sendbyte               55
+     ?Subroutine4                  9
+     audio_getbyte                53
+     ?Subroutine1                 11
+     audio_sendack                 3
+     audio_sendnack               12
+     audio_getack                 40
+     tas5711_write_byte           85
+     tas5711_write_4byte         149
+     tas5711_write_20byte        121
+     tas5711_read_byte           111
+     get_5711_err_sta             56
+     ?<Constant "sta = 0x%X\n">   12
+
+ 
+  45 bytes in segment CODE_C
+ 830 bytes in segment DSP_IIC
+   4 bytes in segment SFR_AN
+   1 byte  in segment XDATA_Z
+ 
+ 875 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 4 bytes shared)
+   1 byte  of XDATA memory
+
+Errors: none
+Warnings: none

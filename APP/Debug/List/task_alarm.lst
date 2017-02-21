@@ -1,0 +1,370 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:55 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_alarm.c                                       #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_alarm.c                                       #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_alarm.lst                               #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_alarm.r51                                #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_alarm.c
+      1          /*****************************************************************************
+      2          * Module    : Task
+      3          * File      : task_alarm.c
+      4          * Author    : Yinglang_Li
+      5          * Email     :
+      6          * Function  : 闹钟模块
+      7          *****************************************************************************/
+      8          #include "include.h"
+      9          #if ALARM_EN
+     10          #include "task.h"
+     11          #include "task_alarm.h"
+     12          #include "task_clock.h"
+     13          
+     14          type_alarm_task t_alarm;
+     15          u32 next_alarm;          //下一闹钟时间
+     16          u32 cur_time_sec;
+     17          void task_alarm_calc_and_set(u8 Mode);
+     18          bool task_alarm_msgbox(void);
+     19          extern u16 crc_calculate(void *buf, u16 len);
+     20          #include SET_USER_PATH(CFG_UI_CLOCK_DIR, /ui/ui_alarm.c)
+     21          
+     22          //判断是闹钟音乐类型
+     23          #pragma location="TASK_ALARM_SEG"
+     24          void task_alm_music_get(void)
+     25          {
+     26              t_alarm.alm_music_type = 0;
+     27              t_alarm.alm_music_type = irtcc_read_ram8(ALM_MUSIC_TYPE);
+     28              if(!t_alarm.alm_music_type)
+     29              {
+     30                  return;
+     31              }
+     32              t_alarm.alm_music_type = 0;
+     33              if (!device_is_actived(fs_cur_dev()) || !fs_is_mounted()) {
+     34                  draw_wait();
+     35                  device_change();
+     36                  if (fs_need_mounted()) {
+     37                      set_sys_clk(SYS_48M);                   //提高主频，加速
+     38                      fs_init();
+     39                      set_sys_clk(SYS_24M);
+     40                  }
+     41              }
+     42              if (!device_is_actived(fs_cur_dev())) {
+     43                  return;
+     44              }
+     45              if (!fs_is_mounted()) {
+     46                  return;
+     47              }
+     48              f_scan_set(SCAN_SUB_FOLDER, &file_filter_music, &dir_filter_music);
+     49              if(!music_total())
+     50              {
+     51                  return;
+     52              }
+     53              t_alarm.alm_music_num = irtcc_read_ram16(ALM_FILE_NUM);
+     54              if (!f_open_opt(t_alarm.alm_music_num)) {
+     55                  return;
+     56              }
+     57              f_get_opt_filename(filename);
+     58              u16 name_crc = irtcc_read_ram16(ALM_NAME_CRC);
+     59              if(name_crc == crc_calculate(filename,8))
+     60              {
+     61                if (TYPE_NONE == music_init()) {
+     62                  return;
+     63                }
+     64                t_alarm.alm_music_type = 1;
+     65                music_eq(sys_ctl.eq_num);
+     66                music_set_speed(0);
+     67                music_play();
+     68              }
+     69          }
+     70          //任务初始化
+     71          #pragma location="TASK_ALARM_SEG"
+     72          void task_alarm_enter(void)
+     73          {
+     74              set_sys_clk(SYS_24M);
+     75              //dac_dynamic(DYNAMIC_NO);
+     76              task_ctl.work_sta = TASK_ALARM;
+     77              set_lcd_buf(LCD_FULL_MODE);
+     78              user_change_volume(WARNING_VOLUME);//  //
+     79              dac_enable();
+     80              task_alm_music_get();
+     81              sys_ctl.voice_play_flag = 1;
+     82              if(!t_alarm.alm_music_type)
+     83              {
+     84                  mp3_res_play(RES_MP3_ALARM_BELL);
+     85              }
+     86              t_alarm.disp_index = 0xFF;
+     87              t_alarm.index = 1;                          //默认选择是，重响
+     88              t_alarm.cur_state = 0;                      //正常闹铃
+     89              task_alarm_check();
+     90          }
+     91          
+     92          //任务退出
+     93          #pragma location="TASK_ALARM_SEG"
+     94          void task_alarm_exit(void)
+     95          {
+     96          
+     97              music_stop();                           //结束Music播放
+     98              dac_disable();
+     99          #if IS_LCD_DISPLAY
+    100              task_ctl.work_sta = task_ctl.back_up_work_sta;      // 返回之前的状态
+    101              task_ctl.back_up_work_sta = TASK_MENU;      // 设置上上次的状态为TASK_MENU
+    102          #endif
+    103          }
+    104          
+    105          
+    106          //任务事务处理
+    107          #pragma location="TASK_ALARM_SEG"
+    108          void task_alarm_event(void)
+    109          {
+    110              WATCHDOG_CLR();
+    111              if (music_get_status() <= STATUS_PLAY_STOPPING) {
+    112                  if(!t_alarm.alm_music_type)
+    113                  {
+    114                      mp3_res_play(RES_MP3_ALARM_BELL);
+    115                  }
+    116              }
+    117              if(t_alarm.alm_music_type)
+    118              {
+    119                  if (!device_is_actived(fs_cur_dev())) {
+    120                      music_stop();                           //停止当前音乐
+    121                      task_ctl.dev_change = 1;                //当前设备无效，设备发生变动
+    122                  }
+    123              }
+    124              comm_event();
+    125              music_event();
+    126          
+    127              if (cur_time_sec - next_alarm > SECS_ALARM_BELL) {
+    128                  t_alarm.index = 2;
+    129                  t_alarm.cur_state = 1;                      //闹铃时间到，默认重响
+    130              }
+    131              if(t_alarm.cur_state){
+    132                  if (((t_alarm.index == 2) && (t_alarm.ring_times) < (ALARM_REBELL_TIMES-1)) || (t_alarm.index == 1)) {
+    133                      next_alarm += SECS_ALARM_REBELL;        //闹铃再响
+    134                      if (next_alarm > 3155759999UL) {
+    135                          sys_ctl.alarm_switch = 0;
+    136                      }
+    137                      t_alarm.ring_times++;
+    138                  } else {
+    139                      task_alarm_set();                               //关闭，重设闹钟
+    140          #if !IS_LCD_DISPLAY
+    141                      if(sys_ctl.alarm_mode == 0)
+    142                      {
+    143                          sys_ctl.alarm_switch = 0;
+    144                          sys_param_write8(PARAM_ALARM_SWITCH, sys_ctl.alarm_switch);
+    145                      }
+    146          #endif
+    147                  }
+    148                  task_ctl.work_sta = TASK_CLOCK;     //闹铃结束显示时钟
+    149              }
+    150          }
+    151          
+    152          
+    153          //设置闹钟
+    154          #pragma location="TASK_ALARM_SEG"
+    155          void task_alarm_set(void)
+    156          {
+    157              u8 next_day = 0;
+    158              u8 num = 0;
+    159              u8 i;
+    160              u32 cur_time;
+    161              t_alarm.ring_times = 0;
+    162              next_alarm = 0;
+    163              cur_time = irtcc_read_rtc(READ_RTC);
+    164              make_time(irtcc_read_rtc(READ_RTC));  //后面的判断 需要用到转换后的t_time
+    165          #if ALM_TYPE
+    166              //闹钟时间今天已过期
+    167              if (sys_ctl.alarm_mode == ALARM_CYC_7D)
+    168              {
+    169                  if (t_time.hour > sys_ctl.alarm_hour || (t_time.hour == sys_ctl.alarm_hour && t_time.minute >= sys_ctl.alarm_min))
+    170                  {   //每日闹钟
+    171                      next_day = 1;
+    172                  }
+    173              }
+    174              else if (sys_ctl.alarm_mode == ALARM_CYC_5D)
+    175                  //工作日闹钟
+    176              {
+    177                  switch (t_time.wday)
+    178                  {
+    179                  case FRIDAY:
+    180                      if (t_time.hour > sys_ctl.alarm_hour || (t_time.hour == sys_ctl.alarm_hour && t_time.minute >= sys_ctl.alarm_min))
+    181                      {   //每日闹钟
+    182                          next_day = 3;
+    183                      }
+    184                      else
+    185                      {
+    186                          next_day = 0;
+    187                      }
+    188                      break;
+    189                  case SATURDAY:
+    190                      next_day =  2;
+    191                      break;
+    192                  case SUNDAY:
+    193                      next_day = 1;
+    194                      break;
+    195                  default:
+    196                      if (t_time.hour > sys_ctl.alarm_hour || (t_time.hour == sys_ctl.alarm_hour && t_time.minute >= sys_ctl.alarm_min))
+    197                      {
+    198                          next_day = 1;
+    199                      }
+    200                      else
+    201                      {
+    202                          next_day = 0;
+    203                      }
+    204                      break;
+    205                  }
+    206              }
+    207          #else
+    208              //printf("setam a mode = %d\n",sys_ctl.alarm_mode);
+    209              //printf("setam t_time.hour = %d\n",t_time.hour);
+    210              //printf("setam  t_time.minute = %d\n",t_time.minute);
+    211              //printf("setam sys_ctl.alarm_hour = %d\n",sys_ctl.alarm_hour);
+    212              //printf("setam  sys_ctl.alarm_min = %d\n",sys_ctl.alarm_min);
+    213              if(sys_ctl.alarm_mode != 0)
+    214              {
+    215                  num = 7;
+    216                  for(i = 0; i < 7; i++)
+    217                  {
+    218                      if(t_time.wday == i && (t_time.hour > sys_ctl.alarm_hour || (t_time.hour == sys_ctl.alarm_hour && t_time.minute >= sys_ctl.alarm_min)))
+    219                      {
+    220                          if(num >= 7)
+    221                              num = 7;
+    222                      }
+    223                      else if(sys_ctl.alarm_mode & (1<<i))
+    224                      {
+    225                          if(t_time.wday <= i)
+    226                          {
+    227                              if(num >= i - t_time.wday)
+    228                                  num = i - t_time.wday;
+    229                          }
+    230                          else
+    231                          {
+    232                              if(num >= i + 7 - t_time.wday)
+    233                                  num = i + 7 - t_time.wday;
+    234                          }
+    235                      }
+    236                  }
+    237              }
+    238              else if (t_time.hour > sys_ctl.alarm_hour || (t_time.hour == sys_ctl.alarm_hour && t_time.minute >= sys_ctl.alarm_min)){ //单次闹钟并且时间已过期
+    239                  num = 1;
+    240              }
+    241              next_day = num;
+    242          #endif
+    243              //printf("setam nxd=%d\n",next_day);
+    244              next_alarm = ((cur_time / SECS_PER_DAY + next_day) * SECS_PER_DAY) + sys_ctl.alarm_hour*SECS_PER_HOUR \
+    245                              + sys_ctl.alarm_min*SECS_PER_MINUTE;
+    246              //printf("setam a=0x%lX\n",next_alarm);
+    247              irtcc_write_rtc(WRITE_ALM,next_alarm);
+    248              irtcc_write_ram32(NEXT_ALARM, next_alarm);
+    249              sys_param_write8(PARAM_ALARM_SWITCH, sys_ctl.alarm_switch);
+    250              if (next_alarm > 3155759999UL) {
+    251                  sys_ctl.alarm_switch = 0;
+    252              }
+    253          }
+    254          
+    255          
+    256          //清除次数
+    257          #pragma location="TASK_ALARM_SEG"
+    258          void task_alarm_clear(void)
+    259          {
+    260              t_alarm.ring_times = 0;
+    261          }
+    262          
+    263          __near_func bool task_alarm_check(void)
+    264          {
+    265              //闹钟
+    266              cur_time_sec = irtcc_read_rtc(READ_RTC);
+    267              //deg_u32("cur0",cur_time_sec);
+    268              //deg_u32("nx0",next_alarm);
+    269              //deg_u8("sw",sys_ctl.alarm_switch);
+    270              if(sys_ctl.alarm_switch) {
+    271                  if(cur_time_sec - next_alarm <= SECS_DIFFER_OF_ALARM) {
+    272          #if IS_LCD_DISPLAY
+    273                      if(task_ctl.work_sta != TASK_ALARM) {
+    274                          task_ctl.back_up_work_sta = task_ctl.work_sta;      // 保存之前的状态
+    275                      }
+    276          #endif
+    277                      task_ctl.work_sta = TASK_ALARM;
+    278                      return true;
+    279                  }
+    280              }
+    281              return false;
+    282          }
+    283          
+    284          #pragma constseg="TASK_ALARM_SEG_CONST"
+    285          IAR_CONST char str_show_taskalarm[] = "task_alarm\n";
+    286          #pragma constseg=default
+    287          //任务主流程
+    288          #pragma location="TASK_ALARM_SEG"
+    289          void task_alarm(void)
+    290          {
+    291              printf(str_show_taskalarm);
+    292              task_alarm_enter();
+    293              while (task_ctl.work_sta == TASK_ALARM) {
+    294                  task_alarm_deal_msg();
+    295                  task_alarm_event();
+    296                  task_alarm_display();  //显示时间
+    297              }
+    298              task_alarm_exit();
+    299          }
+    300          
+    301          #endif
+    302          
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

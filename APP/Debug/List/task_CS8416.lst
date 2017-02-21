@@ -1,0 +1,848 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:54 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_CS8416.c                                      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_CS8416.c                                      #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_CS8416.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_CS8416.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_CS8416.c
+      1          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x80
+   \   unsigned char volatile __sfr P0
+   \                     P0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0x90
+   \   unsigned char volatile __sfr P1
+   \                     P1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xba
+   \   unsigned char volatile __sfr P0DIR
+   \                     P0DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+      2          #include "task.h"
+      3          #include "user_setting.h"
+      4          #include "task_CS8416.h"
+      5          #include "task_NPCP215X.h"
+      6          
+      7          #if CS8416
+      8          
+      9          #pragma location="CS8416_IIC_DATA3"
+
+   \                                 In segment CS8416_IIC_DATA3, align 1
+     10          const __code u8 cs8416_ommands[9] =
+   \                     cs8416_ommands:
+   \   000000   0000A000     DB 0, 0, 160, 0, 0, 128, 164, 16, 0
+   \            0080A410
+   \            00      
+     11          {
+     12              0x00,
+     13              0x00,
+     14              0xA0,
+     15              0x00,
+     16              0x00,
+     17              0x80,
+     18              0xA4,
+     19              0x10,
+     20              0x00,
+     21          };
+     22          
+     23          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+     24          void Audio_in_I2C_Start(void)
+   \                     Audio_in_I2C_Start:
+     25          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     26          	CS8416_DATA_OUTPUT;
+   \   000000   12....       LCALL   ?Subroutine2
+     27          	CS8416_CLK_OUTPUT;
+   \                     ??CrossCallReturnLabel_4:
+   \   000003   53BBEF       ANL     0xbb,#0xef
+   \   000006   D294         SETB    0x90.4
+     28          	CS8416_DATA_HIGH;
+   \   000008   D286         SETB    0x80.6
+     29          	CS8416_CLK_HIGH;
+   \   00000A   D294         SETB    0x90.4
+     30              delay(30);
+   \   00000C                ; Setup parameters for call to function delay
+   \   00000C   7A1E         MOV     R2,#0x1e
+   \   00000E   7B00         MOV     R3,#0x0
+   \   000010   12....       LCALL   delay & 0xFFFF
+     31          	CS8416_DATA_LOW;
+   \   000013   C286         CLR     0x80.6
+     32              delay(30);
+   \   000015                ; Setup parameters for call to function delay
+   \   000015   7A1E         MOV     R2,#0x1e
+   \   000017   7B00         MOV     R3,#0x0
+   \   000019   12....       LCALL   delay & 0xFFFF
+     33          	CS8416_CLK_LOW;
+   \   00001C   C294         CLR     0x90.4
+     34          	//Delay_myself;
+     35          	//TA5731_DATA_HIGH;
+     36          }
+   \   00001E   02....       LJMP    ?BRET
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   53BABF       ANL     0xba,#0xbf
+   \   000003   D286         SETB    0x80.6
+   \   000005   22           RET
+     37          
+     38          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+     39          void Audio_in_I2C_SendByte(u8 Data)
+   \                     Audio_in_I2C_SendByte:
+     40          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   E9           MOV     A,R1
+   \   000007   FF           MOV     R7,A
+     41          	u8 i;
+     42          	
+     43              //delay(30);
+     44          	CS8416_DATA_OUTPUT;	
+   \   000008   12....       LCALL   ?Subroutine2
+     45          	for(i = 0;i < 8;i++)
+   \                     ??CrossCallReturnLabel_5:
+   \   00000B   7E08         MOV     R6,#0x8
+     46          	{
+     47          		if(Data & 0x80) CS8416_DATA_HIGH;
+   \                     ??Audio_in_I2C_SendByte_0:
+   \   00000D   EF           MOV     A,R7
+   \   00000E   A2E7         MOV     C,0xE0 /* A   */.7
+   \   000010   5004         JNC     ??Audio_in_I2C_SendByte_1
+   \   000012   D286         SETB    0x80.6
+   \   000014   8002         SJMP    ??Audio_in_I2C_SendByte_2
+     48          		else			CS8416_DATA_LOW;
+   \                     ??Audio_in_I2C_SendByte_1:
+   \   000016   C286         CLR     0x80.6
+     49          		delay(30);
+   \                     ??Audio_in_I2C_SendByte_2:
+   \   000018                ; Setup parameters for call to function delay
+   \   000018   12....       LCALL   ?Subroutine0
+     50          		CS8416_CLK_HIGH;
+     51          		delay(30);
+     52          		Data <<= 1;
+     53          		CS8416_CLK_LOW;
+   \                     ??CrossCallReturnLabel_0:
+   \   00001B   C294         CLR     0x90.4
+     54          	}
+   \   00001D   1E           DEC     R6
+   \   00001E   EE           MOV     A,R6
+   \   00001F   70EC         JNZ     ??Audio_in_I2C_SendByte_0
+     55          }
+   \   000021   02....       LJMP    ?Subroutine4
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_8:
+   \   000003   EF           MOV     A,R7
+   \   000004   C3           CLR     C
+   \   000005   33           RLC     A
+   \   000006   FF           MOV     R7,A
+   \   000007   22           RET
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   7A1E         MOV     R2,#0x1e
+   \   000002   7B00         MOV     R3,#0x0
+   \   000004   12....       LCALL   delay & 0xFFFF
+   \   000007   D294         SETB    0x90.4
+   \   000009                ; Setup parameters for call to function delay
+   \   000009                ; Setup parameters for call to function delay
+   \   000009                ; Setup parameters for call to function delay
+   \   000009                ; Setup parameters for call to function delay
+   \   000009   7A1E         MOV     R2,#0x1e
+   \   00000B   7B00         MOV     R3,#0x0
+   \   00000D   12....       LCALL   delay & 0xFFFF
+   \   000010   22           RET
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   D0E0         POP     A
+   \   000002   FF           MOV     R7,A
+   \                     ??Subroutine4_0:
+   \   000003   D0E0         POP     A
+   \   000005   FE           MOV     R6,A
+   \   000006   02....       LJMP    ?BRET
+     56          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+     57          u8 Audio_in_I2C_GetByte()
+   \                     Audio_in_I2C_GetByte:
+     58          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+     59              u8 i;
+     60              u8 val = 0;
+   \   000006   7F00         MOV     R7,#0x0
+     61              CS8416_DATA_INPUT;
+   \   000008   43BA40       ORL     0xba,#0x40
+     62              for(i=8; i!=0; i--){
+   \   00000B   7E08         MOV     R6,#0x8
+     63                  delay(30);
+   \                     ??Audio_in_I2C_GetByte_0:
+   \   00000D                ; Setup parameters for call to function delay
+   \   00000D   12....       LCALL   ?Subroutine0
+     64                  CS8416_CLK_HIGH;
+     65                  delay(30);
+     66                  val <<= 1;
+     67                  if(CS8416_DATA_IS_HIGH()){
+   \                     ??CrossCallReturnLabel_1:
+   \   000010   A286         MOV     C,0x80.6
+   \   000012   5003         JNC     ??Audio_in_I2C_GetByte_1
+     68                      val |= BIT(0);
+   \   000014   D2E0         SETB    0xE0 /* A   */.0
+   \   000016   FF           MOV     R7,A
+     69                  }
+     70                  CS8416_CLK_LOW;
+   \                     ??Audio_in_I2C_GetByte_1:
+   \   000017   C294         CLR     0x90.4
+     71              }
+   \   000019   1E           DEC     R6
+   \   00001A   EE           MOV     A,R6
+   \   00001B   70F0         JNZ     ??Audio_in_I2C_GetByte_0
+     72              return val;
+   \   00001D   EF           MOV     A,R7
+   \   00001E   F9           MOV     R1,A
+   \   00001F   02....       LJMP    ?Subroutine4
+     73          }
+     74          
+     75          #if 0
+     76          //IIC总线接收1byte
+     77          #pragma location="DSP_IIC"
+     78          u8 audio_getbyte(void)
+     79          {
+     80              u8 i;
+     81              u8 val = 0;
+     82              AUDIO_DATA_IN();
+     83              for (i=8; i!=0; i--) {
+     84                  audio_delay_2();
+     85                  AUDIO_CLK_HIGH();
+     86                  audio_delay();
+     87                  val <<= 1;
+     88                  if (AUDIO_DATA_IS_HIGH()) {
+     89                      val |= BIT(0);
+     90                  }
+     91                  AUDIO_CLK_LOW();
+     92              }
+     93              return val;
+     94          }
+     95          #endif
+     96          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+     97          bool Audio_in_ReceiveACK(void)
+   \                     Audio_in_ReceiveACK:
+     98          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+     99              bool Ackflag = false;
+    100          	
+    101          	CS8416_DATA_INPUT;
+   \   000002   43BA40       ORL     0xba,#0x40
+    102              delay(30);
+   \   000005                ; Setup parameters for call to function delay
+   \   000005   12....       LCALL   ?Subroutine1
+    103          	CS8416_CLK_HIGH;
+    104              delay(30);
+    105          	
+    106          	if(CS8416_DATA) 
+   \                     ??CrossCallReturnLabel_2:
+   \   000008   A286         MOV     C,0x80.6
+   \   00000A   5007         JNC     ??Audio_in_ReceiveACK_0
+    107              {   
+    108                  CS8416_DATA_OUTPUT;
+   \   00000C   12....       LCALL   ?Subroutine2
+    109          		Ackflag = 1;
+   \                     ??CrossCallReturnLabel_6:
+   \   00000F   D2..         SETB    ?VB.0
+   \   000011   8002         SJMP    ??Audio_in_ReceiveACK_1
+    110              }
+    111          	else 
+    112          		Ackflag = 0;
+   \                     ??Audio_in_ReceiveACK_0:
+   \   000013   C2..         CLR     ?VB.0
+    113          	
+    114          	CS8416_CLK_LOW;
+   \                     ??Audio_in_ReceiveACK_1:
+   \   000015   C294         CLR     0x90.4
+    115          		
+    116              delay(30);
+   \   000017                ; Setup parameters for call to function delay
+   \   000017   7A1E         MOV     R2,#0x1e
+   \   000019   7B00         MOV     R3,#0x0
+   \   00001B   12....       LCALL   delay & 0xFFFF
+    117          
+    118          	return Ackflag;
+   \   00001E   A2..         MOV     C,?VB.0
+   \   000020                REQUIRE ?Subroutine5
+   \   000020                ; // Fall through to label ?Subroutine5
+    119          }
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   D0..         POP     ?VB
+   \   000002   02....       LJMP    ?BRET
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_9:
+   \   000003   22           RET
+    120          
+    121          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+    122          void Audio_in_I2C_Stop(void)
+   \                     Audio_in_I2C_Stop:
+    123          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    124          	CS8416_DATA_OUTPUT;
+   \   000000   12....       LCALL   ?Subroutine2
+    125          	CS8416_DATA_LOW;
+   \                     ??CrossCallReturnLabel_7:
+   \   000003   C286         CLR     0x80.6
+    126              delay(30);
+   \   000005                ; Setup parameters for call to function delay
+   \   000005   12....       LCALL   ?Subroutine1
+    127          	CS8416_CLK_HIGH;
+    128              delay(30);
+    129          	CS8416_DATA_HIGH;
+   \                     ??CrossCallReturnLabel_3:
+   \   000008   D286         SETB    0x80.6
+    130              delay(30);
+   \   00000A                ; Setup parameters for call to function delay
+   \   00000A   7A1E         MOV     R2,#0x1e
+   \   00000C   7B00         MOV     R3,#0x0
+   \   00000E   12....       LCALL   delay & 0xFFFF
+    131          }
+   \   000011   02....       LJMP    ?BRET
+    132          
+    133          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+    134          void cs8416_Init(void)
+   \                     cs8416_Init:
+    135          { 
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   C0..         PUSH    ?V0 + 0
+   \   000005   C0..         PUSH    ?V0 + 1
+   \   000007                ; Saved register size: 3
+   \   000007                ; Auto size: 0
+    136              u8 i;
+    137              //发起始信号
+    138              Audio_in_I2C_Start();   
+   \   000007                ; Setup parameters for call to function Audio_in_I2C_Start
+   \   000007   90....       MOV     DPTR,#(Audio_in_I2C_Start & 0xffff)
+   \   00000A   74..         MOV     A,#((Audio_in_I2C_Start >> 16) & 0xff)
+   \   00000C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    139              //写从地址
+    140              Audio_in_I2C_SendByte(CS8416ADDERSS);
+   \   00000F                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   00000F   7928         MOV     R1,#0x28
+   \   000011   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000014   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000016   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    141              Audio_in_ReceiveACK();
+   \   000019                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   000019   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00001C   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   00001E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    142              // 写数据    
+    143              for( i = 0 ;i< sizeof(cs8416_ommands);i++)
+   \   000021   7E00         MOV     R6,#0x0
+    144              {
+    145                  Audio_in_I2C_SendByte(cs8416_ommands[i]);
+   \                     ??cs8416_Init_0:
+   \   000023                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000023   8E..         MOV     ?V0 + 0,R6
+   \   000025   E5..         MOV     A,?V0 + 0
+   \   000027   24..         ADD     A,#(cs8416_ommands & 0xff)
+   \   000029   F582         MOV     DPL,A
+   \   00002B   E4           CLR     A
+   \   00002C   34..         ADDC    A,#((cs8416_ommands >> 8) & 0xff)
+   \   00002E   F583         MOV     DPH,A
+   \   000030   E4           CLR     A
+   \   000031   93           MOVC    A,@A+DPTR
+   \   000032   F9           MOV     R1,A
+   \   000033   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000036   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000038   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    146                  Audio_in_ReceiveACK();
+   \   00003B                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00003B   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00003E   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000040   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    147              }    
+   \   000043   0E           INC     R6
+   \   000044   EE           MOV     A,R6
+   \   000045   C3           CLR     C
+   \   000046   9409         SUBB    A,#0x9
+   \   000048   40D9         JC      ??cs8416_Init_0
+    148              //发送停止信号 
+    149              Audio_in_I2C_Stop();     // Stop and return        
+   \   00004A                ; Setup parameters for call to function Audio_in_I2C_Stop
+   \   00004A   90....       MOV     DPTR,#(Audio_in_I2C_Stop & 0xffff)
+   \   00004D   74..         MOV     A,#((Audio_in_I2C_Stop >> 16) & 0xff)
+   \   00004F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    150          }
+   \   000052   D0..         POP     ?V0 + 1
+   \   000054   D0..         POP     ?V0 + 0
+   \   000056   80..         SJMP    ??Subroutine4_0
+    151          
+    152          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+    153          void CS8416_write_byte(u8 adr, u8 value)
+   \                     CS8416_write_byte:
+    154          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   E9           MOV     A,R1
+   \   000007   FE           MOV     R6,A
+   \   000008   EA           MOV     A,R2
+   \   000009   FF           MOV     R7,A
+    155              //发起始信号
+    156              Audio_in_I2C_Start();
+   \   00000A                ; Setup parameters for call to function Audio_in_I2C_Start
+   \   00000A   90....       MOV     DPTR,#(Audio_in_I2C_Start & 0xffff)
+   \   00000D   74..         MOV     A,#((Audio_in_I2C_Start >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    157              //写从地址
+    158              Audio_in_I2C_SendByte(adr);
+   \   000012                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000012   EE           MOV     A,R6
+   \   000013   F9           MOV     R1,A
+   \   000014   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000017   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    159              Audio_in_ReceiveACK();
+   \   00001C                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00001C   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00001F   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000021   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    160              //写数据
+    161              Audio_in_I2C_SendByte(value);
+   \   000024                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000024   EF           MOV     A,R7
+   \   000025   F9           MOV     R1,A
+   \   000026   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000029   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   00002B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    162              Audio_in_ReceiveACK();
+   \   00002E                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00002E   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   000031   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000033   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    163              Audio_in_I2C_Stop();     // Stop and return 
+   \   000036                ; Setup parameters for call to function Audio_in_I2C_Stop
+   \   000036   90....       MOV     DPTR,#(Audio_in_I2C_Stop & 0xffff)
+   \   000039   74..         MOV     A,#((Audio_in_I2C_Stop >> 16) & 0xff)
+   \   00003B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    164          }
+   \   00003E                REQUIRE ?Subroutine4
+   \   00003E                ; // Fall through to label ?Subroutine4
+    165          
+    166          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+    167          u8 CS8416_read_byte(u8 adr)
+   \                     CS8416_read_byte:
+    168          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    169              u8 I2CReadResult;
+    170              //发起始信号
+    171              Audio_in_I2C_Start();
+   \   000005                ; Setup parameters for call to function Audio_in_I2C_Start
+   \   000005   90....       MOV     DPTR,#(Audio_in_I2C_Start & 0xffff)
+   \   000008   74..         MOV     A,#((Audio_in_I2C_Start >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    172              //写从地址
+    173              Audio_in_I2C_SendByte(0x28);
+   \   00000D                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   00000D   7928         MOV     R1,#0x28
+   \   00000F   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000012   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    174              Audio_in_ReceiveACK();
+   \   000017                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   000017   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00001A   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    175              Audio_in_I2C_SendByte(adr);
+   \   00001F                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   00001F   EE           MOV     A,R6
+   \   000020   F9           MOV     R1,A
+   \   000021   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000024   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000026   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    176              Audio_in_ReceiveACK();
+   \   000029                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   000029   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00002C   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    177              Audio_in_I2C_Stop();
+   \   000031                ; Setup parameters for call to function Audio_in_I2C_Stop
+   \   000031   90....       MOV     DPTR,#(Audio_in_I2C_Stop & 0xffff)
+   \   000034   74..         MOV     A,#((Audio_in_I2C_Stop >> 16) & 0xff)
+   \   000036   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    178              
+    179              //发起始信号
+    180              Audio_in_I2C_Start();
+   \   000039                ; Setup parameters for call to function Audio_in_I2C_Start
+   \   000039   90....       MOV     DPTR,#(Audio_in_I2C_Start & 0xffff)
+   \   00003C   74..         MOV     A,#((Audio_in_I2C_Start >> 16) & 0xff)
+   \   00003E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    181              //写数据
+    182              Audio_in_I2C_SendByte(0x29);
+   \   000041                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000041   7929         MOV     R1,#0x29
+   \   000043   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000046   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000048   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    183              Audio_in_ReceiveACK();
+   \   00004B                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00004B   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00004E   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000050   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    184              //发起始信号
+    185              I2CReadResult = Audio_in_I2C_GetByte();
+   \   000053                ; Setup parameters for call to function Audio_in_I2C_GetByte
+   \   000053   90....       MOV     DPTR,#(Audio_in_I2C_GetByte & 0xffff)
+   \   000056   74..         MOV     A,#((Audio_in_I2C_GetByte >> 16) & 0xff)
+   \   000058   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00005B   E9           MOV     A,R1
+   \   00005C   FE           MOV     R6,A
+    186              Audio_in_ReceiveACK();
+   \   00005D                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00005D   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   000060   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000062   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    187              Audio_in_I2C_Stop();
+   \   000065                ; Setup parameters for call to function Audio_in_I2C_Stop
+   \   000065   90....       MOV     DPTR,#(Audio_in_I2C_Stop & 0xffff)
+   \   000068   74..         MOV     A,#((Audio_in_I2C_Stop >> 16) & 0xff)
+   \   00006A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    188              delay_5ms(1);
+   \   00006D                ; Setup parameters for call to function delay_5ms
+   \   00006D   7901         MOV     R1,#0x1
+   \   00006F   12....       LCALL   delay_5ms & 0xFFFF
+    189              return I2CReadResult;
+   \   000072   EE           MOV     A,R6
+   \   000073   F9           MOV     R1,A
+   \   000074   80..         SJMP    ??Subroutine4_0
+    190          }
+    191          #if 0
+    192          void Get_CS8416_err_sta(void)
+    193          {
+    194              u8 sta = CS8416_read_byte(0x0B);
+    195              if(sta&BIT(6)){
+    196                  CS8416_write_byte(0x12,0x12);    
+    197              }
+    198              else {
+    199                  CS8416_write_byte(0x11,0x11);
+    200              }
+    201              //printf("sta = 0x%X\n",sta);
+    202          }
+    203          
+    204          void get_5711_err_sta(void)
+    205          {
+    206              u8 sta = tas5711_read_byte(0x02);
+    207              if(sta){
+    208                  tas5711_write_byte(0x02,0x00);
+    209              }
+    210              printf("sta = 0x%X\n",sta);
+    211          
+    212          }
+    213          
+    214          u8 tas5711_read_byte(u8 adr)
+    215          {
+    216              u8 I2CReadResult;
+    217          
+    218              audio_start();                //I2C启动
+    219          
+    220          #if A_SEL
+    221              audio_sendbyte(0x36);         //写命令
+    222          #else
+    223              audio_sendbyte(0x34);         //写命令
+    224          #endif
+    225              audio_getack();
+    226          
+    227              audio_sendbyte(adr);         //写地址
+    228              audio_getack();
+    229          
+    230              audio_start();                    //写转为读命令，需要再次启动I2C
+    231          
+    232          #if A_SEL
+    233              audio_sendbyte(0x36 | 0x01);         //读命令
+    234          #else
+    235              audio_sendbyte(0x34 | 0x01);         //读命令
+    236          #endif
+    237              audio_getack();
+    238          
+    239              I2CReadResult = audio_getbyte();
+    240              audio_sendnack();                      //发送ack命令
+    241          
+    242              audio_stop();                     //I2C停止
+    243              delay_5ms(1);
+    244          
+    245              return I2CReadResult;
+    246          }
+    247          #endif
+    248          #pragma location="CS8416_IIC_API"
+
+   \                                 In segment CS8416_IIC_API, align 1, keep-with-next
+    249          void CS8416_in_choose(bool ch)
+   \                     CS8416_in_choose:
+    250          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+   \   000002   A2F0         MOV     C,B.0
+   \   000004   92..         MOV     ?VB.0,C
+    251              Audio_in_I2C_Start(); 
+   \   000006                ; Setup parameters for call to function Audio_in_I2C_Start
+   \   000006   90....       MOV     DPTR,#(Audio_in_I2C_Start & 0xffff)
+   \   000009   74..         MOV     A,#((Audio_in_I2C_Start >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    252              Audio_in_I2C_SendByte(CS8416ADDERSS); 
+   \   00000E                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   00000E   7928         MOV     R1,#0x28
+   \   000010   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000013   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    253              Audio_in_ReceiveACK();
+   \   000018                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   000018   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00001B   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    254              Audio_in_I2C_SendByte(0x04); 
+   \   000020                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000020   7904         MOV     R1,#0x4
+   \   000022   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   000025   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    255              Audio_in_ReceiveACK();
+   \   00002A                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   00002A   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   00002D   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   00002F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    256              if (ch)Audio_in_I2C_SendByte(0x88);
+   \   000032   A2..         MOV     C,?VB.0
+   \   000034   5004         JNC     ??CS8416_in_choose_0
+   \   000036                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   000036   7988         MOV     R1,#-0x78
+   \   000038   8002         SJMP    ??CS8416_in_choose_1
+    257              else   Audio_in_I2C_SendByte(0x80);     
+   \                     ??CS8416_in_choose_0:
+   \   00003A                ; Setup parameters for call to function Audio_in_I2C_SendByte
+   \   00003A   7980         MOV     R1,#-0x80
+   \                     ??CS8416_in_choose_1:
+   \   00003C   90....       MOV     DPTR,#(Audio_in_I2C_SendByte & 0xffff)
+   \   00003F   74..         MOV     A,#((Audio_in_I2C_SendByte >> 16) & 0xff)
+   \   000041   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    258              Audio_in_ReceiveACK();
+   \   000044                ; Setup parameters for call to function Audio_in_ReceiveACK
+   \   000044   90....       MOV     DPTR,#(Audio_in_ReceiveACK & 0xffff)
+   \   000047   74..         MOV     A,#((Audio_in_ReceiveACK >> 16) & 0xff)
+   \   000049   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    259              Audio_in_I2C_Stop();     // Stop and return 
+   \   00004C                ; Setup parameters for call to function Audio_in_I2C_Stop
+   \   00004C   90....       MOV     DPTR,#(Audio_in_I2C_Stop & 0xffff)
+   \   00004F   74..         MOV     A,#((Audio_in_I2C_Stop >> 16) & 0xff)
+   \   000051   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    260          }
+   \   000054   02....       LJMP    ?Subroutine5
+    261          
+    262          #if 0
+    263          #pragma location="CS8416_IIC_API"
+    264          void CS8416_IN_OFF(void)
+    265          {
+    266              Audio_in_I2C_Start(); 
+    267              Audio_in_I2C_SendByte(CS8416ADDERSS); 
+    268              Audio_in_ReceiveACK();
+    269              Audio_in_I2C_SendByte(0x04); 
+    270              Audio_in_ReceiveACK();
+    271              Audio_in_I2C_SendByte(0x88);
+    272              Audio_in_ReceiveACK();
+    273              Audio_in_I2C_Stop();     // Stop and return 
+    274          }
+    275          #endif
+    276          #endif
+    277          
+
+   Maximum stack usage in bytes:
+
+     Function                   EXT_STACK PSTACK XSTACK
+     --------                   --------- ------ ------
+     Audio_in_I2C_GetByte              3      0      0
+       -> delay                        4      0      0
+       -> delay                        4      0      0
+     Audio_in_I2C_SendByte             5      0      0
+       -> delay                        4      0      0
+       -> delay                        4      0      0
+     Audio_in_I2C_Start                3      0      0
+       -> delay                        0      0      0
+       -> delay                        0      0      0
+     Audio_in_I2C_Stop                 3      0      0
+       -> delay                        0      0      0
+       -> delay                        0      0      0
+       -> delay                        0      0      0
+     Audio_in_ReceiveACK               4      0      0
+       -> delay                        2      0      0
+       -> delay                        2      0      0
+       -> delay                        2      0      0
+     CS8416_in_choose                  1      0      0
+       -> Audio_in_I2C_Start           2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_Stop            2      0      0
+     CS8416_read_byte                  1      0      0
+       -> Audio_in_I2C_Start           2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_Stop            2      0      0
+       -> Audio_in_I2C_Start           2      0      0
+       -> Audio_in_I2C_SendByte        2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_GetByte         2      0      0
+       -> Audio_in_ReceiveACK          2      0      0
+       -> Audio_in_I2C_Stop            2      0      0
+       -> delay_5ms                    2      0      0
+     CS8416_write_byte                 2      0      0
+       -> Audio_in_I2C_Start           4      0      0
+       -> Audio_in_I2C_SendByte        4      0      0
+       -> Audio_in_ReceiveACK          4      0      0
+       -> Audio_in_I2C_SendByte        4      0      0
+       -> Audio_in_ReceiveACK          4      0      0
+       -> Audio_in_I2C_Stop            4      0      0
+     cs8416_Init                       3      0      0
+       -> Audio_in_I2C_Start           6      0      0
+       -> Audio_in_I2C_SendByte        6      0      0
+       -> Audio_in_ReceiveACK          6      0      0
+       -> Audio_in_I2C_SendByte        6      0      0
+       -> Audio_in_ReceiveACK          6      0      0
+       -> Audio_in_I2C_Stop            6      0      0
+
+
+   Segment part sizes:
+
+     Function/Label        Bytes
+     --------------        -----
+     P0                       1
+     P1                       1
+     P0DIR                    1
+     P1DIR                    1
+     cs8416_ommands           9
+     Audio_in_I2C_Start      33
+     ?Subroutine2             6
+     Audio_in_I2C_SendByte   36
+     ?Subroutine0             8
+     ?Subroutine3            17
+     ?Subroutine4             9
+     Audio_in_I2C_GetByte    34
+     Audio_in_ReceiveACK     32
+     ?Subroutine5             5
+     ?Subroutine1             4
+     Audio_in_I2C_Stop       20
+     cs8416_Init             88
+     CS8416_write_byte       62
+     CS8416_read_byte       118
+     CS8416_in_choose        87
+
+ 
+ 559 bytes in segment CS8416_IIC_API
+   9 bytes in segment CS8416_IIC_DATA3
+   4 bytes in segment SFR_AN
+ 
+ 568 bytes of CODE memory
+   0 bytes of DATA memory (+ 4 bytes shared)
+
+Errors: none
+Warnings: none

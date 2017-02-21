@@ -1,0 +1,470 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:56 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_menu.c                                        #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_menu.c                                        #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_menu.lst                                #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_menu.r51                                 #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_menu.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_menu.c
+      4           * Author    : Hanny
+      5           * Function  : 主菜单任务流程
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if TASK_MENU_EN
+      9          #include "task.h"
+     10          #include "task_menu.h"
+     11          #include "listbox.h"
+     12          
+     13          //task menu controller
+     14          type_task_menu_ctl t_menu;
+     15          
+     16          //选择图片资源
+     17          #include SET_USER_PATH(CFG_UI_MENU_DIR, /ui/ui_menu.c)
+     18          #include SET_USER_PATH(CFG_UI_MENU_DIR, /ui/ui_menu.h)
+     19          
+     20          #pragma constseg="TASK_MENU_CONST"
+     21          //所有相关的任务菜单。数据顺序即为菜单顺序
+     22          extern IAR_CONST type_menu_item menu_item[] = {
+     23              //SET_MENU_ITEM(任务状态名, 任务图标名, 任务字符串名, 任务响应语音菜单资源)
+     24          #if TASK_MUSIC_EN
+     25              //音乐菜单
+     26              SET_MENU_ITEM(TASK_MUSIC, RES_MAIN_MUSIC, STR_MAIN_MUSIC, RES_MP3_MUSIC)
+     27          #endif
+     28          
+     29          #if TASK_TAPE_EN
+     30              //磁带菜单
+     31              SET_MENU_ITEM(TASK_TAPE, RES_MAIN_TAPE, STR_MAIN_TAPE, RES_MP3_TAPE)
+     32          #endif
+     33          
+     34          #if TASK_AUX_EN
+     35              //AUX LINEIN菜单
+     36              SET_MENU_ITEM(TASK_AUX, RES_MAIN_AUX, STR_MAIN_AUX, RES_MP3_LINE_IN)
+     37          #endif
+     38          
+     39          #if TASK_MIC_EN
+     40              //MIC菜单
+     41              SET_MENU_ITEM(TASK_MIC, RES_MAIN_MIC, STR_MAIN_RECORDER, RES_MP3_RECORD)
+     42          #endif
+     43          
+     44          #if TASK_VOICE_EN
+     45              //录音播放菜单
+     46              SET_MENU_ITEM(TASK_VOICE, RES_MAIN_VOICE, STR_MAIN_VOICE, RES_MP3_VOICE)
+     47          #endif
+     48          
+     49          
+     50          #if TASK_FM_EN
+     51              //收音机菜单
+     52              SET_MENU_ITEM(TASK_FM, RES_MAIN_RADIO, STR_MAIN_FM, RES_MP3_FM)
+     53          #endif
+     54          
+     55          #if TASK_BT_EN
+     56              //收音机菜单
+     57              SET_MENU_ITEM(TASK_BT, RES_MAIN_BT, STR_MAIN_BT, RES_MP3_BT)
+     58          #endif
+     59          
+     60          #if TASK_RTC_EN
+     61              //电子钟菜单
+     62              SET_MENU_ITEM(TASK_CLOCK, RES_MAIN_RTC, STR_MAIN_CLOCK, RES_MP3_CLOCK)
+     63          #endif
+     64          
+     65          #if TASK_USBDEV_EN
+     66              //USB设备菜单
+     67              SET_MENU_ITEM(TASK_USBDEV, RES_MAIN_USB, STR_MAIN_USB_DEVICE, RES_MP3_USB_DEVICE)
+     68          #endif
+     69          
+     70          #if TASK_EBOOK_EN
+     71              //电子书菜单
+     72              SET_MENU_ITEM(TASK_EBOOK, RES_MAIN_EBOOK, STR_MAIN_EBOOK, RES_MP3_EBOOK)
+     73          #endif
+     74          
+     75              //SET_MENU_ITEM(TASK_NAV, RES_MAIN_EXPLORER0_BMP,)
+     76          
+     77          #if TASK_SETTING_EN
+     78              //系统设置菜单
+     79              SET_MENU_ITEM(TASK_SETTING, RES_MAIN_SYSTEM, STR_MAIN_SETTING, RES_MP3_SETTING)
+     80          #endif
+     81          
+     82          #if TASK_LOUDSPEAKER_EN
+     83              //扩音器菜单
+     84              SET_MENU_ITEM(TASK_SPEAKER, RES_MAIN_SPEARKER, STR_MAIN_LOUD_SPEAKER, RES_MP3_speaker)
+     85          #endif
+     86          
+     87          #if TASK_TOMCAT_EN
+     88              //汤姆猫菜单
+     89              SET_MENU_ITEM(TASK_TOMCAT, RES_MAIN_TOMCAT, STR_MAIN_TOMCAT, RES_MP3_TOMCAT)
+     90          #endif
+     91          };
+     92          #pragma constseg=default
+     93          
+     94          //设置上一次的任务
+     95          #pragma location="TASK_MENU_SEG"
+     96          void task_menu_set_lastwork(void)
+     97          {
+     98              u8 index;
+     99              t_menu.index = 0;
+    100              for (index=0; index!=(sizeof(menu_item)/sizeof(type_menu_item)); index++) {
+    101                  if (task_ctl.last_work == menu_item[index].sta) {
+    102                      t_menu.index = index;
+    103                      break;
+    104                  }
+    105              }
+    106          
+    107              if (t_menu.index >= MENU_NUM) {
+    108                  t_menu.index = MENU_NUM - 1;
+    109              }
+    110              t_menu.page_index = (t_menu.index / NUM_PAGE) * NUM_PAGE;
+    111              if (t_menu.index == 0) {
+    112                  t_menu.page_index = 0;
+    113              } else if (t_menu.index - 1 + NUM_PAGE > MENU_NUM) {
+    114                  t_menu.page_index = (MENU_NUM > NUM_PAGE) ? MENU_NUM - NUM_PAGE : 0;
+    115              } else {
+    116                  t_menu.page_index = t_menu.index - 1;
+    117              }
+    118              task_ctl.back_up_work_sta = TASK_MENU;
+    119          
+    120          }
+    121          
+    122          //任务初始化
+    123          #pragma location="TASK_MENU_SEG"
+    124          void task_menu_enter(void)
+    125          {
+    126          #if MENU_MUSIC
+    127                  set_sys_clk(SYS_24M);
+    128          #else
+    129                  set_sys_clk(SYS_12M);
+    130          #endif
+    131              task_ctl.work_sta = TASK_MENU;
+    132          
+    133              task_menu_set_lastwork();
+    134              //初始化菜单项
+    135              t_menu.total = MENU_NUM;
+    136          
+    137              if (t_menu.index >= MENU_NUM) {
+    138                  t_menu.index = MENU_NUM - 1;
+    139              }
+    140          
+    141              //主菜单下，显存比较充裕，使用大显存
+    142              set_lcd_buf(LCD_FULL_MODE);
+    143          
+    144              t_menu.disp_index = 0xff;                //故意与index不同
+    145              t_menu.disp_flag = 1;                   //刷新显示
+    146              t_menu.icon_index = 1;
+    147              t_menu.icon_cnt = 0;
+    148          #if TASK_SHOWTIME_EN
+    149              t_menu.back_sec = 0;
+    150          #endif
+    151              //sys_ctl.bat_val = get_bat_val();
+    152          #if MENU_MUSIC
+    153              sound_ctl_init(3, 0x800, 25, 0x800);     //连续3次超过0x800认为开始有声；连续25次0x800认为静音
+    154              user_change_volume(sys_ctl.volume);//数字音量
+    155              dac_enable();
+    156          #endif
+    157          }
+    158          
+    159          //任务退出
+    160          #pragma location="TASK_MENU_SEG"
+    161          void task_menu_exit(void)
+    162          {
+    163              //printf("task_menu_exit\n");
+    164          #if MENU_MUSIC
+    165              dac_disable();
+    166          #endif
+    167          }
+    168          
+    169          //任务事务处理
+    170          #pragma location="TASK_MENU_SEG"
+    171          void task_menu_event(void)
+    172          {
+    173              if (move_ctl.ms_flag) {
+    174                  move_ctl.ms_flag = 0;
+    175                  if(move_ctl.move_flag)
+    176                  {
+    177                      menu_move_control(101);
+    178                  }
+    179                  t_menu.icon_cnt++;
+    180                  if (t_menu.icon_cnt >= 3) {
+    181                      t_menu.icon_cnt = 0;
+    182                      if (t_menu.icon_index >= 3) {
+    183                          t_menu.icon_index = 0;
+    184                      }
+    185                      t_menu.icon_index++;
+    186                      t_menu.disp_flag = 1;
+    187                  }
+    188              }
+    189              music_event();
+    190              if (!comm_event()) {
+    191                  return;
+    192              }
+    193              if (device_need_activate(DEVICE_SDMMC) || device_need_activate(DEVICE_UDISK)) {
+    194          #if MENU_MUSIC
+    195                  music_stop();
+    196          #endif
+    197                  draw_wait();
+    198                  t_menu.disp_flag = 1;
+    199              }
+    200              if (device_need_activate(DEVICE_PC)) {
+    201                  if (device_activate(DEVICE_PC)) {
+    202                      task_ctl.work_sta = TASK_USBDEV;
+    203                      return;
+    204                  }
+    205              }
+    206          #if TASK_SHOWTIME_EN
+    207              if(t_menu.back_sec >= RETURN_SHOW_TIME_SEC)
+    208              {
+    209                  task_ctl.back_up_work_sta = TASK_MENU;
+    210                  task_ctl.work_sta = TASK_SHOW_TIME;
+    211                  t_menu.back_sec = 0;
+    212              }
+    213          #endif
+    214              device_change();
+    215              if (fs_need_mounted()) {
+    216                  draw_wait();
+    217                  t_menu.disp_flag = 1;                   //刷新显示
+    218                  set_sys_clk(SYS_48M);                   //提高主频，加速
+    219                  fs_init();
+    220          #if MENU_MUSIC
+    221                  set_sys_clk(SYS_24M);
+    222          #else
+    223                  set_sys_clk(SYS_12M);
+    224          #endif
+    225              }
+    226              if (fs_is_mounted()) {
+    227                  //task_ctl.work_sta = TASK_MUSIC;
+    228              }
+    229          }
+    230          
+    231          #if !IS_LCD_DISPLAY
+    232          //菜单上一项
+    233          #pragma location="TASK_MENU_SEG"
+    234          void task_menu_prev(void)
+    235          {
+    236          
+    237              if (t_menu.index <= t_menu.page_index) {
+    238          #if MENU_ROLL
+    239                  t_menu.page_index--;
+    240          #else
+    241                  t_menu.page_index -= NUM_PAGE;
+    242          #endif
+    243              }
+    244              if (t_menu.index == 0) {
+    245                  t_menu.index = t_menu.total;
+    246          #if MENU_ROLL
+    247                  if (t_menu.total > NUM_PAGE) {
+    248                      t_menu.page_index = t_menu.total - NUM_PAGE;
+    249                  } else {
+    250                      t_menu.page_index = 0;
+    251                  }
+    252          #else
+    253                  t_menu.page_index = ((t_menu.total - 1) / NUM_PAGE) * NUM_PAGE;
+    254          #endif
+    255              }
+    256              t_menu.index--;
+    257              t_menu.icon_index = 1;
+    258              t_menu.icon_cnt = 0;
+    259          }
+    260          
+    261          //菜单下一项
+    262          #pragma location="TASK_MENU_SEG"
+    263          void task_menu_next(void)
+    264          {
+    265              t_menu.index++;
+    266              if (t_menu.index - t_menu.page_index >= NUM_PAGE) {
+    267          #if MENU_ROLL
+    268                  t_menu.page_index++;
+    269          #else
+    270                  t_menu.page_index += NUM_PAGE;
+    271          #endif
+    272              }
+    273              if (t_menu.index == t_menu.total) {
+    274                  t_menu.index = 0;
+    275                  t_menu.page_index = 0;
+    276              }
+    277              t_menu.icon_index = 1;
+    278              t_menu.icon_cnt = 0;
+    279          }
+    280          
+    281          //任务显示处理
+    282          #pragma location="TASK_MENU_SEG"
+    283          void task_menu_display(void)
+    284          {
+    285              if (t_menu.disp_index != t_menu.index) {
+    286                  t_menu.disp_flag = 1;
+    287                  t_menu.disp_index = t_menu.index;
+    288                  move_ctl.name_x=0;
+    289              }
+    290              if (sys_ctl.bat_val != sys_ctl.disp_bat_val) {
+    291                  sys_ctl.disp_bat_val = sys_ctl.bat_val;
+    292                  t_menu.disp_flag = 1;             //设置更新标志
+    293              }
+    294              if (!t_menu.disp_flag) {
+    295                  return;
+    296              }
+    297              t_menu.disp_flag = 0;
+    298          
+    299              u8 i, pos;
+    300              disp_clear();
+    301          
+    302              pos = 12;
+    303              for (i=0; i!=4 && t_menu.page_index+i<t_menu.total; i++) {
+    304                  disp_draw(menu_item[t_menu.page_index+i].r_index, pos, 0);
+    305                  if (t_menu.index == t_menu.page_index + i) {
+    306                      disp_draw(RES_ICON_FOCUSL_BMP, pos-4, 0);
+    307                      disp_menu(menu_item[t_menu.page_index+i].name, 0, move_ctl.name_x, 6, ME_CENTER);//示当前菜单项的文字
+    308                      move_ctl.name_wide = move_ctl.name_wide1;
+    309                      if(move_ctl.name_wide >= 105)
+    310                      {
+    311                          move_ctl.move_flag=1;
+    312                      }
+    313                      else
+    314                      {
+    315                          move_ctl.move_flag=0;
+    316                      }
+    317                      disp_draw(RES_ICON_FOCUSR_BMP, pos+16, 0);
+    318                      disp_draw(menu_item[t_menu.page_index+i].r_index+t_menu.icon_index, 48, 2);
+    319                  }
+    320                      pos += 24;
+    321              }
+    322          
+    323              if (sys_ctl.bat_val >= 1) {
+    324                  disp_draw(RES_ICON_BAT0_BMP + sys_ctl.bat_val - 1, 108, 0);
+    325              }
+    326              disp_update();
+    327          }
+    328          
+    329          //任务消息处理
+    330          #pragma location="TASK_MENU_SEG"
+    331          void task_menu_deal_msg(u8 msg)
+    332          {
+    333              switch(msg) {
+    334          
+    335                  //选择菜单
+    336              case KU_OK:
+    337                  music_stop();
+    338                  task_ctl.work_sta = menu_item[t_menu.index].sta;
+    339                  break;
+    340          
+    341                  //上一项，下一项
+    342              case KU_PREV:
+    343                  task_menu_prev();
+    344          #if MENU_MUSIC
+    345                  music_stop();
+    346                  mp3_res_play(menu_item[t_menu.index].mp3res);
+    347          #endif
+    348                  break;
+    349              case KU_NEXT:
+    350                  task_menu_next();
+    351          #if MENU_MUSIC
+    352                  music_stop();
+    353                  mp3_res_play(menu_item[t_menu.index].mp3res);
+    354          #endif
+    355                  break;
+    356            /*  case KU_MENU:
+    357                      hold_mode_enter();
+    358                      break;*/
+    359          /*
+    360              case KL_POWER:
+    361                  printf("power off\n");
+    362                  //task_ctl.work_sta = TASK_POWEROFF;
+    363                  break;
+    364          */
+    365                  //长按MENU关机
+    366          #if SOFTKEY
+    367              case KL_MENU:
+    368                  task_ctl.work_sta = TASK_POWEROFF;
+    369                  break;
+    370          #endif
+    371              case QSYSTEM_1S:
+    372          #if TASK_SHOWTIME_EN
+    373                  t_menu.back_sec++;
+    374          #endif
+    375                  break;
+    376              default:
+    377                  break;
+    378              }
+    379          #if TASK_SHOWTIME_EN
+    380              if(msg != NO_KEY && msg!= QSYSTEM_1S)
+    381                  t_menu.back_sec = 0;
+    382          #endif
+    383          }
+    384          #endif
+    385          
+    386          //任务主流程
+    387          #pragma location="TASK_MENU_SEG"
+    388          void task_menu(void)
+    389          {
+    390              u8 msg;
+    391              task_menu_enter();
+    392              while (task_ctl.work_sta == TASK_MENU) {
+    393                  msg = get_msg();
+    394                  task_menu_event();
+    395                  task_menu_deal_msg(msg);
+    396                  task_menu_display();
+    397          
+    398              }
+    399              task_menu_exit();
+    400          }
+    401          
+    402          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,187 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:58 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_voice.c                                       #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_voice.c                                       #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_voice.lst                               #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_voice.r51                                #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_voice.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_voice.c
+      4           * Author    : Hanny
+      5           * Function  : 播放录音文件
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if TASK_VOICE_EN
+      9          #include "task.h"
+     10          #include "task_music.h"
+     11          
+     12          #define DEBUG_TASK_VOICE            0
+     13          
+     14          extern type_task_music_ctl t_msc;
+     15          
+     16          void task_music_event(void);
+     17          void task_music_deal_msg(u8);
+     18          void task_music_display(void);
+     19          void task_music_exit(void);
+     20          void task_voice_numget(void);
+     21          
+     22          void task_voice_numget(void)
+     23          {
+     24              t_msc.music_num = sys_param_read16(PARAM_VOICE_NUM);        //打开的文件编号
+     25              if (t_msc.music_num == 0 || t_msc.music_num > t_msc.music_total) {
+     26                  t_msc.music_num = 1;
+     27              }
+     28          }
+     29          
+     30          //音乐任务初始化
+     31          void task_voice_enter(void)
+     32          {
+     33              led_mode_off();
+     34              led_idle();
+     35              set_sys_clk(SYS_48M);
+     36              draw_wait();
+     37          #if FIRST_PLAY_UDISK                                  //2014-1-2, 避免U盘在线时，在其他模式插入SD卡仍播U盘
+     38              if(device_is_actived(DEVICE_SDMMC) && device_is_actived(DEVICE_UDISK)) { //U盘和SD卡同时在线时优先播放U盘
+     39                  if(fs_cur_dev() != DEVICE_UDISK){
+     40                      fs_sel(DEVICE_UDISK);
+     41                  }
+     42              }
+     43          #endif
+     44          
+     45           /*   if (!device_is_actived(DEVICE_SDMMC)) {
+     46                  if (!device_is_actived(DEVICE_UDISK))
+     47                  {
+     48                      msgbox(STR_NO_DEVICE, NULL, MSGBOX_TIME);
+     49                      task_ctl.work_sta = TASK_EXIT;      //设备无效，返回主菜单
+     50                      return;
+     51                  }
+     52              } */
+     53              draw_wait();
+     54              //设置任务
+     55              task_ctl.work_sta = TASK_VOICE;
+     56              memset(&t_msc,0,sizeof(t_msc));
+     57              //播放信息初始化
+     58              t_msc.file_change = 1;                  //需要打开一个新文件
+     59              t_msc.disp_flag = 1; //显示控制
+     60              t_msc.music_voice_flag = 1;
+     61              //sound_ctl_init(3, 0x800, 25, 0x800);     //连续3次超过0x800认为开始有声；连续25次0x800认为静音
+     62              //配置扫描过滤器
+     63              user_change_volume(sys_ctl.volume);//数字音量
+     64              dac_enable();
+     65              f_scan_set(SCAN_SUB_FOLDER|SCAN_SPEED, &file_filter_voice, &dir_filter_voice);
+     66              if(!music_mount_device()) {
+     67                  msgbox(STR_NO_VOICE, NULL, MSGBOX_TIME);
+     68                  task_ctl.work_sta = TASK_EXIT;          //设备无效，退出
+     69                  return;
+     70              }
+     71          #if WARNING_TASK_VOICE
+     72              if (work_sta_interrupt == TASK_NULL) {
+     73                  mp3_res_play_wait(RES_MP3_PLAY_RECORDING);
+     74              }
+     75          #endif
+     76              work_sta_interrupt = TASK_NULL;
+     77              //获取歌曲的总数
+     78              task_voice_numget();
+     79              //开始播放
+     80              ocx_init(task_music_event, NULL);       //设置OCX需要响应的消息及事件
+     81              dac_dynamic(DYNAMIC_NO);
+     82          }
+     83          
+     84          
+     85          //任务退出
+     86          void task_voice_exit(void)
+     87          {
+     88              music_stop();                           //结束Music播放
+     89              sys_unmute();
+     90              dac_disable();
+     91          }
+     92          
+     93          //任务主流程
+     94          //#pragma location="TASK_MUSIC_SEG"
+     95          void task_voice(void)
+     96          {
+     97              u8 msg;
+     98          #if DEBUG_TASK_VOICE
+     99              printf("task_voice\n");
+    100          #endif
+    101              task_voice_enter();
+    102              while (task_ctl.work_sta == TASK_VOICE) {
+    103          #if IS_LCD_DISPLAY
+    104                  task_music_event();
+    105                  while(msg = get_msg()) { // lcd显示耗时太大，先集中处理消息，处理完后再显示
+    106                      task_music_deal_msg(msg);
+    107                  }
+    108                  task_music_display();
+    109          #else
+    110                  msg = get_msg();
+    111                  task_music_event();
+    112                  task_music_deal_msg(msg);
+    113                  task_music_display();
+    114          #endif
+    115              }
+    116              task_voice_exit();
+    117          }
+    118          
+    119          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

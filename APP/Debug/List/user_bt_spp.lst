@@ -1,0 +1,830 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:59 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_bt_spp.c                                      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_bt_spp.c                                      #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_bt_spp.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_bt_spp.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_bt_spp.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_bt.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙SPP操作接口
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          
+      9          #define DBG_BT_SPP_EN           0
+     10          #define SPP_MSG_NUM             9
+     11          
+     12          typedef struct {
+     13              u8 msg;
+     14              char str[8];
+     15          } TYPE_SPP_MSG;
+     16          
+     17          //发送格式为AT#**BW ，BW后一定要加一个如空格等的其他字符
+     18          #pragma constseg="SPP_RX_CONST"
+
+   \                                 In segment SPP_RX_CONST, align 1
+     19          IAR_CONST char tbl_spp_sig[] = "BW";
+   \                     tbl_spp_sig:
+   \   000000   425700       DB "BW"
+
+   \                                 In segment SPP_RX_CONST, align 1
+     20          IAR_CONST TYPE_SPP_MSG tbl_spp_msg[SPP_MSG_NUM] = {
+   \                     tbl_spp_msg:
+   \   000000   81           DB 129
+   \   000001   4154234D     DB "AT#ME"
+   \            4500    
+   \   000007   000083       DB 0, 0, 131
+   \   00000A   4154234D     DB "AT#MD"
+   \            4400    
+   \   000010   000005       DB 0, 0, 5
+   \   000013   41542356     DB "AT#VU"
+   \            5500    
+   \   000019   000004       DB 0, 0, 4
+   \   00001C   41542356     DB "AT#VD"
+   \            4400    
+   \   000022   000082       DB 0, 0, 130
+   \   000025   4154234D     DB "AT#MA"
+   \            4100    
+   \   00002B   00008E       DB 0, 0, 142
+   \   00002E   4154234D     DB "AT#MO"
+   \            4F00    
+   \   000034   00006E       DB 0, 0, 110
+   \   000037   41542347     DB "AT#GT"
+   \            5400    
+   \   00003D   00006F       DB 0, 0, 111
+   \   000040   41542347     DB "AT#GF"
+   \            4600    
+   \   000046   00006D       DB 0, 0, 109
+   \   000049   41542347     DB "AT#GN"
+   \            4E00    
+   \   00004F   0000         DB 0, 0
+     21              {KU_PREV, "AT#ME"},
+     22              {KU_NEXT, "AT#MD"},
+     23              {K_VOL_UP, "AT#VU"},
+     24              {K_VOL_DOWN, "AT#VD"},
+     25              {KU_PLAY, "AT#MA"},
+     26              {KU_MODE, "AT#MO"},
+     27              {Q_SPP_MSC_GET_TOTAL, "AT#GT"}, //AT#GTBW :获取总曲目
+     28              {Q_SPP_MSC_GET_LFN, "AT#GF"},   //AT#GF0001BW :获取第一首歌曲的文件名
+     29              {Q_SPP_MSC_GET_NUM, "AT#GN"},   //AT#GNBW :获取当前曲目
+     30          };
+
+   \                                 In segment SPP_RX_CONST, align 1
+     31          IAR_CONST char tbl_spp_settime[] = "AT#RT";
+   \                     tbl_spp_settime:
+   \   000000   41542352     DB "AT#RT"
+   \            5400    
+
+   \                                 In segment SPP_RX_CONST, align 1
+     32          IAR_CONST char tbl_spp_seteq[] = "AT#EQ";//设置EQ
+   \                     tbl_spp_seteq:
+   \   000000   41542345     DB "AT#EQ"
+   \            5100    
+     33          
+
+   \                                 In segment BTEQ_BUF, align 1, root
+     34          IAR_XDATA_A u8 bteq_buf[123] @ "BTEQ_BUF";
+   \                     bteq_buf:
+   \   000000                DS 123
+     35          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     36          bool eqflag = FALSE;
+   \                     eqflag:
+   \   000000                DS 1
+     37          #pragma constseg=default
+     38          
+     39          //CHAR 转换成数值
+     40          #pragma location="SPP_RX_SEG"
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+     41          u8 char_to_num(u8 ch)
+   \                     char_to_num:
+     42          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     43              if (ch >= '0' && ch <= '9') {
+   \   000000   E9           MOV     A,R1
+   \   000001   C3           CLR     C
+   \   000002   9430         SUBB    A,#0x30
+   \   000004   400C         JC      ??char_to_num_0
+   \   000006   E9           MOV     A,R1
+   \   000007   C3           CLR     C
+   \   000008   943A         SUBB    A,#0x3a
+   \   00000A   5006         JNC     ??char_to_num_0
+     44                  return (ch - '0');
+   \   00000C   74D0         MOV     A,#-0x30
+   \   00000E   29           ADD     A,R1
+   \   00000F   F9           MOV     R1,A
+   \   000010   8002         SJMP    ??char_to_num_1
+     45              }
+     46              return 0;
+   \                     ??char_to_num_0:
+   \   000012   7900         MOV     R1,#0x0
+   \                     ??char_to_num_1:
+   \   000014   02....       LJMP    ?BRET
+     47          }
+     48          
+     49          //SPP接收处理
+     50          #pragma location="SPP_RX_SEG"
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+     51          void spp_rx_msg(u8 *ptr, u8 len)
+   \                     spp_rx_msg:
+     52          {
+   \   000000   7406         MOV     A,#0x6
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 9
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+   \   000009   89..         MOV     ?V0 + 0,R1
+     53              if (0 == memcmp(&ptr[len-3], (char *)tbl_spp_sig, 2)) {
+   \   00000B                ; Setup parameters for call to function mem_cmp
+   \   00000B   7902         MOV     R1,#0x2
+   \   00000D   7C..         MOV     R4,#(tbl_spp_sig & 0xff)
+   \   00000F   7D..         MOV     R5,#((tbl_spp_sig >> 8) & 0xff)
+   \   000011   85....       MOV     ?V0 + 2,?V0 + 0
+   \   000014   EE           MOV     A,R6
+   \   000015   25..         ADD     A,?V0 + 2
+   \   000017   FA           MOV     R2,A
+   \   000018   EF           MOV     A,R7
+   \   000019   3400         ADDC    A,#0x0
+   \   00001B   FB           MOV     R3,A
+   \   00001C   74FD         MOV     A,#-0x3
+   \   00001E   2A           ADD     A,R2
+   \   00001F   1A           DEC     R2
+   \   000020   1A           DEC     R2
+   \   000021   1A           DEC     R2
+   \   000022   74FF         MOV     A,#-0x1
+   \   000024   3B           ADDC    A,R3
+   \   000025   FB           MOV     R3,A
+   \   000026   12....       LCALL   mem_cmp & 0xFFFF
+   \   000029   EA           MOV     A,R2
+   \   00002A   7001         JNZ     ??spp_rx_msg_0
+   \   00002C   EB           MOV     A,R3
+   \                     ??spp_rx_msg_0:
+   \   00002D   6003         JZ      $+5
+   \   00002F   02....       LJMP    ??spp_rx_msg_1 & 0xFFFF
+     54                  //SPP同步RTC时钟
+     55                  if (0 == memcmp(ptr, (char *)tbl_spp_settime, 5)) {
+   \   000032                ; Setup parameters for call to function mem_cmp
+   \   000032   7905         MOV     R1,#0x5
+   \   000034   7C..         MOV     R4,#(tbl_spp_settime & 0xff)
+   \   000036   7D..         MOV     R5,#((tbl_spp_settime >> 8) & 0xff)
+   \   000038   EE           MOV     A,R6
+   \   000039   FA           MOV     R2,A
+   \   00003A   EF           MOV     A,R7
+   \   00003B   FB           MOV     R3,A
+   \   00003C   12....       LCALL   mem_cmp & 0xFFFF
+   \   00003F   EA           MOV     A,R2
+   \   000040   7001         JNZ     ??spp_rx_msg_2
+   \   000042   EB           MOV     A,R3
+   \                     ??spp_rx_msg_2:
+   \   000043   6003         JZ      $+5
+   \   000045   02....       LJMP    ??spp_rx_msg_3 & 0xFFFF
+     56          #if BT_SPP_EQ_EN==0
+     57                      if (len == 22) {
+   \   000048   7416         MOV     A,#0x16
+   \   00004A   65..         XRL     A,?V0 + 0
+   \   00004C   6003         JZ      $+5
+   \   00004E   02....       LJMP    ??spp_rx_msg_1 & 0xFFFF
+     58                          u8 *p = ptr + 5;
+   \   000051   EE           MOV     A,R6
+   \   000052   2405         ADD     A,#0x5
+   \   000054   FE           MOV     R6,A
+   \   000055   EF           MOV     A,R7
+   \   000056   3400         ADDC    A,#0x0
+   \   000058   FF           MOV     R7,A
+     59                          u16 year = char_to_num(*p++) * 1000;
+   \   000059                ; Setup parameters for call to function char_to_num
+   \   000059   8E82         MOV     DPL,R6
+   \   00005B   8F83         MOV     DPH,R7
+   \   00005D   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_10:
+   \   000060   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000063   E9           MOV     A,R1
+   \   000064   8E82         MOV     DPL,R6
+   \   000066   8F83         MOV     DPH,R7
+   \   000068   A3           INC     DPTR
+   \   000069   AE82         MOV     R6,DPL
+   \   00006B   AF83         MOV     R7,DPH
+   \   00006D   F5..         MOV     ?V0 + 0,A
+   \   00006F   75F0E8       MOV     B,#-0x18
+   \   000072   A4           MUL     AB
+   \   000073   C5..         XCH     A,?V0 + 0
+   \   000075   AAF0         MOV     R2,B
+   \   000077   75F003       MOV     B,#0x3
+   \   00007A   A4           MUL     AB
+   \   00007B   2A           ADD     A,R2
+   \   00007C   F5..         MOV     ?V0 + 1,A
+     60                          memset(&t_time, 0, sizeof(t_time));
+   \   00007E                ; Setup parameters for call to function my_memset
+   \   00007E   7C07         MOV     R4,#0x7
+   \   000080   7D00         MOV     R5,#0x0
+   \   000082   7900         MOV     R1,#0x0
+   \   000084   7A..         MOV     R2,#(t_time & 0xff)
+   \   000086   7B..         MOV     R3,#((t_time >> 8) & 0xff)
+   \   000088   12....       LCALL   my_memset & 0xFFFF
+     61                          year += char_to_num(*p++) * 100;
+   \   00008B                ; Setup parameters for call to function char_to_num
+   \   00008B   8E82         MOV     DPL,R6
+   \   00008D   8F83         MOV     DPH,R7
+   \   00008F   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_11:
+   \   000092   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000095   E9           MOV     A,R1
+   \   000096   8E82         MOV     DPL,R6
+   \   000098   8F83         MOV     DPH,R7
+   \   00009A   A3           INC     DPTR
+   \   00009B   0E           INC     R6
+   \   00009C   AF83         MOV     R7,DPH
+   \   00009E   75F064       MOV     B,#0x64
+   \   0000A1   12....       LCALL   ?Subroutine1
+     62                          year += char_to_num(*p++) * 10;
+   \                     ??CrossCallReturnLabel_8:
+   \   0000A4   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000A7   E9           MOV     A,R1
+   \   0000A8   8E82         MOV     DPL,R6
+   \   0000AA   8F83         MOV     DPH,R7
+   \   0000AC   A3           INC     DPTR
+   \   0000AD   0E           INC     R6
+   \   0000AE   AF83         MOV     R7,DPH
+   \   0000B0   75F00A       MOV     B,#0xa
+   \   0000B3   12....       LCALL   ?Subroutine1
+     63                          year += char_to_num(*p++);
+   \                     ??CrossCallReturnLabel_9:
+   \   0000B6   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000B9   E9           MOV     A,R1
+   \   0000BA   F5..         MOV     ?V0 + 2,A
+   \   0000BC   8E82         MOV     DPL,R6
+   \   0000BE   8F83         MOV     DPH,R7
+   \   0000C0   A3           INC     DPTR
+   \   0000C1   0E           INC     R6
+   \   0000C2   AF83         MOV     R7,DPH
+   \   0000C4   E5..         MOV     A,?V0 + 0
+   \   0000C6   25..         ADD     A,?V0 + 2
+   \   0000C8   F5..         MOV     ?V0 + 0,A
+   \   0000CA   E5..         MOV     A,?V0 + 1
+   \   0000CC   3400         ADDC    A,#0x0
+   \   0000CE   F5..         MOV     ?V0 + 1,A
+     64                          if (year >= 2000 & year <= 2099) {
+   \   0000D0   C3           CLR     C
+   \   0000D1   E5..         MOV     A,?V0 + 0
+   \   0000D3   94D0         SUBB    A,#-0x30
+   \   0000D5   E5..         MOV     A,?V0 + 1
+   \   0000D7   9407         SUBB    A,#0x7
+   \   0000D9   4013         JC      ??spp_rx_msg_4
+   \   0000DB   C3           CLR     C
+   \   0000DC   E5..         MOV     A,?V0 + 0
+   \   0000DE   9434         SUBB    A,#0x34
+   \   0000E0   E5..         MOV     A,?V0 + 1
+   \   0000E2   9408         SUBB    A,#0x8
+   \   0000E4   5008         JNC     ??spp_rx_msg_4
+     65                              t_time.year = year - 2000;
+   \   0000E6   E5..         MOV     A,?V0 + 0
+   \   0000E8   2430         ADD     A,#0x30
+   \   0000EA   90....       MOV     DPTR,#t_time
+   \   0000ED   F0           MOVX    @DPTR,A
+     66                          }
+     67                          t_time.month = char_to_num(*p++) * 10;
+   \                     ??spp_rx_msg_4:
+   \   0000EE                ; Setup parameters for call to function char_to_num
+   \   0000EE   8E82         MOV     DPL,R6
+   \   0000F0   8F83         MOV     DPH,R7
+   \   0000F2   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_12:
+   \   0000F5   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000F8   E9           MOV     A,R1
+   \   0000F9   8E82         MOV     DPL,R6
+   \   0000FB   8F83         MOV     DPH,R7
+   \   0000FD   A3           INC     DPTR
+   \   0000FE   0E           INC     R6
+   \   0000FF   AF83         MOV     R7,DPH
+   \   000101   75F00A       MOV     B,#0xa
+   \   000104   A4           MUL     AB
+   \   000105   90....       MOV     DPTR,#(t_time + 1)
+   \   000108   12....       LCALL   ??Subroutine0_1
+     68                          t_time.month += char_to_num(*p++);
+   \                     ??CrossCallReturnLabel_5:
+   \   00010B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00010E   E9           MOV     A,R1
+   \   00010F   FA           MOV     R2,A
+   \   000110   8E82         MOV     DPL,R6
+   \   000112   8F83         MOV     DPH,R7
+   \   000114   A3           INC     DPTR
+   \   000115   0E           INC     R6
+   \   000116   AF83         MOV     R7,DPH
+   \   000118   90....       MOV     DPTR,#(t_time + 1)
+   \   00011B   E0           MOVX    A,@DPTR
+   \   00011C   2A           ADD     A,R2
+   \   00011D   F0           MOVX    @DPTR,A
+     69                          t_time.month--;
+   \   00011E   14           DEC     A
+   \   00011F   12....       LCALL   ??Subroutine0_1
+     70          
+     71                          t_time.day += char_to_num(*p++) * 10;
+   \                     ??CrossCallReturnLabel_6:
+   \   000122   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000125   E9           MOV     A,R1
+   \   000126   8E82         MOV     DPL,R6
+   \   000128   8F83         MOV     DPH,R7
+   \   00012A   A3           INC     DPTR
+   \   00012B   0E           INC     R6
+   \   00012C   AF83         MOV     R7,DPH
+   \   00012E   75F00A       MOV     B,#0xa
+   \   000131   A4           MUL     AB
+   \   000132   FA           MOV     R2,A
+   \   000133   90....       MOV     DPTR,#(t_time + 2)
+   \   000136   12....       LCALL   ??Subroutine0_0
+     72                          t_time.day += char_to_num(*p++);
+   \                     ??CrossCallReturnLabel_2:
+   \   000139   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00013C   E9           MOV     A,R1
+   \   00013D   FA           MOV     R2,A
+   \   00013E   8E82         MOV     DPL,R6
+   \   000140   8F83         MOV     DPH,R7
+   \   000142   A3           INC     DPTR
+   \   000143   0E           INC     R6
+   \   000144   AF83         MOV     R7,DPH
+   \   000146   90....       MOV     DPTR,#(t_time + 2)
+   \   000149   E0           MOVX    A,@DPTR
+   \   00014A   2A           ADD     A,R2
+   \   00014B   F0           MOVX    @DPTR,A
+     73                          t_time.day--;
+   \   00014C   14           DEC     A
+   \   00014D   12....       LCALL   ??Subroutine0_1
+     74          
+     75                          t_time.hour += char_to_num(*p++) * 10;
+   \                     ??CrossCallReturnLabel_7:
+   \   000150   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000153   E9           MOV     A,R1
+   \   000154   8E82         MOV     DPL,R6
+   \   000156   8F83         MOV     DPH,R7
+   \   000158   A3           INC     DPTR
+   \   000159   0E           INC     R6
+   \   00015A   AF83         MOV     R7,DPH
+   \   00015C   75F00A       MOV     B,#0xa
+   \   00015F   A4           MUL     AB
+   \   000160   FA           MOV     R2,A
+   \   000161   12....       LCALL   ?Subroutine0
+     76                          t_time.hour += char_to_num(*p++);
+   \                     ??CrossCallReturnLabel_0:
+   \   000164   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000167   E9           MOV     A,R1
+   \   000168   FA           MOV     R2,A
+   \   000169   8E82         MOV     DPL,R6
+   \   00016B   8F83         MOV     DPH,R7
+   \   00016D   A3           INC     DPTR
+   \   00016E   0E           INC     R6
+   \   00016F   AF83         MOV     R7,DPH
+   \   000171   12....       LCALL   ?Subroutine0
+     77          
+     78                          t_time.minute += char_to_num(*p++) * 10;
+   \                     ??CrossCallReturnLabel_1:
+   \   000174   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000177   E9           MOV     A,R1
+   \   000178   8E82         MOV     DPL,R6
+   \   00017A   8F83         MOV     DPH,R7
+   \   00017C   A3           INC     DPTR
+   \   00017D   0E           INC     R6
+   \   00017E   AF83         MOV     R7,DPH
+   \   000180   75F00A       MOV     B,#0xa
+   \   000183   A4           MUL     AB
+   \   000184   FA           MOV     R2,A
+   \   000185   90....       MOV     DPTR,#(t_time + 4)
+   \   000188   12....       LCALL   ??Subroutine0_0
+     79                          t_time.minute += char_to_num(*p++);
+   \                     ??CrossCallReturnLabel_3:
+   \   00018B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00018E   E9           MOV     A,R1
+   \   00018F   FA           MOV     R2,A
+   \   000190   8E82         MOV     DPL,R6
+   \   000192   8F83         MOV     DPH,R7
+   \   000194   A3           INC     DPTR
+   \   000195   0E           INC     R6
+   \   000196   AF83         MOV     R7,DPH
+   \   000198   90....       MOV     DPTR,#(t_time + 4)
+   \   00019B   12....       LCALL   ??Subroutine0_0
+     80          
+     81                          t_time.second += char_to_num(*p++) * 10;
+   \                     ??CrossCallReturnLabel_4:
+   \   00019E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001A1   E9           MOV     A,R1
+   \   0001A2   75F00A       MOV     B,#0xa
+   \   0001A5   A4           MUL     AB
+   \   0001A6   FA           MOV     R2,A
+   \   0001A7   90....       MOV     DPTR,#(t_time + 5)
+   \   0001AA   E0           MOVX    A,@DPTR
+   \   0001AB   2A           ADD     A,R2
+   \   0001AC   F0           MOVX    @DPTR,A
+     82                          t_time.second += char_to_num(*p++);
+   \   0001AD                ; Setup parameters for call to function char_to_num
+   \   0001AD   8E82         MOV     DPL,R6
+   \   0001AF   8F83         MOV     DPH,R7
+   \   0001B1   A3           INC     DPTR
+   \   0001B2   12....       LCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_13:
+   \   0001B5   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001B8   E9           MOV     A,R1
+   \   0001B9   FA           MOV     R2,A
+   \   0001BA   90....       MOV     DPTR,#(t_time + 5)
+   \   0001BD   E0           MOVX    A,@DPTR
+   \   0001BE   2A           ADD     A,R2
+   \   0001BF   F0           MOVX    @DPTR,A
+     83                          set_rtc_time();
+   \   0001C0                ; Setup parameters for call to function set_rtc_time
+   \   0001C0   90....       MOV     DPTR,#(set_rtc_time & 0xffff)
+   \   0001C3   74..         MOV     A,#((set_rtc_time >> 16) & 0xff)
+   \   0001C5   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001C8   805E         SJMP    ??spp_rx_msg_1
+     84                      }
+     85          #endif
+     86                  }
+     87                  else if (0 == memcmp(ptr, (char *)tbl_spp_seteq, 5)) { //接受eq数据
+   \                     ??spp_rx_msg_3:
+   \   0001CA                ; Setup parameters for call to function mem_cmp
+   \   0001CA   7905         MOV     R1,#0x5
+   \   0001CC   7C..         MOV     R4,#(tbl_spp_seteq & 0xff)
+   \   0001CE   7D..         MOV     R5,#((tbl_spp_seteq >> 8) & 0xff)
+   \   0001D0   EE           MOV     A,R6
+   \   0001D1   FA           MOV     R2,A
+   \   0001D2   EF           MOV     A,R7
+   \   0001D3   FB           MOV     R3,A
+   \   0001D4   12....       LCALL   mem_cmp & 0xFFFF
+   \   0001D7   EA           MOV     A,R2
+   \   0001D8   7001         JNZ     ??spp_rx_msg_5
+   \   0001DA   EB           MOV     A,R3
+   \                     ??spp_rx_msg_5:
+   \   0001DB   7008         JNZ     ??spp_rx_msg_6
+     88                      eqflag = true;
+   \   0001DD   7401         MOV     A,#0x1
+   \   0001DF   90....       MOV     DPTR,#eqflag
+   \   0001E2   F0           MOVX    @DPTR,A
+   \   0001E3   8043         SJMP    ??spp_rx_msg_1
+     89                  }
+     90                  else {
+     91                      //SPP消息转按键消息
+     92                      u8 i;
+     93                      for (i=0; i!=SPP_MSG_NUM; i++) {
+   \                     ??spp_rx_msg_6:
+   \   0001E5   75..00       MOV     ?V0 + 2,#0x0
+     94                          //printf("str:%s\n", tbl_spp_msg[i].str);
+     95                          if (0 == memcmp(ptr, (char *)tbl_spp_msg[i].str, 5)) {
+   \                     ??spp_rx_msg_7:
+   \   0001E8   E5..         MOV     A,?V0 + 2
+   \   0001EA   75F009       MOV     B,#0x9
+   \   0001ED   A4           MUL     AB
+   \   0001EE   24..         ADD     A,#(tbl_spp_msg & 0xff)
+   \   0001F0   F8           MOV     R0,A
+   \   0001F1   E5F0         MOV     A,B
+   \   0001F3   34..         ADDC    A,#((tbl_spp_msg >> 8) & 0xff)
+   \   0001F5   F9           MOV     R1,A
+   \   0001F6   88..         MOV     ?V0 + 0,R0
+   \   0001F8   89..         MOV     ?V0 + 1,R1
+   \   0001FA                ; Setup parameters for call to function mem_cmp
+   \   0001FA   7905         MOV     R1,#0x5
+   \   0001FC   8882         MOV     DPL,R0
+   \   0001FE   F583         MOV     DPH,A
+   \   000200   A3           INC     DPTR
+   \   000201   AC82         MOV     R4,DPL
+   \   000203   AD83         MOV     R5,DPH
+   \   000205   EE           MOV     A,R6
+   \   000206   FA           MOV     R2,A
+   \   000207   EF           MOV     A,R7
+   \   000208   FB           MOV     R3,A
+   \   000209   12....       LCALL   mem_cmp & 0xFFFF
+   \   00020C   EA           MOV     A,R2
+   \   00020D   7001         JNZ     ??spp_rx_msg_8
+   \   00020F   EB           MOV     A,R3
+   \                     ??spp_rx_msg_8:
+   \   000210   700E         JNZ     ??spp_rx_msg_9
+     96          #if BT_SPP_MSC_EN
+     97                              //printf("msg:%02x\n", tbl_spp_msg[i].msg);
+     98                              if(tbl_spp_msg[i].msg == Q_SPP_MSC_GET_LFN) {
+     99                                  u8 tmp;
+    100                                  u16 num = 0;
+    101                                  for(u8 j=5; j<10; j++) {
+    102                                      if(ptr[j] == '\0') {
+    103                                          break;
+    104                                      }
+    105                                      tmp = char_to_hex(ptr[j]);
+    106                                      if(tmp == 0xff) {
+    107                                          return;
+    108                                      }
+    109                                      num *= 10;
+    110                                      num += tmp;
+    111                                  }
+    112                                  //printf("num: %d\n", num);
+    113                                  spp_msc_lfn_num = num;
+    114                              }
+    115          #endif
+    116                              put_msg(tbl_spp_msg[i].msg);
+   \   000212                ; Setup parameters for call to function put_msg
+   \   000212   85..82       MOV     DPL,?V0 + 0
+   \   000215   85..83       MOV     DPH,?V0 + 1
+   \   000218   E4           CLR     A
+   \   000219   93           MOVC    A,@A+DPTR
+   \   00021A   F9           MOV     R1,A
+   \   00021B   12....       LCALL   put_msg & 0xFFFF
+    117                              return;
+   \   00021E   8008         SJMP    ??spp_rx_msg_1
+    118                           }
+    119                       }
+   \                     ??spp_rx_msg_9:
+   \   000220   05..         INC     ?V0 + 2
+   \   000222   7409         MOV     A,#0x9
+   \   000224   65..         XRL     A,?V0 + 2
+   \   000226   70C0         JNZ     ??spp_rx_msg_7
+   \                     ??spp_rx_msg_1:
+   \   000228   7F06         MOV     R7,#0x6
+   \   00022A   02....       LJMP    ?BANKED_LEAVE_SP
+    120                  }
+    121              }
+    122              else{
+    123          #if BT_SPP_EQ_EN
+    124                  if(eqflag == true)
+    125                  {
+    126                      if(123 == len) //123个eq参数
+    127                      {
+    128                          eqflag = FALSE;
+    129                          for(u8 i=0;i<len;i++)
+    130                              bteq_buf[i] = ptr[i];
+    131                         }
+    132          
+    133                  }
+    134          #endif
+    135              }
+    136          }
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   A4           MUL     AB
+   \   000001   F8           MOV     R0,A
+   \   000002   A9F0         MOV     R1,B
+   \   000004   E5..         MOV     A,?V0 + 0
+   \   000006   28           ADD     A,R0
+   \   000007   F5..         MOV     ?V0 + 0,A
+   \   000009   E5..         MOV     A,?V0 + 1
+   \   00000B   39           ADDC    A,R1
+   \   00000C   F5..         MOV     ?V0 + 1,A
+   \   00000E                ; Setup parameters for call to function char_to_num
+   \   00000E                ; Setup parameters for call to function char_to_num
+   \   00000E                REQUIRE ?Subroutine2
+   \   00000E                ; // Fall through to label ?Subroutine2
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F9           MOV     R1,A
+   \   000002   90....       MOV     DPTR,#(char_to_num & 0xffff)
+   \   000005   74..         MOV     A,#((char_to_num >> 16) & 0xff)
+   \   000007   22           RET
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   90....       MOV     DPTR,#(t_time + 3)
+   \                     ??Subroutine0_0:
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   2A           ADD     A,R2
+   \                     ??Subroutine0_1:
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006                ; Setup parameters for call to function char_to_num
+   \   000006   8E82         MOV     DPL,R6
+   \   000008   8F83         MOV     DPH,R7
+   \   00000A   80..         SJMP    ?Subroutine2
+    137          
+    138          //SPP接收到的数据
+    139          #pragma location="SPP_RX_SEG"
+
+   \                                 In segment SPP_RX_SEG, align 1, keep-with-next
+    140          void spp_rx(u8 *ptr, u8 len)
+   \                     spp_rx:
+    141          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    142          #if DBG_BT_SPP_EN
+    143             printf("SPP_RX(%x): %s\n", len, ptr);
+    144          #endif
+    145             if (len >= 8) {
+   \   000000   E9           MOV     A,R1
+   \   000001   C3           CLR     C
+   \   000002   9408         SUBB    A,#0x8
+   \   000004   4008         JC      ??spp_rx_0
+    146                 spp_rx_msg(ptr, len);
+   \   000006                ; Setup parameters for call to function spp_rx_msg
+   \   000006   90....       MOV     DPTR,#(spp_rx_msg & 0xffff)
+   \   000009   74..         MOV     A,#((spp_rx_msg >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    147             }
+    148          }
+   \                     ??spp_rx_0:
+   \   00000E   02....       LJMP    ?BRET
+    149          
+    150          //SPP发送的数据
+    151          #pragma location="SPP_TX_SEG"
+
+   \                                 In segment SPP_TX_SEG, align 1, keep-with-next
+    152          void spp_tx(char *ptr, u8 len)
+   \                     spp_tx:
+    153          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    154          #if DBG_BT_SPP_EN
+    155              printf("SPP_TX(%x): %s\n", len, ptr);
+    156          #endif
+    157              bt_send_spp_ex(ptr, len);
+   \   000000                ; Setup parameters for call to function bt_send_spp_ex
+   \   000000   90....       MOV     DPTR,#(bt_send_spp_ex & 0xffff)
+   \   000003   74..         MOV     A,#((bt_send_spp_ex >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    158          }
+   \   000008   02....       LJMP    ?BRET
+    159          
+    160          #if BT_SPP_MSC_EN
+    161          
+    162          IAR_XDATA_A u8 spp_buf[100+3] @ "DIR2_LFN";   //此BUF只能在非蓝牙模式下发送SPP消息
+    163          IAR_XDATA_A u16 spp_msc_lfn_num;
+    164          
+    165          //SPP获取歌曲总曲目
+    166          #pragma location="SPP_TX_SEG"
+    167          void spp_tx_msc_total(u16 total)
+    168          {
+    169              spp_buf[0] = 'M';   //music
+    170              spp_buf[1] = 'T';   //total
+    171              for(u8 i=6; i>1; i--) {
+    172                  spp_buf[i] = hex_to_char(total%10);
+    173                  total /= 10;
+    174              }
+    175              spp_buf[7] = '\0';
+    176          
+    177              spp_tx((char *)spp_buf, 8);
+    178          }
+    179          
+    180          //SPP获取当前曲目
+    181          #pragma location="SPP_TX_SEG"
+    182          void spp_tx_msc_num(u16 num)
+    183          {
+    184              spp_buf[0] = 'M';   //music
+    185              spp_buf[1] = 'N';   //num
+    186              for(u8 i=6; i>1; i--) {
+    187                  spp_buf[i] = hex_to_char(num%10);
+    188                  num /= 10;
+    189              }
+    190              spp_buf[7] = '\0';
+    191          
+    192              spp_tx((char *)spp_buf, 8);
+    193          }
+    194          
+    195          //SPP获取指定曲目的文件名
+    196          #pragma location="SPP_TX_SEG"
+    197          void spp_tx_msc_lfn(u16 lfn_len)
+    198          {
+    199              spp_buf[0] = 'M';   //mucic
+    200              spp_buf[1] = 'F';   //file name
+    201              spp_buf[lfn_len+2] = '\0';
+    202          
+    203              spp_tx((char *)spp_buf, lfn_len+3);
+    204          }
+    205          
+    206          //SPP获取指定曲目的文件名
+    207          #pragma location="SPP_TX_SEG"
+    208          void spp_msc_get_lfn(u16 total_num)
+    209          {
+    210              u16 lfn_len = 1;
+    211              if((spp_msc_lfn_num <= total_num) && f_search_fname(spp_msc_lfn_num, (char *)&spp_buf[3], 98)) {
+    212                  spp_buf[2] = (spp_buf[3+97]==0)? 0x01 : 0x02;      //spp_buf[2]: 0x01=UNICODE, 0x02=GBK
+    213                  lfn_len += str_len2(&spp_buf[3], spp_buf[3+97]);   //spp_buf[3~3+97]: filename
+    214                  //printf_array(&spp_buf[3], 98);
+    215              } else {
+    216                  spp_buf[2] = 0x00;                              //0x00=ERROR
+    217                  //printf("error\n");
+    218              }
+    219          
+    220              spp_tx_msc_lfn(lfn_len);
+    221          }
+    222          #endif
+
+   Maximum stack usage in bytes:
+
+     Function            EXT_STACK PSTACK XSTACK
+     --------            --------- ------ ------
+     char_to_num                9      0      0
+     spp_rx                     0      0      0
+       -> spp_rx_msg            0      0      0
+     spp_rx_msg                 9      0      0
+       -> mem_cmp              18      0      0
+       -> mem_cmp              18      0      0
+       -> char_to_num          18      0      0
+       -> my_memset            18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> char_to_num          18      0      0
+       -> set_rtc_time         18      0      0
+       -> mem_cmp              18      0      0
+       -> mem_cmp              18      0      0
+       -> put_msg              18      0      0
+     spp_tx                     0      0      0
+       -> bt_send_spp_ex        0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label  Bytes
+     --------------  -----
+     tbl_spp_sig        3
+     tbl_spp_msg       81
+     tbl_spp_settime    6
+     tbl_spp_seteq      6
+     bteq_buf         123
+     eqflag             1
+     char_to_num       23
+     spp_rx_msg       557
+     ?Subroutine1      14
+     ?Subroutine2       8
+     ?Subroutine0      12
+     spp_rx            17
+     spp_tx            11
+
+ 
+ 123 bytes in segment BTEQ_BUF
+  96 bytes in segment SPP_RX_CONST
+ 631 bytes in segment SPP_RX_SEG
+  11 bytes in segment SPP_TX_SEG
+   1 byte  in segment XDATA_Z
+ 
+ 738 bytes of CODE  memory
+ 124 bytes of XDATA memory
+
+Errors: none
+Warnings: none

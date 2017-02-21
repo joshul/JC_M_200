@@ -1,0 +1,296 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:54 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\progressbox.c                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\progressbox.c                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\progressbox.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\progressbox.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\progressbox.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : progressbox.c
+      4           * Author    : Hanny
+      5           * Function  : 进度条控件框，用于各项数值配置等
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "task.h"
+     10          //list box controller
+     11          IAR_XDATA_A struct {
+     12              u8 disp_value;                      //当前显示的选择项，用于判断是否需要刷新
+     13              u8 value;                           //当前的选择项
+     14              u8 in_value;                        //传入的原来值
+     15              u8 min;                             //最小值
+     16              u8 max;                             //最大值
+     17              u8 on_change_flag;                  //是否响应按键事件
+     18              u8 on_click_flag;                   //是否响应抬键事件
+     19              u8 key_mode;                        //响应上下键，或音量键
+     20              u8 ok_flag;                         //是否按下确定键
+     21              string title;                       //标题内容
+     22              u8 show_time;                       //显示时间
+     23              bool (*on_change)(u8 value);        //设置接口，响应按键事件。返回false则为预设，返回true则表示已设定
+     24              bool (*on_click)(u8 value);         //设置接口，响应抬键事件
+     25          } t_prog @ "OCX_XDATA";
+     26          
+     27          //进度条减
+     28          #pragma location="PROGRESS_SEG"
+     29          void progressbar_dec(void)
+     30          {
+     31              if (t_prog.value > t_prog.min) {
+     32                  t_prog.value--;
+     33                  if (NULL != t_prog.on_change && (*t_prog.on_change)(t_prog.value)) {
+     34                      t_prog.in_value = t_prog.value;
+     35                  }
+     36              }
+     37              ocx_show_cnt = 0;
+     38          }
+     39          
+     40          //进度条加
+     41          #pragma location="PROGRESS_SEG"
+     42          void progressbar_inc(void)
+     43          {
+     44              if (t_prog.value < t_prog.max) {
+     45                  t_prog.value++;
+     46                  if (NULL != t_prog.on_change && (*t_prog.on_change)(t_prog.value)) {
+     47                      t_prog.in_value = t_prog.value;
+     48                  }
+     49              }
+     50              ocx_show_cnt = 0;
+     51          }
+     52          
+     53          #pragma location="PROGRESS_SEG"
+     54          void progressbar_event(void)
+     55          {
+     56              if (!comm_event()) {
+     57                  t_prog.ok_flag = 0xff;
+     58                  return;
+     59              }
+     60              ocx_event();
+     61              if (t_prog.show_time && ocx_show_cnt >= t_prog.show_time) {
+     62                  t_prog.ok_flag = 0xff;
+     63              }
+     64              /*
+     65              if(t_prog.auto_next)
+     66              {
+     67                if (music_get_status() <= STATUS_PLAY_STOPPING)
+     68                {
+     69                    t_prog.ok_flag = 0xff;
+     70                }
+     71              }
+     72              */
+     73          }
+     74          
+     75          //进度条控件处理消息
+     76          #pragma location="PROGRESS_SEG"
+     77          void progressbar_deal_msg(void)
+     78          {
+     79              u8 msg = get_msg();
+     80              switch(msg) {
+     81                  //确定
+     82              case KU_OK:
+     83                  t_prog.ok_flag = 1;
+     84                  break;
+     85          
+     86                  //取消
+     87          #if THEME_SELECT==THEME_LCD_DEFAULT
+     88              case KU_PLAY_POWER:
+     89          #else
+     90              case KU_BACK:
+     91          #endif
+     92                  t_prog.ok_flag = 0xff;
+     93                  break;
+     94          
+     95                  //长按返回主菜单
+     96              case KL_MENU:
+     97          #if THEME_SELECT==THEME_LCD_DEFAULT
+     98              case KL_PLAY_POWER:
+     99          #endif
+    100                  task_ctl.work_sta = TASK_EXIT;
+    101                  break;
+    102          
+    103                  //上一项，下一项
+    104              case K_PREV:
+    105              case KL_PREV:
+    106              case KH_PREV:
+    107                  if (!t_prog.key_mode) {
+    108                      progressbar_dec();
+    109                  }
+    110                  break;
+    111          
+    112              case K_VOL_DOWN:
+    113              case KL_VOL_DOWN:
+    114              case KH_VOL_DOWN:
+    115                  if (t_prog.key_mode) {
+    116                      progressbar_dec();
+    117                  }
+    118                  break;
+    119          
+    120              case K_NEXT:
+    121              case KL_NEXT:
+    122              case KH_NEXT:
+    123                  if (!t_prog.key_mode) {
+    124                      progressbar_inc();
+    125                  }
+    126                  break;
+    127          
+    128              case K_VOL_UP:
+    129              case KL_VOL_UP:
+    130              case KH_VOL_UP:
+    131                  if (t_prog.key_mode) {
+    132                      progressbar_inc();
+    133                  }
+    134                  break;
+    135          
+    136              case KU_PREV:
+    137              case KU_NEXT:
+    138              case KU_VOL_DOWN:
+    139              case KU_VOL_UP:
+    140              case KLU_PREV:
+    141              case KLU_NEXT:
+    142              case KLU_VOL_DOWN:
+    143              case KLU_VOL_UP:
+    144                  if (t_prog.on_click_flag) {
+    145                      if ((*t_prog.on_click)(t_prog.value)) {
+    146                          t_prog.in_value = t_prog.value;
+    147                      }
+    148                      ocx_show_cnt = 0;
+    149                  }
+    150                  break;
+    151          
+    152                  //调用公共消息函数
+    153              default:
+    154                  ocx_msg(msg);
+    155                  break;
+    156              }
+    157          }
+    158          
+    159          //进度条控件显示接口
+    160          #pragma location="PROGRESS_SEG"
+    161          void progressbar_display(void)
+    162          {
+    163              if (t_prog.value == t_prog.disp_value) {
+    164                  return;
+    165              }
+    166              t_prog.disp_value = t_prog.value;
+    167              line_clear();
+    168              //disp_llp_text(t_prog.title, TX_CENTER, 0, 0);
+    169              disp_menu(t_prog.title,1,0, 0,ME_CENTER);
+    170              line_update_clear(0);
+    171              disp_num(t_prog.value, 56, 0, DN_RIGHT | 2);
+    172              line_update_clear(3);
+    173          
+    174              progressbar(((t_prog.value - t_prog.min) << 7) / (t_prog.max - t_prog.min), 0);
+    175              line_update(5);
+    176          }
+    177          
+    178          //value: 当前值;  max: 最大值;  mode模式选择;  param: 内容参数; mode: 模式; show_time: 显示时间
+    179          //返回调整的值
+    180          #pragma location="PROGRESS_SEG"
+    181          u8 progressbox(u8 value, u8 min, u8 max, u32 param, u8 mode, u8 show_time)
+    182          {
+    183              t_prog.disp_value = 0xFF;
+    184              if (value > max) {
+    185                  value = max;
+    186              }
+    187              t_prog.in_value = value;
+    188              t_prog.value = value;
+    189              t_prog.min = min;
+    190              t_prog.max = max;
+    191              if (t_prog.min > max) {
+    192                  t_prog.min = 0;
+    193              }
+    194              t_prog.ok_flag = 0;
+    195              t_prog.key_mode = (mode & PG_VOLKEY) ? 1 : 0;
+    196          #pragma diag_remark=Pe1053
+    197              //暂时忽略Pe1053这个警告，指针类型大转小
+    198              t_prog.title = ((type_progress_param *)param)->title;
+    199              t_prog.on_change = ((type_progress_param *)param)->on_change;
+    200              t_prog.on_click = ((type_progress_param *)param)->on_click;
+    201              t_prog.show_time = show_time;
+    202              t_prog.on_change_flag = (t_prog.on_change == NULL) ? 0 : 1;
+    203              t_prog.on_click_flag = (t_prog.on_click == NULL) ? 0 : 1;
+    204          #pragma diag_warning=Pe1053
+    205              draw_clear();
+    206              ocx_show_cnt = 0;
+    207              while (!t_prog.ok_flag) {
+    208                  progressbar_event();
+    209                  progressbar_deal_msg();
+    210                  progressbar_display();
+    211          #if ALARM_EN
+    212                  if (task_ctl.work_sta == TASK_EXIT || task_ctl.work_sta == TASK_ALARM) {
+    213          #else
+    214                  if (task_ctl.work_sta == TASK_EXIT) {
+    215          #endif
+    216                      t_prog.ok_flag = 0xfe;
+    217                  }
+    218              }
+    219              if (t_prog.ok_flag == 1) {
+    220                  return t_prog.value;            //按下确定键，并且选择了确定按钮
+    221              }
+    222              if (t_prog.on_change_flag) {
+    223                  (*t_prog.on_change)(t_prog.in_value);
+    224              }
+    225              return 0xff;
+    226          }
+    227          
+    228          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

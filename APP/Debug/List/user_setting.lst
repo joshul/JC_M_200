@@ -1,0 +1,2013 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:01 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_setting.c                                     #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_setting.c                                     #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_setting.lst                             #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_setting.r51                              #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_setting.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_setting.c
+      4           * Author    : Hanny
+      5           * Function  : 系统参数设置
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x97
+   \   unsigned char volatile __sfr PCON3
+   \                     PCON3:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "task_music.h"
+     10          #include "user_fm.h"
+     11          #include "user_iis.h"
+     12          //系统参数
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     13          type_sys_ctl sys_ctl;
+   \                     sys_ctl:
+   \   000000                DS 75
+     14          #define MIN_RREQ 8750
+     15          
+     16          
+     17          //音量设置
+     18          #pragma constseg="PROGRESS_CONTENT"
+
+   \                                 In segment PROGRESS_CONTENT, align 1
+     19          extern IAR_CONST type_progress_param tbl_pg_volume = {
+   \                     tbl_pg_volume:
+   \   000000   4C00         DW 76
+   \   000002   ........     DT user_change_volume, user_set_volume
+   \            ....    
+     20              STR_VOLUME_SET, &user_change_volume, &user_set_volume
+     21          };
+     22          
+     23          #pragma constseg="PROGRESS_CONTENT"
+
+   \                                 In segment PROGRESS_CONTENT, align 1
+     24          extern IAR_CONST type_progress_param tbl_digital_volume = {
+   \                     tbl_digital_volume:
+   \   000000   9100         DW 145
+   \   000002   ......00     DT change_digital_volume, 0H
+   \            0000    
+     25              STR_ACCOMPANY_VOLUME, &change_digital_volume, NULL
+     26          };
+     27          
+     28          #pragma constseg="PROGRESS_CONTENT"
+
+   \                                 In segment PROGRESS_CONTENT, align 1
+     29          extern IAR_CONST type_progress_param tbl_mic_volume = {
+   \                     tbl_mic_volume:
+   \   000000   9000         DW 144
+   \   000002   ......00     DT change_mic_volume, 0H
+   \            0000    
+     30              STR_MIC_VOLUME, &change_mic_volume, NULL
+     31          };
+     32          
+     33          #if FM_SET_VOL_CHANGE_BANK
+     34          #pragma constseg="USER_SETTING_CONST"
+     35          #else
+     36          #pragma constseg=default
+     37          #endif
+     38          #if !SMALL_VOLUME_EN
+     39          
+     40          /*u8 const tbl_volume[VOLUME_MAX+1] =
+     41          {
+     42          	60-60,60-50,60-45,60-40,60-36,60-32,60-30,60-28,60-26,60-24,60-22,
+     43          	60-20,60-19,60-18,60-17,60-16,60-15,60-14,60-13,60-12,60-11,  
+     44          	60-10, 60- 9, 60- 8, 60-  7, 60- 6, 60- 5, 60- 4,  60-  3, 60- 2, 60- 1,  
+     45          	60, 60+1, 
+     46          };*/
+
+   \                                 In segment USER_SETTING_CONST, align 1
+     47          u8 const tbl_volume[VOLUME_MAX+1] =
+   \                     tbl_volume:
+   \   000000   000A0F14     DB 0, 10, 15, 20, 24, 28, 30, 32, 34, 36, 38, 39, 40, 41, 42, 43, 44
+   \            181C1E20
+   \            22242627
+   \            28292A2B
+   \            2C      
+   \   000011   2D2E2F30     DB 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60
+   \            31323334
+   \            35363738
+   \            393A3B3C
+     48          {
+     49              60-60,60-50,60-45,60-40,60-36,60-32,60-30,60-28,60-26,60-24,
+     50              60-22,60-21,60-20,60-19,60-18,60-17,60-16,60-15,60-14,60-13,
+     51              60-12,60-11,60-10,60- 9,60- 8,60- 7,60- 6,60- 5,60- 4,60- 3, 
+     52              60- 2,60- 1,60, 
+     53          };
+     54          
+     55          #else
+     56          u8 const tbl_volume[VOLUME_MAX+1] =
+     57          {
+     58          	60-60,60-50,60-45,60-40,60-36,60-32,60-30,60-28,60-26,60-24,60-22,
+     59          	60-20,60-19,60-18,60-17,60-16,60-15,60-14,60-13,60-12,60-11,  
+     60          	60-10, 60- 9, 60- 8, 60-  7, 60- 6, 60- 5, 60- 4,  60-  3, 60- 2, 60- 1,  
+     61          	60, 60+1, 
+     62          };
+     63          
+     64          
+     65          #endif
+     66          
+     67          #pragma constseg="USER_SETTING_CONST"
+
+   \                                 In segment USER_SETTING_CONST, align 1
+     68          u16 const digital_volume[16] = {0x0000,0x0700, 0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x7000, 0x9000, 0xa000, 0xb000, 0xc000, 0xd000, 0xe000, 0xef00, 0xff00};
+   \                     digital_volume:
+   \   000000   00000007     DW 0, 1792, 4096, 8192, 12288, 16384, 20480, 28672, 36864, 40960, 45056
+   \            00100020
+   \            00300040
+   \            00500070
+   \            009000A0
+   \            00B0    
+   \   000016   00C000D0     DW 49152, 53248, 57344, 61184, 65280
+   \            00E000EF
+   \            00FF    
+     69          
+     70          #define WIN_OFFSET 288
+     71          #pragma constseg="MUSIC_SEG_CONST"
+
+   \                                 In segment MUSIC_SEG_CONST, align 1
+     72          IAR_CONST u16 tbl_speed[] =
+   \                     tbl_speed:
+   \   000000   2001E600     DW 288, 230, 144, 432, 576
+   \            9000B001
+   \            4002    
+     73          {
+     74              1.0 * WIN_OFFSET,           //正常
+     75              0.8 * WIN_OFFSET,           //慢1
+     76              0.5 * WIN_OFFSET,           //慢2
+     77              1.5 * WIN_OFFSET,           //快1
+     78              2.0 * WIN_OFFSET,           //快2
+     79          };
+     80          #pragma constseg=default
+     81          
+
+   \                                 In segment CODE_C, align 1
+     82          const u8 tbl_backlight[BACKLIGHT_NUM] = {0xff, 5, 10, 15, 20, 0};
+   \                     tbl_backlight:
+   \   000000   FF050A0F     DB 255, 5, 10, 15, 20, 0
+   \            1400    
+
+   \                                 In segment CODE_C, align 1
+     83          const u16 tbl_poweroff[POWEROFF_NUM] = {0xffff, 900, 1800, 2700, 3600};
+   \                     tbl_poweroff:
+   \   000000   FFFF8403     DW 65535, 900, 1800, 2700, 3600
+   \            08078C0A
+   \            100E    
+     84          
+     85          //#if 1
+     86          #if IS_LCD_DISPLAY
+     87          __near_func void set_backlight(void)
+     88          {
+     89              if (sys_ctl.backlightcnt) {
+     90                  LCD_BACKLIGHT_ON();
+     91              } else {
+     92                  LCD_BACKLIGHT_OFF();
+     93              }
+     94          }
+     95          
+     96          __near_func void reset_backlight(void)
+     97          {
+     98              bool tmp_ietm1 = IE_TM1;
+     99              IE_TM1 = 0;
+    100              sys_ctl.backlightcnt = tbl_backlight[sys_ctl.backlight];
+    101              set_backlight();
+    102              IE_TM1 = tmp_ietm1;
+    103          }
+    104          
+    105          __near_func void set_poweroff(void)
+    106          {
+    107              bool tmp_ietm1 = IE_TM1;
+    108              IE_TM1 = 0;
+    109              sys_ctl.poweroffcnt = tbl_poweroff[sys_ctl.poweroff];
+    110              IE_TM1 = tmp_ietm1;
+    111          }
+    112          #endif
+    113          
+    114          //恢复出厂设置，这里只对变量进行初始化。禁止有写SPIFlash的操作。
+    115          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    116          void user_setting_factory_sys(u8 *setting_buf)
+   \                     user_setting_factory_sys:
+    117          {
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    118              task_ctl.work_sta = TASK_BT;
+   \   000009   740D         MOV     A,#0xd
+   \   00000B   90....       MOV     DPTR,#task_ctl
+   \   00000E   F0           MOVX    @DPTR,A
+    119              setting_buf[PARAM_WORD_STA] = TASK_BT;
+   \   00000F   EE           MOV     A,R6
+   \   000010   240D         ADD     A,#0xd
+   \   000012   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_29:
+   \   000015   740D         MOV     A,#0xd
+   \   000017   F0           MOVX    @DPTR,A
+    120              
+    121              sys_ctl.main_vol = 16;
+   \   000018   7410         MOV     A,#0x10
+   \   00001A   90....       MOV     DPTR,#(sys_ctl + 65)
+   \   00001D   12....       LCALL   ?Subroutine2
+    122              setting_buf[PARAM_MAIN] = 16;
+   \                     ??CrossCallReturnLabel_7:
+   \   000020   A3           INC     DPTR
+   \   000021   F0           MOVX    @DPTR,A
+    123              
+    124              sys_ctl.Trable_vol = 0;
+   \   000022   E4           CLR     A
+   \   000023   90....       MOV     DPTR,#(sys_ctl + 66)
+   \   000026   12....       LCALL   ?Subroutine1
+    125              setting_buf[PARAM_TREBLE]  = 0;       //高音
+   \                     ??CrossCallReturnLabel_5:
+   \   000029   F0           MOVX    @DPTR,A
+    126          
+    127              sys_ctl.Bass_vol = 0;
+   \   00002A   90....       MOV     DPTR,#(sys_ctl + 68)
+   \   00002D   12....       LCALL   ?Subroutine4
+    128              setting_buf[PARAM_BASS] = 0;             //低音调
+   \                     ??CrossCallReturnLabel_25:
+   \   000030   E4           CLR     A
+   \   000031   F0           MOVX    @DPTR,A
+    129              
+    130              sys_ctl.Sub_vol = 16;
+   \   000032   7410         MOV     A,#0x10
+   \   000034   90....       MOV     DPTR,#(sys_ctl + 67)
+   \   000037   12....       LCALL   ?Subroutine5
+    131              setting_buf[PARAM_SUB] = 16;
+   \                     ??CrossCallReturnLabel_27:
+   \   00003A   7410         MOV     A,#0x10
+   \   00003C   F0           MOVX    @DPTR,A
+    132              
+    133              sys_ctl.m3d_Mode = 0;
+   \   00003D   E4           CLR     A
+   \   00003E   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000041   12....       LCALL   ?Subroutine3
+    134              setting_buf[PARAM_3D]= 0;                  //3d
+   \                     ??CrossCallReturnLabel_10:
+   \   000044   F0           MOVX    @DPTR,A
+    135              
+    136              sys_ctl.dim_level = 2;
+   \   000045   7402         MOV     A,#0x2
+   \   000047   90....       MOV     DPTR,#(sys_ctl + 58)
+   \   00004A   F0           MOVX    @DPTR,A
+    137              setting_buf[PARAM_DIM] = 2;             //dim 
+   \   00004B   EE           MOV     A,R6
+   \   00004C   240E         ADD     A,#0xe
+   \   00004E   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_30:
+   \   000051   7402         MOV     A,#0x2
+   \   000053   F0           MOVX    @DPTR,A
+    138              
+    139              sys_ctl.Eq_tyle = 0;
+   \   000054   E4           CLR     A
+   \   000055   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000058   12....       LCALL   ?Subroutine2
+    140              setting_buf[PARAM_EQ] = 0;
+   \                     ??CrossCallReturnLabel_8:
+   \   00005B   F0           MOVX    @DPTR,A
+    141              
+    142              sys_ctl.lang_id = 0;                        //语言
+   \   00005C   90....       MOV     DPTR,#sys_ctl
+   \   00005F   12....       LCALL   ?Subroutine7
+    143              setting_buf[PARAM_LANG_ID] = 0;
+   \                     ??CrossCallReturnLabel_14:
+   \   000062   F0           MOVX    @DPTR,A
+    144          
+    145              sys_ctl.contrast = LCD_CONTRAST_DEFAULT;    //对比度
+   \   000063   740A         MOV     A,#0xa
+   \   000065   90....       MOV     DPTR,#(sys_ctl + 2)
+   \   000068   12....       LCALL   ?Subroutine7
+    146              setting_buf[PARAM_CONTRAST] = LCD_CONTRAST_DEFAULT;
+   \                     ??CrossCallReturnLabel_15:
+   \   00006B   A3           INC     DPTR
+   \   00006C   F0           MOVX    @DPTR,A
+    147          
+    148              sys_ctl.eq_num = 0;                         //EQ选择
+   \   00006D   E4           CLR     A
+   \   00006E   90....       MOV     DPTR,#(sys_ctl + 3)
+   \   000071   F0           MOVX    @DPTR,A
+    149              //setting_buf[PARAM_EQ_NUM] = 0;
+    150          
+    151              sys_ctl.mode_play = 0;                      //播放模式
+   \   000072   90....       MOV     DPTR,#(sys_ctl + 4)
+   \   000075   12....       LCALL   ?Subroutine6
+    152              setting_buf[PARAM_MODE_PLAY] = 0;
+   \                     ??CrossCallReturnLabel_12:
+   \   000078   F0           MOVX    @DPTR,A
+    153          
+    154              sys_ctl.mode_record = 1;                    //录音模式
+   \   000079   7401         MOV     A,#0x1
+   \   00007B   90....       MOV     DPTR,#(sys_ctl + 5)
+   \   00007E   F0           MOVX    @DPTR,A
+    155             // setting_buf[PARAM_MODE_RECORD] = 1;
+    156          
+    157              sys_ctl.volume = VOLUME_MAX;                //音量
+   \   00007F   7420         MOV     A,#0x20
+   \   000081   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000084   F0           MOVX    @DPTR,A
+    158              //setting_buf[PARAM_VOLUME] = VOLUME_MAX;
+    159          
+    160              sys_ctl.hshf_vol = HSHFVOL_DEFAULT;         //通话音量
+   \   000085   740C         MOV     A,#0xc
+   \   000087   90....       MOV     DPTR,#(sys_ctl + 7)
+   \   00008A   F0           MOVX    @DPTR,A
+    161              setting_buf[PARAM_HSHF_VOLUME] = HSHFVOL_DEFAULT;
+   \   00008B   EE           MOV     A,R6
+   \   00008C   2427         ADD     A,#0x27
+   \   00008E   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_31:
+   \   000091   740C         MOV     A,#0xc
+   \   000093   F0           MOVX    @DPTR,A
+    162          
+    163              sys_ctl.backlight = 0;                      //背光延时
+   \   000094   E4           CLR     A
+   \   000095   90....       MOV     DPTR,#(sys_ctl + 9)
+   \   000098   F0           MOVX    @DPTR,A
+    164              //setting_buf[PARAM_BACKLIGHT] = 0;
+    165              //reset_backlight();
+    166          
+    167              sys_ctl.poweroff = 0;                       //自动关机
+   \   000099   90....       MOV     DPTR,#(sys_ctl + 10)
+   \   00009C   F0           MOVX    @DPTR,A
+    168              //setting_buf[PARAM_POWEROFF] = 0;
+    169              //set_poweroff();
+    170          
+    171          #if ALARM_EN
+    172              sys_ctl.alarm_mode = 0;                     //alarm mode : every day
+    173              setting_buf[PARAM_ALARM_MODE] = 0;
+    174          
+    175              sys_ctl.alarm_switch = 0;                   //alarm off
+    176              setting_buf[PARAM_ALARM_SWITCH] = 0;
+    177          
+    178              sys_ctl.alarm_hour = 0;                     //alarm time 00:00
+    179              sys_ctl.alarm_min = 0;
+    180              setting_buf[PARAM_ALARM_HOUR] = 0;
+    181              setting_buf[PARAM_ALARM_MIN] = 0;
+    182          #endif
+    183          
+    184          
+    185              setting_buf[PARAM_FM_CHSEL] = 0;
+   \   00009D   EE           MOV     A,R6
+   \   00009E   241A         ADD     A,#0x1a
+   \   0000A0   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_32:
+   \   0000A3   E4           CLR     A
+   \   0000A4   F0           MOVX    @DPTR,A
+    186              setting_buf[PARAM_FM_CH] = 0;
+   \   0000A5   EE           MOV     A,R6
+   \   0000A6   2450         ADD     A,#0x50
+   \   0000A8   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_33:
+   \   0000AB   E4           CLR     A
+   \   0000AC   F0           MOVX    @DPTR,A
+    187              U16_ACCESS(&setting_buf[PARAM_FM_FREQ]) = MIN_RREQ;
+   \   0000AD   EE           MOV     A,R6
+   \   0000AE   241B         ADD     A,#0x1b
+   \   0000B0   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_34:
+   \   0000B3   742E         MOV     A,#0x2e
+   \   0000B5   F0           MOVX    @DPTR,A
+   \   0000B6   A3           INC     DPTR
+   \   0000B7   7422         MOV     A,#0x22
+   \   0000B9   F0           MOVX    @DPTR,A
+    188              //sys_param_write8(PARAM_FM_CHSEL, 0);              //保存当前台号
+    189             //param_write16(PARAM_FM_FREQ, MIN_RREQ);                //保存起始频率
+    190             // sys_param_write8(PARAM_FM_CH, 0);
+    191          #if FM_TIME_EN
+    192              sys_ctl.time_fm_on = 0;
+    193              setting_buf[PARAM_FM_TIME] = 0;
+    194              sys_ctl.fm_hour = 0;
+    195              sys_ctl.fm_min = 0;
+    196              setting_buf[PARAM_FM_HOUR] = sys_ctl.fm_hour;
+    197              setting_buf[PARAM_FM_MIN] = sys_ctl.fm_min;
+    198          #endif
+    199          
+    200              U32_ACCESS(&setting_buf[PARAM_RANDOM_KEY]) = get_rand_key();
+   \   0000BA                ; Setup parameters for call to function get_rand_key
+   \   0000BA   90....       MOV     DPTR,#(get_rand_key & 0xffff)
+   \   0000BD   74..         MOV     A,#((get_rand_key >> 16) & 0xff)
+   \   0000BF   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000C2   8A..         MOV     ?V0 + 0,R2
+   \   0000C4   8B..         MOV     ?V0 + 1,R3
+   \   0000C6   8C..         MOV     ?V0 + 2,R4
+   \   0000C8   8D..         MOV     ?V0 + 3,R5
+   \   0000CA   8E82         MOV     DPL,R6
+   \   0000CC   8F83         MOV     DPH,R7
+   \   0000CE   78..         MOV     R0,#?V0 + 0
+   \   0000D0   12....       LCALL   ?L_MOV_TO_X
+    201          
+    202          #if BT_AUTO_PLAY
+    203              sys_ctl.bt_auto_play_flag = 0;
+    204              setting_buf[PARAM_BT_AUTO_PLAY] = 0;
+    205          #endif
+    206          }
+   \   0000D3                REQUIRE ?Subroutine12
+   \   0000D3                ; // Fall through to label ?Subroutine12
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine12:
+   \   000000   7F04         MOV     R7,#0x4
+   \   000002   02....       LJMP    ?BANKED_LEAVE_SP
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine7:
+   \   000000   12....       LCALL   ?Subroutine11
+   \                     ??CrossCallReturnLabel_23:
+   \   000003   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine11:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   8E82         MOV     DPL,R6
+   \   000003   8F83         MOV     DPH,R7
+   \   000005   A3           INC     DPTR
+   \   000006   A3           INC     DPTR
+   \   000007   A3           INC     DPTR
+   \   000008   A3           INC     DPTR
+   \   000009   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   12....       LCALL   ?Subroutine9
+   \                     ??CrossCallReturnLabel_19:
+   \   000003   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine9:
+   \   000000   12....       LCALL   ?Subroutine10
+   \                     ??CrossCallReturnLabel_21:
+   \   000003   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine10:
+   \   000000   12....       LCALL   ?Subroutine11
+   \                     ??CrossCallReturnLabel_24:
+   \   000003   A3           INC     DPTR
+   \   000004   A3           INC     DPTR
+   \   000005   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   EE           MOV     A,R6
+   \   000002   240C         ADD     A,#0xc
+   \   000004                REQUIRE ?Subroutine14
+   \   000004                ; // Fall through to label ?Subroutine14
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine14:
+   \   000000   F582         MOV     DPL,A
+   \   000002   EF           MOV     A,R7
+   \   000003   3400         ADDC    A,#0x0
+   \   000005   F583         MOV     DPH,A
+   \   000007   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   EE           MOV     A,R6
+   \   000002   240B         ADD     A,#0xb
+   \   000004   80..         SJMP    ?Subroutine14
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?Subroutine9
+   \                     ??CrossCallReturnLabel_20:
+   \   000003   A3           INC     DPTR
+   \   000004   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   12....       LCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_17:
+   \   000003   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine8:
+   \   000000   12....       LCALL   ?Subroutine10
+   \                     ??CrossCallReturnLabel_22:
+   \   000003   A3           INC     DPTR
+   \   000004   A3           INC     DPTR
+   \   000005   22           RET
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   12....       LCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_18:
+   \   000003   A3           INC     DPTR
+   \   000004   A3           INC     DPTR
+   \   000005   22           RET
+    207          
+    208          //恢复出厂设置
+    209          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    210          void user_setting_factory(u8 page, u8 *setting_buf)
+   \                     user_setting_factory:
+    211          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    212              switch (page) {
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for user_setting_factory>_0`:
+   \   000004   00           DB        0
+   \   000005   00           DB        0
+   \   000006   ....         DW        ??user_setting_factory_0
+   \   000008   ....         DW        ??user_setting_factory_1
+    213              case PARAM_SYS:
+    214                  user_setting_factory_sys(setting_buf);
+   \                     ??user_setting_factory_1:
+   \   00000A                ; Setup parameters for call to function user_setting_factory_sys
+   \   00000A   90....       MOV     DPTR,#(user_setting_factory_sys & 0xffff)
+   \   00000D   74..         MOV     A,#((user_setting_factory_sys >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    215                  break;
+    216          
+    217              case PARAM_BT:
+    218                  break;
+    219              }
+    220          }
+   \                     ??user_setting_factory_0:
+   \   000012   02....       LJMP    ?BRET
+    221          
+    222          //上电加载用户参数
+    223          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    224          bool user_setting_load_sys(u8 *setting_buf)
+   \                     user_setting_load_sys:
+    225          { 
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    226          #if 0
+    227              task_ctl.work_sta = sys_param_read8(PARAM_WORD_STA);
+    228              if(task_ctl.work_sta > TASK_BT){
+    229                  return false;
+    230              }   
+    231          #endif 
+    232              sys_ctl.main_vol = setting_buf[PARAM_MAIN];             //音量
+   \   000009   8E82         MOV     DPL,R6
+   \   00000B   8F83         MOV     DPH,R7
+   \   00000D   A3           INC     DPTR
+   \   00000E   A3           INC     DPTR
+   \   00000F   A3           INC     DPTR
+   \   000010   A3           INC     DPTR
+   \   000011   A3           INC     DPTR
+   \   000012   A3           INC     DPTR
+   \   000013   A3           INC     DPTR
+   \   000014   A3           INC     DPTR
+   \   000015   A3           INC     DPTR
+   \   000016   E0           MOVX    A,@DPTR
+   \   000017   90....       MOV     DPTR,#(sys_ctl + 65)
+   \   00001A   12....       LCALL   ?Subroutine0
+    233              if ((sys_ctl.main_vol < 1)||(sys_ctl.main_vol > 33))
+   \                     ??CrossCallReturnLabel_0:
+   \   00001D   400B         JC      ??user_setting_load_sys_0
+   \   00001F   EA           MOV     A,R2
+   \   000020   C3           CLR     C
+   \   000021   9422         SUBB    A,#0x22
+   \   000023   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000025   65D0         XRL     A,PSW
+   \   000027   33           RLC     A
+   \   000028   4004         JC      ??user_setting_load_sys_1
+    234              {
+    235          		sys_ctl.main_vol = 16;
+   \                     ??user_setting_load_sys_0:
+   \   00002A   7410         MOV     A,#0x10
+   \   00002C   8003         SJMP    ??user_setting_load_sys_2
+    236              }else{
+    237          		sys_ctl.main_vol -= 1;
+   \                     ??user_setting_load_sys_1:
+   \   00002E   E0           MOVX    A,@DPTR
+   \   00002F   24FF         ADD     A,#-0x1
+   \                     ??user_setting_load_sys_2:
+   \   000031   12....       LCALL   ?Subroutine1
+    238          	}
+    239              
+    240              sys_ctl.Trable_vol = setting_buf[PARAM_TREBLE];         //高音
+   \                     ??CrossCallReturnLabel_6:
+   \   000034   E0           MOVX    A,@DPTR
+   \   000035   90....       MOV     DPTR,#(sys_ctl + 66)
+   \   000038   12....       LCALL   ?Subroutine0
+    241              if ((sys_ctl.Trable_vol < 1)||(sys_ctl.Trable_vol > 21))
+   \                     ??CrossCallReturnLabel_1:
+   \   00003B   400B         JC      ??user_setting_load_sys_3
+   \   00003D   EA           MOV     A,R2
+   \   00003E   C3           CLR     C
+   \   00003F   9416         SUBB    A,#0x16
+   \   000041   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000043   65D0         XRL     A,PSW
+   \   000045   33           RLC     A
+   \   000046   4003         JC      ??user_setting_load_sys_4
+    242              {
+    243          		sys_ctl.Trable_vol = 0;
+   \                     ??user_setting_load_sys_3:
+   \   000048   E4           CLR     A
+   \   000049   8003         SJMP    ??user_setting_load_sys_5
+    244              }else{
+    245          		sys_ctl.Trable_vol -= 11;
+   \                     ??user_setting_load_sys_4:
+   \   00004B   E0           MOVX    A,@DPTR
+   \   00004C   24F5         ADD     A,#-0xb
+   \                     ??user_setting_load_sys_5:
+   \   00004E   12....       LCALL   ?Subroutine4
+    246          	}
+    247          
+    248              sys_ctl.Bass_vol = setting_buf[PARAM_BASS];             //低音调
+   \                     ??CrossCallReturnLabel_26:
+   \   000051   E0           MOVX    A,@DPTR
+   \   000052   90....       MOV     DPTR,#(sys_ctl + 68)
+   \   000055   12....       LCALL   ?Subroutine0
+    249              if ((sys_ctl.Bass_vol < 1)||(sys_ctl.Bass_vol > 21))
+   \                     ??CrossCallReturnLabel_2:
+   \   000058   400B         JC      ??user_setting_load_sys_6
+   \   00005A   EA           MOV     A,R2
+   \   00005B   C3           CLR     C
+   \   00005C   9416         SUBB    A,#0x16
+   \   00005E   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000060   65D0         XRL     A,PSW
+   \   000062   33           RLC     A
+   \   000063   4004         JC      ??user_setting_load_sys_7
+    250              {
+    251          		sys_ctl.Bass_vol = 6;
+   \                     ??user_setting_load_sys_6:
+   \   000065   7406         MOV     A,#0x6
+   \   000067   8003         SJMP    ??user_setting_load_sys_8
+    252              }else{
+    253          		sys_ctl.Bass_vol -= 11;
+   \                     ??user_setting_load_sys_7:
+   \   000069   E0           MOVX    A,@DPTR
+   \   00006A   24F5         ADD     A,#-0xb
+   \                     ??user_setting_load_sys_8:
+   \   00006C   12....       LCALL   ?Subroutine5
+    254          	}
+    255          
+    256              sys_ctl.Sub_vol = setting_buf[PARAM_SUB];               //低音
+   \                     ??CrossCallReturnLabel_28:
+   \   00006F   E0           MOVX    A,@DPTR
+   \   000070   90....       MOV     DPTR,#(sys_ctl + 67)
+   \   000073   12....       LCALL   ?Subroutine0
+    257              if ((sys_ctl.Sub_vol < 1)||(sys_ctl.Sub_vol > 33))
+   \                     ??CrossCallReturnLabel_3:
+   \   000076   400B         JC      ??user_setting_load_sys_9
+   \   000078   EA           MOV     A,R2
+   \   000079   C3           CLR     C
+   \   00007A   9422         SUBB    A,#0x22
+   \   00007C   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   00007E   65D0         XRL     A,PSW
+   \   000080   33           RLC     A
+   \   000081   4004         JC      ??user_setting_load_sys_10
+    258              {
+    259          		sys_ctl.Sub_vol = 16;
+   \                     ??user_setting_load_sys_9:
+   \   000083   7410         MOV     A,#0x10
+   \   000085   8003         SJMP    ??user_setting_load_sys_11
+    260              }else{
+    261          		sys_ctl.Sub_vol -= 1;
+   \                     ??user_setting_load_sys_10:
+   \   000087   E0           MOVX    A,@DPTR
+   \   000088   24FF         ADD     A,#-0x1
+   \                     ??user_setting_load_sys_11:
+   \   00008A   F0           MOVX    @DPTR,A
+    262          	}
+    263              
+    264              sys_ctl.dim_level = setting_buf[PARAM_DIM];
+   \   00008B   EE           MOV     A,R6
+   \   00008C   240E         ADD     A,#0xe
+   \   00008E   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_35:
+   \   000091   E0           MOVX    A,@DPTR
+   \   000092   90....       MOV     DPTR,#(sys_ctl + 58)
+   \   000095   12....       LCALL   ?Subroutine0
+    265              if ((sys_ctl.dim_level < 1)||(sys_ctl.dim_level > 4))
+   \                     ??CrossCallReturnLabel_4:
+   \   000098   400B         JC      ??user_setting_load_sys_12
+   \   00009A   EA           MOV     A,R2
+   \   00009B   C3           CLR     C
+   \   00009C   9405         SUBB    A,#0x5
+   \   00009E   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   0000A0   65D0         XRL     A,PSW
+   \   0000A2   33           RLC     A
+   \   0000A3   4004         JC      ??user_setting_load_sys_13
+    266              {
+    267          		sys_ctl.dim_level = 2;
+   \                     ??user_setting_load_sys_12:
+   \   0000A5   7402         MOV     A,#0x2
+   \   0000A7   8003         SJMP    ??user_setting_load_sys_14
+    268              }else{
+    269          		sys_ctl.dim_level -= 1;
+   \                     ??user_setting_load_sys_13:
+   \   0000A9   E0           MOVX    A,@DPTR
+   \   0000AA   24FF         ADD     A,#-0x1
+   \                     ??user_setting_load_sys_14:
+   \   0000AC   12....       LCALL   ?Subroutine2
+    270          	}
+    271              
+    272              sys_ctl.Eq_tyle = setting_buf[PARAM_EQ];           //语言
+   \                     ??CrossCallReturnLabel_9:
+   \   0000AF   E0           MOVX    A,@DPTR
+   \   0000B0   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   0000B3   F0           MOVX    @DPTR,A
+    273              if (( sys_ctl.Eq_tyle < 1)||( sys_ctl.Eq_tyle > 3))
+   \   0000B4   6005         JZ      ??user_setting_load_sys_15
+   \   0000B6   C3           CLR     C
+   \   0000B7   9404         SUBB    A,#0x4
+   \   0000B9   4003         JC      ??user_setting_load_sys_16
+    274              {
+    275          		 sys_ctl.Eq_tyle = 0;
+   \                     ??user_setting_load_sys_15:
+   \   0000BB   E4           CLR     A
+   \   0000BC   8002         SJMP    ??user_setting_load_sys_17
+    276              }else{
+    277          		 sys_ctl.Eq_tyle -= 1;
+   \                     ??user_setting_load_sys_16:
+   \   0000BE   E0           MOVX    A,@DPTR
+   \   0000BF   14           DEC     A
+   \                     ??user_setting_load_sys_17:
+   \   0000C0   12....       LCALL   ?Subroutine3
+    278          	}
+    279               
+    280              sys_ctl.m3d_Mode = setting_buf[PARAM_3D];                  //3d
+   \                     ??CrossCallReturnLabel_11:
+   \   0000C3   E0           MOVX    A,@DPTR
+   \   0000C4   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   0000C7   12....       LCALL   ?Subroutine7
+    281                 
+    282              sys_ctl.lang_id = setting_buf[PARAM_LANG_ID];           //语言
+   \                     ??CrossCallReturnLabel_16:
+   \   0000CA   E0           MOVX    A,@DPTR
+   \   0000CB   90....       MOV     DPTR,#sys_ctl
+   \   0000CE   F0           MOVX    @DPTR,A
+    283              if (sys_ctl.lang_id > sys_ctl.lang_num ) {
+   \   0000CF   90....       MOV     DPTR,#(sys_ctl + 1)
+   \   0000D2   E0           MOVX    A,@DPTR
+   \   0000D3   C0E0         PUSH    A
+   \   0000D5   90....       MOV     DPTR,#sys_ctl
+   \   0000D8   E0           MOVX    A,@DPTR
+   \   0000D9   FA           MOV     R2,A
+   \   0000DA   D0E0         POP     A
+   \   0000DC   C3           CLR     C
+   \   0000DD   9A           SUBB    A,R2
+   \   0000DE   5003         JNC     ??user_setting_load_sys_18
+    284                  return false;                                       //语言参数非法
+   \                     ??user_setting_load_sys_19:
+   \   0000E0   C3           CLR     C
+   \   0000E1   807D         SJMP    ??user_setting_load_sys_20
+    285              }
+    286          
+    287              sys_ctl.contrast = setting_buf[PARAM_CONTRAST];         //对比度
+   \                     ??user_setting_load_sys_18:
+   \   0000E3   8E82         MOV     DPL,R6
+   \   0000E5   8F83         MOV     DPH,R7
+   \   0000E7   A3           INC     DPTR
+   \   0000E8   A3           INC     DPTR
+   \   0000E9   A3           INC     DPTR
+   \   0000EA   A3           INC     DPTR
+   \   0000EB   A3           INC     DPTR
+   \   0000EC   E0           MOVX    A,@DPTR
+   \   0000ED   90....       MOV     DPTR,#(sys_ctl + 2)
+   \   0000F0   F0           MOVX    @DPTR,A
+    288              if (sys_ctl.contrast > CONTRAST_MAX) {
+   \   0000F1   C3           CLR     C
+   \   0000F2   9410         SUBB    A,#0x10
+   \   0000F4   50EA         JNC     ??user_setting_load_sys_19
+    289                  return false;                                       //对比度参数非法
+    290              }
+    291          
+    292              sys_ctl.eq_num = 0;//setting_buf[PARAM_EQ_NUM];             //EQ选择
+   \   0000F6   E4           CLR     A
+   \   0000F7   90....       MOV     DPTR,#(sys_ctl + 3)
+   \   0000FA   12....       LCALL   ?Subroutine6
+    293              if (sys_ctl.eq_num >= MUSIC_EQ_NUM) {
+    294                  return false;                                       //EQ值非法
+    295              }
+    296          
+    297              sys_ctl.mode_play = setting_buf[PARAM_MODE_PLAY];       //播放
+   \                     ??CrossCallReturnLabel_13:
+   \   0000FD   E0           MOVX    A,@DPTR
+   \   0000FE   90....       MOV     DPTR,#(sys_ctl + 4)
+   \   000101   F0           MOVX    @DPTR,A
+    298              if (sys_ctl.mode_play >= MODE_PLAY_NUM) {
+   \   000102   C3           CLR     C
+   \   000103   9406         SUBB    A,#0x6
+   \   000105   50D9         JNC     ??user_setting_load_sys_19
+    299                  return false;                                       //播放模式非法
+    300              }
+    301          
+    302             // sys_ctl.mode_record = setting_buf[PARAM_MODE_RECORD];   //录音
+    303              if (sys_ctl.mode_record > MODE_RECORD_MAX) {
+   \   000107   90....       MOV     DPTR,#(sys_ctl + 5)
+   \   00010A   E0           MOVX    A,@DPTR
+   \   00010B   C3           CLR     C
+   \   00010C   9403         SUBB    A,#0x3
+   \   00010E   50D0         JNC     ??user_setting_load_sys_19
+    304                  return false;                                       //录音模式非法
+    305              }
+    306              sys_ctl.volume =VOLUME_MAX;//setting_buf[PARAM_VOLUME];             //音量
+   \   000110   7420         MOV     A,#0x20
+   \   000112   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000115   F0           MOVX    @DPTR,A
+    307              //printf("sys_ctl.volume: %d\n",sys_ctl.volume);
+    308              if (sys_ctl.volume > VOLUME_MAX) {
+    309                  return false;                                       //音量非法
+    310              }
+    311              if (sys_ctl.volume < VOLUME_MIN) {
+    312                  sys_ctl.volume = VOLUME_MIN;                        //设置开机最小音量
+    313              }
+    314          
+    315              sys_ctl.hshf_vol = setting_buf[PARAM_HSHF_VOLUME];      //通话音量
+   \   000116   EE           MOV     A,R6
+   \   000117   2427         ADD     A,#0x27
+   \   000119   12....       LCALL   ?Subroutine14
+   \                     ??CrossCallReturnLabel_36:
+   \   00011C   E0           MOVX    A,@DPTR
+   \   00011D   FA           MOV     R2,A
+   \   00011E   90....       MOV     DPTR,#(sys_ctl + 7)
+   \   000121   F0           MOVX    @DPTR,A
+    316              if (sys_ctl.hshf_vol > VOLUME_MAX) {
+   \   000122   C3           CLR     C
+   \   000123   9421         SUBB    A,#0x21
+   \   000125   50B9         JNC     ??user_setting_load_sys_19
+    317                  return false;                                       //音量非法
+    318              }
+    319              if (sys_ctl.hshf_vol < VOLUME_MIN) {
+   \   000127   EA           MOV     A,R2
+   \   000128   C3           CLR     C
+   \   000129   9405         SUBB    A,#0x5
+   \   00012B   5003         JNC     ??user_setting_load_sys_21
+    320                  sys_ctl.hshf_vol = VOLUME_MIN;                      //设置开机最小音量
+   \   00012D   7405         MOV     A,#0x5
+   \   00012F   F0           MOVX    @DPTR,A
+    321              }
+    322          
+    323              //sys_ctl.backlight = setting_buf[PARAM_BACKLIGHT];       //背光延时
+    324              if (sys_ctl.backlight >= BACKLIGHT_NUM) {
+   \                     ??user_setting_load_sys_21:
+   \   000130   90....       MOV     DPTR,#(sys_ctl + 9)
+   \   000133   E0           MOVX    A,@DPTR
+   \   000134   C3           CLR     C
+   \   000135   9406         SUBB    A,#0x6
+   \   000137   50A7         JNC     ??user_setting_load_sys_19
+    325                  return false;
+    326              }
+    327          #if ALARM_EN
+    328              sys_ctl.alarm_switch = setting_buf[PARAM_ALARM_SWITCH]; //闹钟开关
+    329              if (sys_ctl.alarm_switch > 1) {
+    330                  sys_ctl.alarm_switch = 0;
+    331              }
+    332          
+    333              sys_ctl.alarm_hour = setting_buf[PARAM_ALARM_HOUR];
+    334              if (sys_ctl.alarm_hour > MAX_ALARM_HOUR) {
+    335                  sys_ctl.alarm_hour = 0;
+    336                  sys_ctl.alarm_switch = 0;
+    337              }
+    338              sys_ctl.alarm_min = setting_buf[PARAM_ALARM_MIN];
+    339              if (sys_ctl.alarm_min > MAX_ALARM_MIN) {
+    340                  sys_ctl.alarm_min = 0;
+    341                  sys_ctl.alarm_switch = 0;
+    342              }
+    343          
+    344              sys_ctl.alarm_mode = setting_buf[PARAM_ALARM_MODE];
+    345              if (sys_ctl.alarm_mode > MAX_ALARM_MODE) {
+    346                  sys_ctl.alarm_mode = 0;
+    347              }
+    348          #endif
+    349              //sys_ctl.poweroff = setting_buf[PARAM_POWEROFF];         //自动关机延时
+    350              if (sys_ctl.poweroff >= POWEROFF_NUM) {
+   \   000139   90....       MOV     DPTR,#(sys_ctl + 10)
+   \   00013C   E0           MOVX    A,@DPTR
+   \   00013D   C3           CLR     C
+   \   00013E   9405         SUBB    A,#0x5
+   \   000140   509E         JNC     ??user_setting_load_sys_19
+    351                  return false;
+    352              }
+    353          #if FM_TIME_EN
+    354              sys_ctl.time_fm_on = setting_buf[PARAM_FM_TIME];
+    355              if(sys_ctl.time_fm_on > 1)
+    356              {
+    357                  return false;
+    358              }
+    359              sys_ctl.fm_hour = setting_buf[PARAM_FM_HOUR];
+    360              if(sys_ctl.fm_hour >=24)
+    361                return false;
+    362              sys_ctl.fm_min = setting_buf[PARAM_FM_MIN];
+    363              if(sys_ctl.fm_min >= 60)
+    364                return false;
+    365          #endif
+    366              user_change_volume(sys_ctl.volume);
+   \   000142                ; Setup parameters for call to function user_change_volume
+   \   000142   7920         MOV     R1,#0x20
+   \   000144   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   000147   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   000149   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    367          
+    368              if (LOAD_U32(&setting_buf[PARAM_RANDOM_KEY]) == 0) {
+   \   00014C   90....       MOV     DPTR,#__Constant_0
+   \   00014F   78..         MOV     R0,#?V0 + 0
+   \   000151   12....       LCALL   ?L_MOV_C
+   \   000154   8F83         MOV     DPH,R7
+   \   000156   8E82         MOV     DPL,R6
+   \   000158   78..         MOV     R0,#?V0 + 0
+   \   00015A   12....       LCALL   ?L_EQ_X
+   \   00015D   6081         JZ      ??user_setting_load_sys_19
+    369                  return false;                                       //随机字串，不能全为0
+    370              }
+    371          
+    372          #if BT_AUTO_PLAY
+    373              sys_ctl.bt_auto_play_flag = setting_buf[PARAM_BT_AUTO_PLAY];
+    374              if(sys_ctl.bt_auto_play_flag > 1){
+    375                  return false;
+    376              }
+    377          #endif
+    378          
+    379              //reset_backlight();
+    380              //set_poweroff();
+    381              return true;
+   \   00015F   D3           SETB    C
+   \                     ??user_setting_load_sys_20:
+   \   000160   02....       LJMP    ?Subroutine12
+    382          }
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   FA           MOV     R2,A
+   \   000002   C3           CLR     C
+   \   000003   9401         SUBB    A,#0x1
+   \   000005   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000007   65D0         XRL     A,PSW
+   \   000009   33           RLC     A
+   \   00000A   22           RET
+    383          
+    384          //上电加载参数
+    385          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    386          bool user_setting_load(u8 page, u8 *setting_buf)
+   \                     user_setting_load:
+    387          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    388              switch (page) {
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for user_setting_load>_0`:
+   \   000004   00           DB        0
+   \   000005   01           DB        1
+   \   000006   ....         DW        ??user_setting_load_0
+   \   000008   ....         DW        ??user_setting_load_1
+   \   00000A   ....         DW        ??user_setting_load_2
+    389              case PARAM_SYS:
+    390                  return user_setting_load_sys(setting_buf);
+   \                     ??user_setting_load_1:
+   \   00000C                ; Setup parameters for call to function user_setting_load_sys
+   \   00000C   90....       MOV     DPTR,#(user_setting_load_sys & 0xffff)
+   \   00000F   74..         MOV     A,#((user_setting_load_sys >> 16) & 0xff)
+   \   000011   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000014   8004         SJMP    ??user_setting_load_3
+    391          
+    392              case PARAM_BT:
+    393                  return true;
+   \                     ??user_setting_load_2:
+   \   000016   D3           SETB    C
+   \   000017   8001         SJMP    ??user_setting_load_3
+    394              }
+    395              return false;
+   \                     ??user_setting_load_0:
+   \   000019   C3           CLR     C
+   \                     ??user_setting_load_3:
+   \   00001A   02....       LJMP    ?BRET
+    396          }
+    397          
+    398          //保存设置语言
+    399          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    400          void user_set_lang(u8 lang_id)
+   \                     user_set_lang:
+    401          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+    402              if (lang_id == sys_ctl.lang_id) {
+   \   000004   90....       MOV     DPTR,#sys_ctl
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   69           XRL     A,R1
+   \   000009   6029         JZ      ??user_set_lang_0
+    403                  return;                             //没有更改
+    404              }
+    405              if (lang_id < sys_ctl.lang_num+1) {
+   \   00000B   90....       MOV     DPTR,#(sys_ctl + 1)
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   FA           MOV     R2,A
+   \   000010   7401         MOV     A,#0x1
+   \   000012   2A           ADD     A,R2
+   \   000013   0A           INC     R2
+   \   000014   E4           CLR     A
+   \   000015   3400         ADDC    A,#0x0
+   \   000017   FB           MOV     R3,A
+   \   000018   E9           MOV     A,R1
+   \   000019   9A           SUBB    A,R2
+   \   00001A   E4           CLR     A
+   \   00001B   9B           SUBB    A,R3
+   \   00001C   C3           CLR     C
+   \   00001D   65D0         XRL     A,PSW
+   \   00001F   33           RLC     A
+   \   000020   5012         JNC     ??user_set_lang_0
+    406                  sys_ctl.lang_id = lang_id;
+   \   000022   E9           MOV     A,R1
+   \   000023   90....       MOV     DPTR,#sys_ctl
+   \   000026   F0           MOVX    @DPTR,A
+    407                  sys_param_write8(PARAM_LANG_ID, lang_id);
+   \   000027                ; Setup parameters for call to function spi_param_write8
+   \   000027   FB           MOV     R3,A
+   \   000028   7A04         MOV     R2,#0x4
+   \   00002A   7900         MOV     R1,#0x0
+   \   00002C   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   00002F   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000031   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??user_set_lang_0:
+   \   000034   D0..         POP     ?V0 + 1
+   \   000036   D0..         POP     ?V0 + 0
+   \   000038   02....       LJMP    ?BRET
+    408              }
+    409          }
+    410          
+    411          //保存设置对比度
+    412          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    413          void user_set_contrast(u8 contrast)
+   \                     user_set_contrast:
+    414          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    415              if (contrast == sys_ctl.contrast) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 2)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   6015         JZ      ??user_set_contrast_0
+    416                  return;                             //没有更改
+    417              }
+    418              if (contrast <= CONTRAST_MAX) {
+   \   000007   E9           MOV     A,R1
+   \   000008   C3           CLR     C
+   \   000009   9410         SUBB    A,#0x10
+   \   00000B   500F         JNC     ??user_set_contrast_0
+    419                  sys_ctl.contrast = contrast;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   F0           MOVX    @DPTR,A
+    420                  sys_param_write8(PARAM_CONTRAST, contrast);
+   \   00000F                ; Setup parameters for call to function spi_param_write8
+   \   00000F   FB           MOV     R3,A
+   \   000010   7A05         MOV     R2,#0x5
+   \   000012   7900         MOV     R1,#0x0
+   \   000014   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   000017   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??user_set_contrast_0:
+   \   00001C   02....       LJMP    ?BRET
+    421              }
+    422          }
+    423          
+    424          //保存背光延时时间
+    425          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    426          void user_set_backlight(u8 backlight)
+   \                     user_set_backlight:
+    427          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    428              if (backlight == sys_ctl.backlight) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 9)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   6008         JZ      ??user_set_backlight_0
+    429                  return;                             //没有更改
+    430              }
+    431              if (backlight < BACKLIGHT_NUM) {
+   \   000007   E9           MOV     A,R1
+   \   000008   C3           CLR     C
+   \   000009   9406         SUBB    A,#0x6
+   \   00000B   5002         JNC     ??user_set_backlight_0
+    432                  sys_ctl.backlight = backlight;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   F0           MOVX    @DPTR,A
+   \                     ??user_set_backlight_0:
+   \   00000F   02....       LJMP    ?BRET
+    433                  //sys_param_write8(PARAM_BACKLIGHT, backlight);
+    434          #if IS_LCD_DISPLAY
+    435                  reset_backlight();
+    436          #endif
+    437              }
+    438          }
+    439          
+    440          //保存自动关机时间
+    441          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    442          void user_set_poweroff(u8 poweroff)
+   \                     user_set_poweroff:
+    443          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    444              if (poweroff == sys_ctl.poweroff) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 10)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   600B         JZ      ??user_set_poweroff_0
+    445          #if IS_LCD_DISPLAY
+    446                  set_poweroff();
+    447          #endif
+    448                  return;                             //没有更改
+    449              }
+    450              if (poweroff < POWEROFF_NUM) {
+   \   000007   E9           MOV     A,R1
+   \   000008   C3           CLR     C
+   \   000009   9405         SUBB    A,#0x5
+   \   00000B   5005         JNC     ??user_set_poweroff_0
+    451                  sys_ctl.poweroff = poweroff;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   F0           MOVX    @DPTR,A
+    452                  //sys_param_write8(PARAM_POWEROFF, poweroff);
+    453                  set_poweroff();
+   \   00000F                ; Setup parameters for call to function set_poweroff
+   \   00000F   12....       LCALL   set_poweroff & 0xFFFF
+   \                     ??user_set_poweroff_0:
+   \   000012   02....       LJMP    ?BRET
+    454              }
+    455          }
+    456          
+    457          //保存设置播放模式
+    458          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    459          void user_set_mode_play(u8 mode_play)
+   \                     user_set_mode_play:
+    460          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    461              if (mode_play == sys_ctl.mode_play) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 4)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   6015         JZ      ??user_set_mode_play_0
+    462                  return;                             //没有更改
+    463              }
+    464              if (mode_play < MODE_PLAY_NUM) {
+   \   000007   E9           MOV     A,R1
+   \   000008   C3           CLR     C
+   \   000009   9406         SUBB    A,#0x6
+   \   00000B   500F         JNC     ??user_set_mode_play_0
+    465                  sys_ctl.mode_play = mode_play;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   F0           MOVX    @DPTR,A
+    466                  sys_param_write8(PARAM_MODE_PLAY, mode_play);
+   \   00000F                ; Setup parameters for call to function spi_param_write8
+   \   00000F   FB           MOV     R3,A
+   \   000010   7A06         MOV     R2,#0x6
+   \   000012   7900         MOV     R1,#0x0
+   \   000014   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   000017   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000019   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??user_set_mode_play_0:
+   \   00001C   02....       LJMP    ?BRET
+    467              }
+    468          }
+    469          //保存闹钟时间
+    470          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    471          void user_set_alarm_time(u8 hour, u8 min)
+   \                     user_set_alarm_time:
+    472          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    473              //printf("set alarm time: %x -> %x\n",sys_ctl.alarm_time,alarm_time);
+    474              if (hour == sys_ctl.alarm_hour && min == sys_ctl.alarm_min) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 15)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   7007         JNZ     ??user_set_alarm_time_0
+   \   000007   90....       MOV     DPTR,#(sys_ctl + 16)
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   6A           XRL     A,R2
+   \   00000C   6016         JZ      ??user_set_alarm_time_1
+    475                  return;                             //没有更改
+    476              }
+    477              if (hour <= MAX_ALARM_HOUR && min <= MAX_ALARM_MIN) {
+   \                     ??user_set_alarm_time_0:
+   \   00000E   E9           MOV     A,R1
+   \   00000F   C3           CLR     C
+   \   000010   9418         SUBB    A,#0x18
+   \   000012   5010         JNC     ??user_set_alarm_time_1
+   \   000014   EA           MOV     A,R2
+   \   000015   C3           CLR     C
+   \   000016   943C         SUBB    A,#0x3c
+   \   000018   500A         JNC     ??user_set_alarm_time_1
+    478                  sys_ctl.alarm_hour = hour;
+   \   00001A   E9           MOV     A,R1
+   \   00001B   90....       MOV     DPTR,#(sys_ctl + 15)
+   \   00001E   F0           MOVX    @DPTR,A
+    479                  sys_ctl.alarm_min = min;
+   \   00001F   EA           MOV     A,R2
+   \   000020   90....       MOV     DPTR,#(sys_ctl + 16)
+   \   000023   F0           MOVX    @DPTR,A
+   \                     ??user_set_alarm_time_1:
+   \   000024   02....       LJMP    ?BRET
+    480                  //sys_param_write8(PARAM_ALARM_HOUR, hour);
+    481                  //sys_param_write8(PARAM_ALARM_MIN, min);
+    482              }
+    483          }
+    484          
+    485          //保存闹钟模式
+    486          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    487          void user_set_alram_mode(u8 alarm_mode)
+   \                     user_set_alram_mode:
+    488          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    489              if (alarm_mode == sys_ctl.alarm_mode) {
+   \   000000   02....       LJMP    ?BRET
+    490                  return;                             //没有更改
+    491              }
+    492              if (alarm_mode <= MAX_ALARM_MODE) {
+    493                  //sys_ctl.alarm_mode = alarm_mode;
+    494                  //sys_param_write8(PARAM_ALARM_MODE, alarm_mode);
+    495              }
+    496          }
+    497          
+    498          //保存闹钟开关
+    499          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    500          void user_set_alarm_switch(u8 alarm_switch)
+   \                     user_set_alarm_switch:
+    501          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    502              if (alarm_switch == sys_ctl.alarm_switch) {
+   \   000000   02....       LJMP    ?BRET
+    503                  return;                             //没有更改
+    504              }
+    505              //sys_ctl.alarm_switch = alarm_switch;
+    506              //sys_param_write8(PARAM_ALARM_SWITCH, alarm_switch);
+    507          }
+    508          
+    509          //保存设置录音模式
+    510          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    511          void user_set_mode_record(u8 mode_record)
+   \                     user_set_mode_record:
+    512          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    513              if (mode_record == sys_ctl.mode_record) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 5)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   6008         JZ      ??user_set_mode_record_0
+    514                  return;                             //没有更改
+    515              }
+    516              if (mode_record <= MODE_RECORD_MAX) {
+   \   000007   E9           MOV     A,R1
+   \   000008   C3           CLR     C
+   \   000009   9403         SUBB    A,#0x3
+   \   00000B   5002         JNC     ??user_set_mode_record_0
+    517                  sys_ctl.mode_record = mode_record;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   F0           MOVX    @DPTR,A
+   \                     ??user_set_mode_record_0:
+   \   00000F   02....       LJMP    ?BRET
+    518                  //sys_param_write8(PARAM_MODE_RECORD, mode_record);
+    519              }
+    520          }
+    521          
+    522          //保存设置音量
+    523          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    524          bool user_set_volume(u8 volume)
+   \                     user_set_volume:
+    525          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    526              if(sys_ctl.voice_play_flag == 0) {          //播放语音过程中不调整音量
+   \   000005   90....       MOV     DPTR,#(sys_ctl + 26)
+   \   000008   E0           MOVX    A,@DPTR
+   \   000009   7008         JNZ     ??user_set_volume_0
+    527                  user_change_volume(volume);
+   \   00000B                ; Setup parameters for call to function user_change_volume
+   \   00000B   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   00000E   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   000010   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    528              }
+    529          
+    530              if (volume == sys_ctl.volume) {
+   \                     ??user_set_volume_0:
+   \   000013   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000016   E0           MOVX    A,@DPTR
+   \   000017   6E           XRL     A,R6
+   \   000018   7003         JNZ     ??user_set_volume_1
+    531                  return false;                             //没有更改
+   \   00001A   C3           CLR     C
+   \   00001B   8009         SJMP    ??user_set_volume_2
+    532              }
+    533              if (volume <= VOLUME_MAX) {
+   \                     ??user_set_volume_1:
+   \   00001D   EE           MOV     A,R6
+   \   00001E   C3           CLR     C
+   \   00001F   9421         SUBB    A,#0x21
+   \   000021   5002         JNC     ??user_set_volume_3
+    534                  sys_ctl.volume = volume;
+   \   000023   EE           MOV     A,R6
+   \   000024   F0           MOVX    @DPTR,A
+    535                  //sys_param_write8(PARAM_VOLUME, volume);
+    536              }
+    537              return true;
+   \                     ??user_set_volume_3:
+   \   000025   D3           SETB    C
+   \                     ??user_set_volume_2:
+   \   000026   80..         SJMP    ??Subroutine13_0
+    538          }
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+   \                     ?Subroutine13:
+   \   000000   D3           SETB    C
+   \                     ??Subroutine13_0:
+   \   000001   D0E0         POP     A
+   \   000003   FE           MOV     R6,A
+   \   000004   02....       LJMP    ?BRET
+    539          
+    540          //保存设置通话音量，通话音量不能设为0
+    541          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    542          bool user_set_hshfvol(u8 volume)
+   \                     user_set_hshfvol:
+    543          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    544              if (bt_in_call() && volume) {
+   \   000005                ; Setup parameters for call to function bt_in_call
+   \   000005   12....       LCALL   bt_in_call & 0xFFFF
+   \   000008   500C         JNC     ??user_set_hshfvol_0
+   \   00000A   EE           MOV     A,R6
+   \   00000B   6009         JZ      ??user_set_hshfvol_0
+    545                  user_change_volume(volume);                 //只有进入通话时，才需要修改这个音量值
+   \   00000D                ; Setup parameters for call to function user_change_volume
+   \   00000D   F9           MOV     R1,A
+   \   00000E   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   000011   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    546              }
+    547              if ((volume == sys_ctl.hshf_vol) || !volume) {
+   \                     ??user_set_hshfvol_0:
+   \   000016   90....       MOV     DPTR,#(sys_ctl + 7)
+   \   000019   E0           MOVX    A,@DPTR
+   \   00001A   6E           XRL     A,R6
+   \   00001B   6003         JZ      ??user_set_hshfvol_1
+   \   00001D   EE           MOV     A,R6
+   \   00001E   7003         JNZ     ??user_set_hshfvol_2
+    548                  return false;                               //没有更改
+   \                     ??user_set_hshfvol_1:
+   \   000020   C3           CLR     C
+   \   000021   8015         SJMP    ??user_set_hshfvol_3
+    549              }
+    550              if (volume <= VOLUME_MAX) {
+   \                     ??user_set_hshfvol_2:
+   \   000023   C3           CLR     C
+   \   000024   9421         SUBB    A,#0x21
+   \   000026   500F         JNC     ??user_set_hshfvol_4
+    551                  sys_ctl.hshf_vol = volume;
+   \   000028   EE           MOV     A,R6
+   \   000029   F0           MOVX    @DPTR,A
+    552                  sys_param_write8(PARAM_HSHF_VOLUME, volume);
+   \   00002A                ; Setup parameters for call to function spi_param_write8
+   \   00002A   FB           MOV     R3,A
+   \   00002B   7A27         MOV     R2,#0x27
+   \   00002D   7900         MOV     R1,#0x0
+   \   00002F   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   000032   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000034   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    553              }
+    554              return true;
+   \                     ??user_set_hshfvol_4:
+   \   000037   D3           SETB    C
+   \                     ??user_set_hshfvol_3:
+   \   000038   80..         SJMP    ??Subroutine13_0
+    555          }
+    556          
+    557          //保存设置音量
+    558          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    559          bool user_change_volume(u8 volume)
+   \                     user_change_volume:
+    560          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    561              u8 dac_vol;
+    562              if (volume <= VOLUME_MAX) {
+   \   000005   C3           CLR     C
+   \   000006   9421         SUBB    A,#0x21
+   \   000008   5031         JNC     ??user_change_volume_0
+    563          #if IIS_EN
+    564                  dac_vol = tbl_volume[VOLUME_MAX] + sys_ctl.vol_ex;
+   \   00000A   90....       MOV     DPTR,#(tbl_volume + 32)
+   \   00000D   E4           CLR     A
+   \   00000E   93           MOVC    A,@A+DPTR
+   \   00000F   7583..       MOV     DPH,#(((sys_ctl + 8) >> 8) & 0xff)
+   \   000012   7582..       MOV     DPL,#((sys_ctl + 8) & 0xff)
+   \   000015   FA           MOV     R2,A
+   \   000016   E0           MOVX    A,@DPTR
+   \   000017   2A           ADD     A,R2
+   \   000018   F9           MOV     R1,A
+    565          #else
+    566                  dac_vol = tbl_volume[volume] + sys_ctl.vol_ex;
+    567          #endif
+    568                  if(volume == 0){
+   \   000019   EE           MOV     A,R6
+   \   00001A   7004         JNZ     ??user_change_volume_1
+    569                      dac_vol = 0;
+   \                     ??user_change_volume_2:
+   \   00001C   7900         MOV     R1,#0x0
+   \   00001E   800E         SJMP    ??user_change_volume_3
+    570                  }
+    571                  if (dac_vol >= 128) {
+   \                     ??user_change_volume_1:
+   \   000020   E9           MOV     A,R1
+   \   000021   C3           CLR     C
+   \   000022   9480         SUBB    A,#-0x80
+   \   000024   50F6         JNC     ??user_change_volume_2
+    572                      dac_vol = 0;
+    573                  } else if (dac_vol > 65) {
+   \   000026   E9           MOV     A,R1
+   \   000027   C3           CLR     C
+   \   000028   9442         SUBB    A,#0x42
+   \   00002A   4002         JC      ??user_change_volume_3
+    574                      dac_vol = 65;
+   \   00002C   7941         MOV     R1,#0x41
+    575                  }
+    576                  dac_set_volume(dac_vol);
+   \                     ??user_change_volume_3:
+   \   00002E                ; Setup parameters for call to function dac_set_volume
+   \   00002E   12....       LCALL   dac_set_volume & 0xFFFF
+    577          #if IIS_EN
+    578                  iis_set_vol(volume);
+   \   000031                ; Setup parameters for call to function iis_set_vol
+   \   000031   EE           MOV     A,R6
+   \   000032   F9           MOV     R1,A
+   \   000033   90....       MOV     DPTR,#(iis_set_vol & 0xffff)
+   \   000036   74..         MOV     A,#((iis_set_vol >> 16) & 0xff)
+   \   000038   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    579          #endif
+    580              }
+    581              return true;
+   \                     ??user_change_volume_0:
+   \   00003B   80..         SJMP    ?Subroutine13
+    582          }
+    583          
+    584          //数字音量
+    585          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    586          bool change_digital_volume(u8 volume)
+   \                     change_digital_volume:
+    587          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    588              if (volume <= VOLUME_MAX) {
+   \   000005   C3           CLR     C
+   \   000006   9421         SUBB    A,#0x21
+   \   000008   5011         JNC     ??change_digital_volume_0
+    589                  u16 dac_vol = 0xff00;//digital_volume[volume];
+    590                  digital_vol_set(dac_vol);
+   \   00000A                ; Setup parameters for call to function digital_vol_set
+   \   00000A   7A00         MOV     R2,#0x0
+   \   00000C   7BFF         MOV     R3,#-0x1
+   \   00000E   90....       MOV     DPTR,#(digital_vol_set & 0xffff)
+   \   000011   74..         MOV     A,#((digital_vol_set >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    591                  sys_ctl.dig_vol = volume;
+   \   000016   EE           MOV     A,R6
+   \   000017   90....       MOV     DPTR,#(sys_ctl + 29)
+   \   00001A   F0           MOVX    @DPTR,A
+    592              }
+    593              return true;
+   \                     ??change_digital_volume_0:
+   \   00001B   02....       LJMP    ?Subroutine13
+    594          }
+    595          
+    596          //mic音量
+    597          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    598          bool change_mic_volume(u8 volume)
+   \                     change_mic_volume:
+    599          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    600              if (volume <= VOLUME_MAX) {
+   \   000005   C3           CLR     C
+   \   000006   9421         SUBB    A,#0x21
+   \   000008   500D         JNC     ??change_mic_volume_0
+    601                  agc_anl_set(volume);
+   \   00000A                ; Setup parameters for call to function agc_anl_set
+   \   00000A   90....       MOV     DPTR,#(agc_anl_set & 0xffff)
+   \   00000D   74..         MOV     A,#((agc_anl_set >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    602                  sys_ctl.mic_volume = volume;
+   \   000012   EE           MOV     A,R6
+   \   000013   90....       MOV     DPTR,#(sys_ctl + 30)
+   \   000016   F0           MOVX    @DPTR,A
+    603              }
+    604              return true;
+   \                     ??change_mic_volume_0:
+   \   000017   02....       LJMP    ?Subroutine13
+    605          }
+    606          
+    607          //设置DAC音量模式。数字模式下需要补偿3DB
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    608          void user_set_volex(s8 volex)
+   \                     user_set_volex:
+    609          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    610              sys_ctl.vol_ex = volex;
+   \   000000   E9           MOV     A,R1
+   \   000001   90....       MOV     DPTR,#(sys_ctl + 8)
+   \   000004   F0           MOVX    @DPTR,A
+    611              user_change_volume(sys_ctl.volume);
+   \   000005                ; Setup parameters for call to function user_change_volume
+   \   000005   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000008   E0           MOVX    A,@DPTR
+   \   000009   F9           MOV     R1,A
+   \   00000A   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   00000D   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    612          }
+   \   000012   02....       LJMP    ?BRET
+    613          
+    614          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    615          u8 user_volume_inc(u8 volume)
+   \                     user_volume_inc:
+    616          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    617              volume++;
+   \   000000   09           INC     R1
+    618              if(volume > VOLUME_MAX)
+   \   000001   E9           MOV     A,R1
+   \   000002   C3           CLR     C
+   \   000003   9421         SUBB    A,#0x21
+   \   000005   4002         JC      ??user_volume_inc_0
+    619                  volume = VOLUME_MAX;
+   \   000007   7920         MOV     R1,#0x20
+    620              return volume;
+   \                     ??user_volume_inc_0:
+   \   000009   02....       LJMP    ?BRET
+    621          }
+    622          
+    623          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    624          u8 user_volume_dec(u8 volume)
+   \                     user_volume_dec:
+    625          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    626              if(volume > 0)
+   \   000000   E9           MOV     A,R1
+   \   000001   6001         JZ      ??user_volume_dec_0
+    627                  volume--;
+   \   000003   19           DEC     R1
+    628              return volume;
+   \                     ??user_volume_dec_0:
+   \   000004   02....       LJMP    ?BRET
+    629          }
+    630          
+    631          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    632          u8 user_eq_adjust(u8 eq_num)
+   \                     user_eq_adjust:
+    633          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    634              if (eq_num >= MUSIC_EQ_NUM) {
+   \   000005   C3           CLR     C
+   \   000006   9407         SUBB    A,#0x7
+   \   000008   400C         JC      ??user_eq_adjust_0
+    635                  eq_num = EQ_NORMAL;
+    636                  eq_disable();
+   \   00000A                ; Setup parameters for call to function eq_disable
+   \   00000A   90....       MOV     DPTR,#(eq_disable & 0xffff)
+   \   00000D   74..         MOV     A,#((eq_disable >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    637                  return eq_num;
+   \   000012   7900         MOV     R1,#0x0
+   \   000014   800A         SJMP    ??user_eq_adjust_1
+    638              }
+    639              music_eq(eq_num);
+   \                     ??user_eq_adjust_0:
+   \   000016                ; Setup parameters for call to function music_eq
+   \   000016   90....       MOV     DPTR,#(music_eq & 0xffff)
+   \   000019   74..         MOV     A,#((music_eq >> 16) & 0xff)
+   \   00001B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    640              return eq_num;
+   \   00001E   EE           MOV     A,R6
+   \   00001F   F9           MOV     R1,A
+   \                     ??user_eq_adjust_1:
+   \   000020   02....       LJMP    ??Subroutine13_0
+    641          }
+    642          
+    643          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    644          void user_def_eq(void)
+   \                     user_def_eq:
+    645          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   C0..         PUSH    ?V0 + 0
+   \   000005   C0..         PUSH    ?V0 + 1
+   \   000007                ; Saved register size: 3
+   \   000007                ; Auto size: 0
+    646              PCON3 &= ~BIT(5);                     //eq clk en
+   \   000007   5397DF       ANL     0x97,#0xdf
+    647              at_write(EQCON1, 0x00);               //disable EQ
+   \   00000A                ; Setup parameters for call to function at_write
+   \   00000A   7A00         MOV     R2,#0x0
+   \   00000C   790C         MOV     R1,#0xc
+   \   00000E   12....       LCALL   at_write & 0xFFFF
+    648              at_write(EQCON2, 0x00);               //rest
+   \   000011                ; Setup parameters for call to function at_write
+   \   000011   7A00         MOV     R2,#0x0
+   \   000013   790E         MOV     R1,#0xe
+   \   000015   12....       LCALL   at_write & 0xFFFF
+    649              at_write(EQCON2, 0x01);               //release rest
+   \   000018                ; Setup parameters for call to function at_write
+   \   000018   7A01         MOV     R2,#0x1
+   \   00001A   790E         MOV     R1,#0xe
+   \   00001C   12....       LCALL   at_write & 0xFFFF
+    650              at_write(EQCON2, 0x07);               //release reset, eq buf & cof address clear
+   \   00001F                ; Setup parameters for call to function at_write
+   \   00001F   7A07         MOV     R2,#0x7
+   \   000021   790E         MOV     R1,#0xe
+   \   000023   12....       LCALL   at_write & 0xFFFF
+    651              while (!(at_read(EQCON2) & BIT(7)));  //eq buf initial done flag
+   \                     ??user_def_eq_0:
+   \   000026                ; Setup parameters for call to function at_read
+   \   000026   790E         MOV     R1,#0xe
+   \   000028   12....       LCALL   at_read & 0xFFFF
+   \   00002B   E9           MOV     A,R1
+   \   00002C   A2E7         MOV     C,0xE0 /* A   */.7
+   \   00002E   50F6         JNC     ??user_def_eq_0
+    652          
+    653              u16 eqpower = 0x7fff;
+    654              at_write(EQVOLIN, eqpower >> 8);      //input volume
+   \   000030                ; Setup parameters for call to function at_write
+   \   000030   7A7F         MOV     R2,#0x7f
+   \   000032   790F         MOV     R1,#0xf
+   \   000034   12....       LCALL   at_write & 0xFFFF
+    655              at_write(EQVOLIN, eqpower);
+   \   000037                ; Setup parameters for call to function at_write
+   \   000037   7AFF         MOV     R2,#-0x1
+   \   000039   790F         MOV     R1,#0xf
+   \   00003B   12....       LCALL   at_write & 0xFFFF
+    656              for (u8 i=0; i<123; i++) {
+   \   00003E   7E00         MOV     R6,#0x0
+    657                  at_write(EQCOF, bteq_buf[i]);
+   \                     ??user_def_eq_1:
+   \   000040                ; Setup parameters for call to function at_write
+   \   000040   8E..         MOV     ?V0 + 0,R6
+   \   000042   E5..         MOV     A,?V0 + 0
+   \   000044   24..         ADD     A,#(bteq_buf & 0xff)
+   \   000046   F582         MOV     DPL,A
+   \   000048   E4           CLR     A
+   \   000049   34..         ADDC    A,#((bteq_buf >> 8) & 0xff)
+   \   00004B   F583         MOV     DPH,A
+   \   00004D   E0           MOVX    A,@DPTR
+   \   00004E   FA           MOV     R2,A
+   \   00004F   790D         MOV     R1,#0xd
+   \   000051   12....       LCALL   at_write & 0xFFFF
+    658              }
+   \   000054   0E           INC     R6
+   \   000055   EE           MOV     A,R6
+   \   000056   C3           CLR     C
+   \   000057   947B         SUBB    A,#0x7b
+   \   000059   40E5         JC      ??user_def_eq_1
+    659              at_write(EQCON1, 0x47);           //eq en & set eq bank
+   \   00005B                ; Setup parameters for call to function at_write
+   \   00005B   7A47         MOV     R2,#0x47
+   \   00005D   790C         MOV     R1,#0xc
+   \   00005F   12....       LCALL   at_write & 0xFFFF
+    660          
+    661          }
+   \   000062   D0..         POP     ?V0 + 1
+   \   000064   D0..         POP     ?V0 + 0
+   \   000066   02....       LJMP    ??Subroutine13_0
+    662          
+    663          //保存EQ值
+    664          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    665          bool user_set_eq(u8 eq_num)
+   \                     user_set_eq:
+    666          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    667              if (eq_num == sys_ctl.eq_num) {
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 3)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   69           XRL     A,R1
+   \   000005   7003         JNZ     ??user_set_eq_0
+    668                  return false;                       //没有更改
+   \                     ??user_set_eq_1:
+   \   000007   C3           CLR     C
+   \   000008   8015         SJMP    ??user_set_eq_2
+    669              }
+    670              u8 num_eq = user_eq_adjust(eq_num);
+   \                     ??user_set_eq_0:
+   \   00000A                ; Setup parameters for call to function user_eq_adjust
+   \   00000A   90....       MOV     DPTR,#(user_eq_adjust & 0xffff)
+   \   00000D   74..         MOV     A,#((user_eq_adjust >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000012   E9           MOV     A,R1
+   \   000013   FA           MOV     R2,A
+    671              if (num_eq < MUSIC_EQ_NUM) {
+   \   000014   C3           CLR     C
+   \   000015   9407         SUBB    A,#0x7
+   \   000017   50EE         JNC     ??user_set_eq_1
+    672                  sys_ctl.eq_num = num_eq;
+   \   000019   EA           MOV     A,R2
+   \   00001A   90....       MOV     DPTR,#(sys_ctl + 3)
+   \   00001D   F0           MOVX    @DPTR,A
+    673                  //sys_param_write8(PARAM_EQ_NUM, eq_num);
+    674                  return true;
+   \   00001E   D3           SETB    C
+   \                     ??user_set_eq_2:
+   \   00001F   02....       LJMP    ?BRET
+    675              }
+    676              return false;
+    677          }
+    678          
+    679          //保存设置播放模式
+    680          #pragma location="USER_SETTING_SEG"
+
+   \                                 In segment USER_SETTING_SEG, align 1, keep-with-next
+    681          u8 user_mode_play_adjust(u8 mode_play)
+   \                     user_mode_play_adjust:
+    682          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    683              mode_play++;
+   \   000000   09           INC     R1
+    684              if(mode_play > ITEM_LOOP_RAMDOM) {
+   \   000001   E9           MOV     A,R1
+   \   000002   C3           CLR     C
+   \   000003   9405         SUBB    A,#0x5
+   \   000005   4002         JC      ??user_mode_play_adjust_0
+    685                  mode_play = ITEM_LOOP_ALL;
+   \   000007   7900         MOV     R1,#0x0
+    686              }
+    687              return mode_play;
+   \                     ??user_mode_play_adjust_0:
+   \   000009   02....       LJMP    ?BRET
+    688          }
+
+   \                                 In segment CODE_C, align 1
+   \                     __Constant_0:
+   \   000000   00000000     DD 0
+    689          
+
+   Maximum stack usage in bytes:
+
+     Function                      EXT_STACK PSTACK XSTACK
+     --------                      --------- ------ ------
+     change_digital_volume                1      0      0
+       -> digital_vol_set                 2      0      0
+     change_mic_volume                    1      0      0
+       -> agc_anl_set                     2      0      0
+     user_change_volume                  10      0      0
+       -> dac_set_volume                  2      0      0
+       -> iis_set_vol                     2      0      0
+     user_def_eq                          3      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+       -> at_read                         6      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+       -> at_write                        6      0      0
+     user_eq_adjust                       1      0      0
+       -> eq_disable                      2      0      0
+       -> music_eq                        2      0      0
+     user_mode_play_adjust                0      0      0
+     user_set_alarm_switch                0      0      0
+     user_set_alarm_time                  0      0      0
+     user_set_alram_mode                  0      0      0
+     user_set_backlight                   0      0      0
+     user_set_contrast                    0      0      0
+       -> spi_param_write8                0      0      0
+     user_set_eq                          0      0      0
+       -> user_eq_adjust                  0      0      0
+     user_set_hshfvol                     1      0      0
+       -> bt_in_call                      2      0      0
+       -> user_change_volume              2      0      0
+       -> spi_param_write8                2      0      0
+     user_set_lang                        2      0      0
+       -> spi_param_write8                4      0      0
+     user_set_mode_play                   0      0      0
+       -> spi_param_write8                0      0      0
+     user_set_mode_record                 0      0      0
+     user_set_poweroff                    0      0      0
+       -> set_poweroff                    0      0      0
+     user_set_volex                       0      0      0
+       -> user_change_volume              0      0      0
+     user_set_volume                      1      0      0
+       -> user_change_volume              2      0      0
+     user_setting_factory                 0      0      0
+       -> user_setting_factory_sys        0      0      0
+     user_setting_factory_sys             8      0      0
+       -> get_rand_key                   14      0      0
+     user_setting_load                    0      0      0
+       -> user_setting_load_sys           0      0      0
+     user_setting_load_sys                9      0      0
+       -> user_change_volume             14      0      0
+     user_volume_dec                      0      0      0
+     user_volume_inc                      0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label           Bytes
+     --------------           -----
+     PCON3                       1
+     sys_ctl                    75
+     tbl_pg_volume               8
+     tbl_digital_volume          8
+     tbl_mic_volume              8
+     tbl_volume                 33
+     digital_volume             32
+     tbl_speed                  10
+     tbl_backlight               6
+     tbl_poweroff               10
+     user_setting_factory_sys  211
+     ?Subroutine12               5
+     ?Subroutine7                4
+     ?Subroutine11              10
+     ?Subroutine6                4
+     ?Subroutine9                4
+     ?Subroutine10               6
+     ?Subroutine5                4
+     ?Subroutine14               8
+     ?Subroutine4                6
+     ?Subroutine3                5
+     ?Subroutine2                4
+     ?Subroutine8                6
+     ?Subroutine1                6
+     user_setting_factory       21
+     user_setting_load_sys     355
+     ?Subroutine0               11
+     user_setting_load          29
+     user_set_lang              59
+     user_set_contrast          31
+     user_set_backlight         18
+     user_set_poweroff          21
+     user_set_mode_play         31
+     user_set_alarm_time        39
+     user_set_alram_mode         3
+     user_set_alarm_switch       3
+     user_set_mode_record       18
+     user_set_volume            40
+     ?Subroutine13               7
+     user_set_hshfvol           58
+     user_change_volume         61
+     change_digital_volume      30
+     change_mic_volume          26
+     user_set_volex             21
+     user_volume_inc            12
+     user_volume_dec             7
+     user_eq_adjust             35
+     user_def_eq               105
+     user_set_eq                34
+     user_mode_play_adjust      12
+     __Constant_0                4
+
+ 
+    21 bytes in segment BANKED_CODE
+    20 bytes in segment CODE_C
+    10 bytes in segment MUSIC_SEG_CONST
+    24 bytes in segment PROGRESS_CONTENT
+     1 byte  in segment SFR_AN
+    65 bytes in segment USER_SETTING_CONST
+ 1 349 bytes in segment USER_SETTING_SEG
+    75 bytes in segment XDATA_Z
+ 
+ 1 485 bytes of CODE  memory (+ 4 bytes shared)
+     0 bytes of DATA  memory (+ 1 byte  shared)
+    75 bytes of XDATA memory
+
+Errors: none
+Warnings: none

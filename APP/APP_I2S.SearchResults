@@ -1,0 +1,12 @@
+---- bt_Mute_cnt Matches (13 in 3 files) ----
+Task.c (task):    sys_ctl.bt_Mute_cnt = 0;
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt < 2)sys_ctl.bt_Mute_cnt++;
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt == 1){
+Ui_bt.c (config\user_15_122\ui):                sys_ctl.bt_Mute_cnt = 2;
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt > 1){
+Ui_bt.c (config\user_15_122\ui):            sys_ctl.bt_Mute_cnt = 0;
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt < 6)sys_ctl.bt_Mute_cnt++;
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt == 1){
+Ui_bt.c (config\user_15_122\ui):            if(sys_ctl.bt_Mute_cnt > 5){
+Ui_bt.c (config\user_15_122\ui):                sys_ctl.bt_Mute_cnt = 0;
+User_setting.h (user):    u8 bt_Mute_cnt;

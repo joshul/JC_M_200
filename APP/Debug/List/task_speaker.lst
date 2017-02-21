@@ -1,0 +1,262 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:58 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_speaker.c                                     #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_speaker.c                                     #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_speaker.lst                             #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_speaker.r51                              #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_speaker.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_speaker.c
+      4           * Author    : Hanny
+      5           * Function  : 扩音器任务流程
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          
+      9          #if TASK_SPEAKER_EN
+     10          #include "task.h"
+     11          #include "task_speaker.h"
+     12          
+     13          #pragma data_alignment=2
+     14          IAR_XDATA_A u16 echo_input              @ "SPEAKER_XDATA";
+     15          IAR_XDATA_A u16 volatile echo_read      @ "SPEAKER_XDATA";
+     16          IAR_XDATA_A u16 volatile echo_write     @ "SPEAKER_XDATA";
+     17          IAR_XDATA_A u8  echo_factor[2]          @ "SPEAKER_XDATA";
+     18          IAR_XDATA_A type_task_speaker t_speaker @ "SPEAKER_XDATA";
+     19          IAR_XDATA_A u8 echo_buf[ECHO_BUF_LEN]   @ "ECHO_BUF";
+     20          
+     21          #include SET_USER_PATH(CFG_UI_SPEAKER_DIR, /ui/ui_speaker.c)
+     22          
+     23          #pragma location="TASK_SPEAKER_SEG"
+     24          void speaker_continue(void)
+     25          {
+     26              speaker_load_code(0x68);
+     27              t_speaker.pos = 0;
+     28              echo_read  = ECHO_BUF_SATRT;
+     29              echo_write = ECHO_BUF_SATRT;
+     30              pcm_init(S_SPR_8000);
+     31              adc_init(SEL_SPEAKER);
+     32              adc_start();
+     33              pcm_play();
+     34          }
+     35          
+     36          #pragma location="TASK_SPEAKER_SEG"
+     37          void mp3res_play_speakermode(u8 music_name)
+     38          {
+     39              adc_stop();
+     40              mp3_res_play_wait(music_name);
+     41              speaker_continue();
+     42          }
+     43          
+     44          #pragma location="TASK_SPEAKER_SEG"
+     45          void speaker_play_vol_music(void)
+     46          {
+     47              if(!sys_ctl.vol_maxmin_music_play){
+     48                  sys_ctl.vol_maxmin_music_play = 1;
+     49                  adc_stop();
+     50              }
+     51              mp3_res_play_wait(RES_MP3_VOL_MAXMIN);
+     52              flush_msg();
+     53          }
+     54          
+     55          //AGC中断处理函数
+     56          #pragma location="MIX_PROC"
+     57          __near_func void task_speaker_process(void)
+     58          {
+     59              if (AUCON5 >= 130) {
+     60                  FIFO_SPEED = 2;
+     61              } else {
+     62                  if (AUCON5 <= 64) {
+     63                      FIFO_SPEED = 0;
+     64                  }
+     65              }
+     66          
+     67              if (!t_speaker.pos) {
+     68                  echo_input = (u16)adc_buf;
+     69              }
+     70              mix_proc(ECHO_SAMPLES);
+     71              dac_direct_out(echo_write-SPEAKER_SAMPLES, ECHO_SAMPLES, 1);
+     72              if (echo_read >= ECHO_BUF_END) {
+     73                  echo_read = ECHO_BUF_SATRT;
+     74              }
+     75              if (echo_write >= ECHO_BUF_END) {
+     76                  echo_write = ECHO_BUF_SATRT;
+     77              }
+     78              t_speaker.pos ^= 1;
+     79          }
+     80          
+     81          #pragma location="TASK_SPEAKER_SEG"
+     82          void mix_step_set(u8 step)
+     83          {
+     84              IE_AGC = 0;
+     85              if (!step) {
+     86                  echo_factor[0] = 108;
+     87                  echo_factor[1] = 0;
+     88                  IE_AGC = 1;
+     89                  return;
+     90              }
+     91              if (step == ECHO_MAX) {
+     92                  echo_write = echo_read;
+     93              } else {
+     94                  echo_write = echo_read + (step * ECHO_STEP);
+     95                  if (echo_write > ECHO_BUF_END) {
+     96                      echo_write -= (ECHO_MAX * ECHO_STEP);
+     97                  }
+     98              }
+     99              //printf("r=%04x w=%04x\n", echo_read, echo_write);
+    100              echo_factor[0] = 90;
+    101              echo_factor[1] = 48;
+    102              IE_AGC = 1;
+    103          }
+    104          
+    105          //任务事务处理
+    106          #pragma location="TASK_SPEAKER_SEG"
+    107          void task_speaker_event(void)
+    108          {
+    109              comm_event();                           //调用公共事件
+    110          #if WARNING_LOWPOWER
+    111              if(sys_ctl.lowpower_warning_flag == 1){
+    112                  sys_ctl.lowpower_warning_flag = 2;
+    113                  mp3res_play_speakermode(RES_MP3_PLEASE_CHARGE);
+    114              }
+    115          #endif
+    116          }
+    117          
+    118          //任务初始化
+    119          #pragma location="TASK_SPEAKER_SEG"
+    120          void task_speaker_enter(void)
+    121          {
+    122              led_mode_off();
+    123              led_idle();
+    124              set_sys_clk(SYS_24M);
+    125              draw_wait();
+    126          
+    127              //sound_ctl_init(3, 0x800, 25, 0x800);     //连续3次超过0x800认为开始有声；连续25次0x800认为静音
+    128              user_change_volume(sys_ctl.volume);//数字音量
+    129              dac_enable();
+    130          
+    131          #if WARNING_TASK_SPEAKER
+    132              if (work_sta_interrupt == TASK_NULL) {
+    133                  mp3_res_play_wait(RES_MP3_SPEAKER_MODE);
+    134              }
+    135          #endif
+    136              work_sta_interrupt = TASK_NULL;
+    137          
+    138              speaker_load_code(0x68);
+    139              t_speaker.mix_step = sys_param_read8(PARAM_MIX_STEP);
+    140              if(t_speaker.mix_step > ECHO_MAX) {
+    141                  t_speaker.mix_step = ECHO_MAX;
+    142              }
+    143              sys_param_write8(PARAM_MIX_STEP, t_speaker.mix_step);
+    144              t_speaker.pos = 0;
+    145              echo_read  = ECHO_BUF_SATRT;
+    146              echo_write = ECHO_BUF_SATRT;
+    147              mix_step_set(t_speaker.mix_step);
+    148          
+    149              pcm_init(S_SPR_8000);
+    150              AUCON10 |= BIT(7);
+    151              FIFO_SPEED = 0;
+    152              adc_init(SEL_SPEAKER);
+    153              adc_start();
+    154              pcm_play();
+    155          #if IS_LCD_DISPLAY
+    156              t_speaker.picture_update_flag = 1;
+    157          #if THEME_SELECT==THEME_LCD_DEFAULT
+    158              lcd_buf=lcd_buf3;   // 使用lcd_buf3，否则会花屏
+    159          #endif
+    160          #endif
+    161          }
+    162          
+    163          //任务退出
+    164          #pragma location="TASK_SPEAKER_SEG"
+    165          void task_speaker_exit(void)
+    166          {
+    167              adc_stop();
+    168              pcm_stop();
+    169          	adc_exit();
+    170              amux_exit();
+    171          #if THEME_SELECT==THEME_LCD_DEFAULT
+    172              lcd_buf=lcd_buf1;   // 退出时，lcd恢复使用大buf
+    173          #endif
+    174          }
+    175          
+    176          #pragma constseg="TASK_SPEAKER_CONST"
+    177          IAR_CONST char str_show_taskspeaker[] = "task_speaker\n";
+    178          #pragma constseg=default
+    179          
+    180          //扩音器任务
+    181          #pragma location="TASK_SPEAKER_SEG"
+    182          void task_speaker(void)
+    183          {
+    184              printf(str_show_taskspeaker);
+    185              task_speaker_enter();
+    186              while (task_ctl.work_sta == TASK_SPEAKER) {
+    187                  u8 msg = get_msg();
+    188                  task_speaker_event();
+    189                  task_speaker_deal_msg(msg);
+    190                  task_speaker_display();
+    191              }
+    192              task_speaker_exit();
+    193          }
+    194          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

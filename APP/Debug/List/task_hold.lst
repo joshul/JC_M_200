@@ -1,0 +1,236 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:56 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_hold.c                                        #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_hold.c                                        #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_hold.lst                                #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_hold.r51                                 #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_hold.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_hold.c
+      4           * Author    : Hanny
+      5           * Function  : HOLD模式，系统进入待机状态
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "task.h"
+      9          #include "user_iis.h"
+     10          
+     11          #if TASK_HOLD_EN
+     12          #include "task_hold.h"
+     13          
+     14          #include SET_USER_PATH(CFG_IO_HOLD_DIR, /io/io_hold.c)
+     15          
+     16          void save_sfr(u8 hold_type);
+     17          void load_sfr(void);
+     18          void sfr_hold_set(void);
+     19          void dac_sfr_hold_load(void);
+     20          void dac_sfr_hold_set(void);
+     21          void lock_pll48m(u8 lock);
+     22          __near_func bool get_wko_pin_state(void);
+     23          IAR_XDATA_A u8 key_cnt @ 0x152A;
+     24          
+     25          #pragma location="TASK_HOLD_SEG"
+     26          void wkup_config(void)
+     27          {
+     28              PWKEN = 0x1F;
+     29          #if (WKUP_EDGE == WKUP_RISING_EDGE)
+     30              PWKEDGE &= 0xE0;
+     31              WKUP_PORT_INIT();
+     32              WKUP_PORT_PULLDOWN();
+     33          #elif (WKUP_EDGE == WKUP_FALLING_EDGE)
+     34              PWKEDGE = (PWKEDGE & 0xE0) | BIT(WKUP_PIN);
+     35              WKUP_PORT_INIT();
+     36              WKUP_PORT_PULLUP();
+     37          #endif
+     38              PWKEN = 0x1F & (~BIT(WKUP_PIN));
+     39          }
+     40          
+     41          #pragma location="TASK_HOLD_SEG"
+     42          void hold_led_scan(void)
+     43          {
+     44              static u8 led_cnt = 0;
+     45              led_cnt++;
+     46              if(1 == led_cnt){
+     47                  LED_BLUE_ON();
+     48              } else if(2 == led_cnt){
+     49                  LED_BLUE_OFF();
+     50              } else if(3 == led_cnt){
+     51                  LED_BLUE_ON();
+     52              } else if(4 == led_cnt){
+     53                  LED_BLUE_OFF();
+     54              } else if(led_cnt > 30){
+     55                  led_cnt = 0;
+     56              }
+     57          }
+     58          
+     59          //任务主流程
+     60          #pragma location="TASK_HOLD_SEG"
+     61          void task_hold(void)
+     62          {
+     63              //printf("task_hold\n");
+     64          #if BT_DISCONNECT_POWEROFF_TIME
+     65              u16 hold_cnt = 0;
+     66          #endif
+     67              WDTCON = 0;
+     68              save_sfr(HOLD_POWER_TYPE | (SYS_CRY<<1)); //参数bit0是高低电压控控制， bit[3:1]是当前使用的时钟，当它为0时不关闭PLL,当它为CRY_2M/32K时，会关闭PLL(节省约300uA电源)
+     69          #if IIS_EN
+     70              iis_powerdown();
+     71          #endif
+     72              IE_EA = 0;
+     73              task_hold_io_sleep();
+     74              SPEAKER_MUTE();
+     75              u8 sys_clk = get_sys_clk();             //备份当前系统时钟
+     76              set_sys_clk(SYS_RC_4M);                 //运行RC
+     77          
+     78          #if TASK_HOLD_DAC_CLOSE   //彻底关掉dac,唤醒时会有啪声，需要mute功放
+     79              dac_sfr_hold_set();
+     80          #else
+     81              dac_disable();  //不彻底关掉dac功耗会比较大
+     82          #endif
+     83          
+     84          #if IS_LCD_DISPLAY
+     85              lcd_off();  // 关闭lcd屏
+     86          #endif
+     87              sfr_hold_set();     //设置hold mode下的寄存器
+     88              wkup_config();      //BT wakeup
+     89          
+     90              WDTCON = 0x13;      //使用看门狗，每128ms唤醒一次
+     91              while(1) {
+     92          #if HOLD_POWER_TYPE
+     93                  PCON5 |= BIT(7);    //蓝牙模式:0.8v, 其它模式:1.25v
+     94          #else
+     95                  PCON0 |= BIT(1);    //电压:1.35v
+     96          #endif
+     97                  delay_ms(1);
+     98                  //定时唤醒查询状态
+     99                  //if (IS_KEY_WAKEUP || !BT_IS_SLEEP) {
+    100                  if (!BT_IS_SLEEP) {
+    101                      break;
+    102                  }
+    103          #if USE_WKOKEY
+    104                  if(get_wko_pin_state()) {
+    105                      break;
+    106                  }
+    107          #endif
+    108                  hold_led_scan();
+    109          
+    110          #if BT_DISCONNECT_POWEROFF_TIME
+    111                  if(task_ctl.work_sta==TASK_BT && sys_ctl.bt_sta<BT_STA_CONNECTED) {
+    112                      hold_cnt++;
+    113                      if(hold_cnt > (BT_DISCONNECT_POWEROFF_TIME*1000UL/128)) {
+    114                          task_ctl.work_sta = TASK_POWEROFF;
+    115                          break;
+    116                      }
+    117                  }
+    118          #endif
+    119          #if INTERNAL_CHARGE_EN
+    120                  charge_detect();
+    121          #endif
+    122              }
+    123          
+    124              PCON0 = 0;
+    125          #if TASK_HOLD_DAC_CLOSE
+    126              dac_sfr_hold_load();
+    127          #else
+    128              if(task_ctl.work_sta != TASK_FM) {
+    129                  dac_enable();
+    130              }
+    131          #endif
+    132              load_sfr();//还原寄存器
+    133              //根据不同任务，还原相应模块
+    134              task_hold_io_reset();                         //开启看门狗
+    135              if(!sys_ctl.spk_mute) {
+    136                  SPEAKER_UNMUTE();
+    137              }
+    138              WDTCON = 0;
+    139              set_sys_clk(sys_clk);                //还原当前系统时钟
+    140              LED_BLUE_ON();
+    141              IE_EA = 1;                  //打开总中断
+    142              if(task_ctl.work_sta !=TASK_BT){
+    143                  if (device_is_online(DEVICE_UDISK)) {
+    144                      lock_pll48m(1);                         //U盘在线，则锁定PLL
+    145                  } else {
+    146                      lock_pll48m(0);                         //U盘不在线，则不锁定PLL
+    147                  }
+    148                  usb_host_reactive();
+    149                  delay_5ms(80);
+    150              }
+    151              WATCHDOG_INIT();
+    152              key_cnt = 0;
+    153              flush_msg();
+    154             // printf("task_hold_exit\n");
+    155              if(!BT_IS_SLEEP) {
+    156                  sys_ctl.sleep_cnt = 0xffff;
+    157              } else {
+    158                  sys_ctl.sleep_cnt = STANDBY_TIME;
+    159              }
+    160          
+    161          #if IS_LCD_DISPLAY
+    162              lcd_on();  // 打开lcd屏
+    163          #endif
+    164          #if IIS_EN
+    165              iis_init();
+    166          #endif
+    167          }
+    168          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

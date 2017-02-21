@@ -1,0 +1,504 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:53 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\listbox.c                                   #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\listbox.c                                   #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\listbox.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\listbox.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\listbox.c
+      1          /*****************************************************************************
+      2          * Module    : Display
+      3          * File      : listbox.c
+      4          * Author    : Hanny
+      5          * Function  : 列表控件，用于处于UI中用到的静态列表功能
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "task.h"
+     10          #include "listbox.h"
+     11          
+     12          #if SLIDER_EN
+     13          //滚动条结构体变量
+     14          IAR_XDATA_A type_slider_ctl t_slider;
+     15          #endif
+     16          //list box controller
+     17          IAR_XDATA_A type_list_ctl t_list @ "OCX_XDATA";
+     18          
+     19          //列表事件
+     20          #pragma location="LIST_BOX_SEG"
+     21          void listbox_event(void)
+     22          {
+     23              if (!comm_event()) {
+     24                  t_list.ok_flag = 0xfe;
+     25              }
+     26              ocx_event();
+     27              if (t_list.show_time && ocx_show_cnt >= t_list.show_time) {
+     28                  t_list.ok_flag = 0xff;
+     29              }
+     30          }
+     31          
+     32          //列表上一项
+     33          #pragma location="LIST_BOX_SEG1"
+     34          void listbox_prev(void)
+     35          {
+     36              if (t_list.index <= t_list.page_index) {
+     37                  if (t_list.m_roll) {
+     38                      t_list.page_index--;
+     39                  } else {
+     40                      t_list.page_index -= t_list.n_page;
+     41                  }
+     42              }
+     43              if (t_list.index == 0) {
+     44                  t_list.index = t_list.total;
+     45                  if (t_list.m_roll) {
+     46                      t_list.page_index = (t_list.total > t_list.n_page) ? t_list.total - t_list.n_page : 0;
+     47                  } else {
+     48                      t_list.page_index = ((t_list.total - 1) / t_list.n_page) * t_list.n_page;
+     49                  }
+     50              }
+     51              t_list.index--;
+     52              ocx_show_cnt = 0;
+     53              if(t_list.m_eq)
+     54              {
+     55                  music_eq(t_list.index);
+     56              }
+     57          }
+     58          
+     59          //列表下一项
+     60          #pragma location="LIST_BOX_SEG1"
+     61          void listbox_next(void)
+     62          {
+     63              t_list.index++;
+     64              if (t_list.index - t_list.page_index >= t_list.n_page) {
+     65                  if (t_list.m_roll) {
+     66                      t_list.page_index++;
+     67                  } else {
+     68                      t_list.page_index += t_list.n_page;
+     69                  }
+     70              }
+     71              if (t_list.index == t_list.total) {
+     72                  t_list.index = 0;
+     73                  t_list.page_index = 0;
+     74              }
+     75              ocx_show_cnt = 0;
+     76              if(t_list.m_eq)
+     77              {
+     78                  music_eq(t_list.index);
+     79              }
+     80          }
+     81          
+     82          //列表控件处理消息
+     83          #pragma location="LIST_BOX_SEG"
+     84          void listbox_deal_msg(void)
+     85          {
+     86              u8 msg = get_msg();
+     87              switch(msg) {
+     88                  //确定
+     89              case KU_OK:
+     90                  t_list.ok_flag = 1;
+     91                  break;
+     92          
+     93                  //取消
+     94          #if THEME_SELECT==THEME_LCD_DEFAULT
+     95              case KU_PLAY_POWER:
+     96          #else
+     97              case KU_BACK:
+     98          #endif
+     99                  t_list.ok_flag = 0xff;
+    100                  break;
+    101          
+    102                  //长按返回主菜单
+    103              case KL_MODE:
+    104          #if THEME_SELECT==THEME_LCD_DEFAULT
+    105              case KL_PLAY_POWER:
+    106          #endif
+    107                  task_ctl.work_sta = TASK_EXIT;
+    108                  break;
+    109          
+    110                  //上一项，下一项
+    111              case KU_PREV:
+    112                  listbox_prev();
+    113                  break;
+    114              case KU_NEXT:
+    115                  listbox_next();
+    116                  break;
+    117          
+    118                  //调用公共消息函数
+    119              default:
+    120                  ocx_msg(msg);
+    121                  break;
+    122              }
+    123          }
+    124          
+    125          #pragma location="LIST_BOX_SEG"
+    126          void listbox_display_line(string menu_str)
+    127          {
+    128              if (t_list.m_icon) {
+    129                  disp_draw(RES_ICON_ITEM_BMP, 0, 0);
+    130                  disp_menu(menu_str, 18, move_ctl.name_x, 0, 0);
+    131              } else {
+    132                  disp_menu(menu_str, 5, move_ctl.name_x, 0, 0);
+    133              }
+    134          }
+    135          #if SLIDER_EN
+    136          //滚动条滑块位置确定
+    137          #pragma location="LIST_BOX_SEG"
+    138          void listbox_display_slider_init(u8 num)
+    139          {
+    140              t_slider.pre_num = num;
+    141              t_slider.line_remainder = 0;
+    142              if (t_list.m_title){
+    143                  if(t_list.total<43){
+    144                      t_slider.angle_line_nums = 42/t_list.total;
+    145                      t_slider.line_remainder = 42%t_list.total;
+    146                  }
+    147                  else{
+    148                      t_slider.angle_line_nums = 1;
+    149                  }
+    150                  if(t_slider.line_remainder){ // 把滚动条空白部分分摊至各处
+    151                      if(t_slider.line_remainder>=t_list.index)
+    152                          t_slider.line_start = t_slider.angle_line_nums * t_list.index + 19;
+    153                      else
+    154                          t_slider.line_start = t_slider.angle_line_nums * t_list.index + t_slider.line_remainder+ 19;
+    155                  }
+    156                  else
+    157                      t_slider.line_start = t_slider.angle_line_nums * t_list.index + 19;
+    158              }
+    159              else {
+    160                  if(t_list.total<59){
+    161                      t_slider.angle_line_nums = 58/t_list.total;
+    162                      t_slider.line_remainder = 58%t_list.total;
+    163                  }
+    164                  else
+    165                      t_slider.angle_line_nums = 1;
+    166          
+    167                  if(t_slider.line_remainder){ // 把滚动条空白部分分摊至各处
+    168                      if(t_slider.line_remainder>=t_list.index)
+    169                          t_slider.line_start = (t_slider.angle_line_nums+1) * t_list.index + 3;
+    170                      else
+    171                          t_slider.line_start = t_slider.angle_line_nums * t_list.index + t_slider.line_remainder+ 3;
+    172                  }
+    173                  else
+    174                      t_slider.line_start = t_slider.angle_line_nums * t_list.index + 3;
+    175          
+    176              }
+    177              if(t_slider.line_start>60)
+    178                  t_slider.line_start = 60;
+    179              t_slider.line = (t_slider.line_start/16) <<1;
+    180              t_slider.line_start %=16;
+    181          }
+    182          
+    183          //滚动条显示
+    184          #pragma location="LIST_BOX_SEG"
+    185          void listbox_display_slider(u8 line,u8 num)
+    186          {
+    187              memset(lcd_buf+121, 0, 6);
+    188              memset(lcd_buf+249, 0, 6);
+    189              lcd_buf[122]=0xff;
+    190              lcd_buf[250]=0xff;
+    191              if(( t_slider.line== line)&&t_slider.angle_line_nums)
+    192              {
+    193                  if(t_slider.line_start>7)
+    194          		     	{
+    195                              t_slider.line_start -= 8;
+    196                              lcd_buf[124] = 0x00;
+    197                              for(;t_slider.line_start<8;t_slider.line_start++){
+    198                                  lcd_buf[252] |= BIT(t_slider.line_start);
+    199                                  if(--t_slider.angle_line_nums < 1){
+    200                                      break;
+    201                                  }
+    202                              }	
+    203                          }
+    204                  else
+    205                  {
+    206                      for(;t_slider.line_start<8;t_slider.line_start++){
+    207                          lcd_buf[124] |= BIT(t_slider.line_start);
+    208                          if(--t_slider.angle_line_nums < 1){
+    209                              break;
+    210                          }
+    211                      }
+    212                      if(t_slider.angle_line_nums > 0){
+    213                          t_slider.line_start=0;
+    214                          for(;t_slider.line_start<8;t_slider.line_start++){
+    215                              lcd_buf[252] |= BIT(t_slider.line_start);
+    216                              if(--t_slider.angle_line_nums < 1){
+    217                                  break;
+    218                              }
+    219                          }
+    220          
+    221                      }	
+    222                  }
+    223                  if(t_slider.angle_line_nums > 0)
+    224                  {
+    225                      t_slider.line +=2;
+    226                      t_slider.line_start=0;
+    227                  }
+    228          
+    229              }
+    230              if((t_slider.pre_num-1) == num){
+    231                  lcd_buf[122] = 0xfc;
+    232                  lcd_buf[123] |= 0x02;
+    233                  lcd_buf[124] |= 0x01;
+    234              }
+    235              if(line == 6){
+    236                  lcd_buf[250] = 0x3f;
+    237                  lcd_buf[251] |= 0x40;
+    238                  lcd_buf[252] |= 0x80;
+    239              }
+    240              lcd_buf[125] = lcd_buf[124];
+    241              lcd_buf[126] = lcd_buf[123];
+    242              lcd_buf[127] = lcd_buf[122];
+    243              lcd_buf[253] = lcd_buf[252];
+    244              lcd_buf[254] = lcd_buf[251];
+    245              lcd_buf[255] = lcd_buf[250];
+    246          }
+    247          #endif
+    248          
+    249          #pragma location="LIST_BOX_SEG1"
+    250          void menu_move_control(u8 wide)
+    251          {
+    252            if(move_ctl.name_x+(s16)move_ctl.name_wide>wide)
+    253            {
+    254          
+    255              if(move_ctl.name_x==0)
+    256              {
+    257                move_ctl.wait++;
+    258                if(move_ctl.wait==11)//在显示文件名开头停留一段时间
+    259                {
+    260                  move_ctl.wait=0;
+    261                  move_ctl.name_x--;
+    262                }
+    263              }
+    264              else
+    265                move_ctl.name_x--;
+    266            }
+    267            else
+    268            {
+    269              move_ctl.wait++;
+    270              if(move_ctl.wait==11)//在显示文件名尾部停留一段时间
+    271              {
+    272                move_ctl.name_x=0;
+    273                move_ctl.wait=0;
+    274              }
+    275            }
+    276          }
+    277          
+    278          //列表显示接口
+    279          #pragma location="LIST_BOX_SEG"
+    280          void listbox_display(void)
+    281          {
+    282              u8 pos, line;
+    283              u8 num;
+    284              string *item = t_list.llp_item;
+    285              line_clear();
+    286              if (t_list.index == t_list.disp_index) {
+    287                  if(move_ctl.ms_flag)
+    288                  {
+    289                      move_ctl.ms_flag=0;
+    290                      if(move_ctl.move_flag)
+    291                      {
+    292          #if SLIDER_EN			
+    293                          menu_move_control(93);
+    294          #else
+    295                          menu_move_control(101);
+    296          #endif			
+    297                          pos = t_list.index - t_list.page_index;
+    298                          item += t_list.index ;//计算当前选中的菜单
+    299                          if (t_list.m_title) {
+    300                              pos += 1;
+    301                              item += 1;
+    302                          }
+    303                          listbox_display_line(*item);
+    304          #if SLIDER_EN
+    305                          disp_invert(0, 0, 121, 2);           //反选菜单
+    306                          lcd_update(0,2 * pos, (u16)lcd_buf,121);
+    307                          lcd_update(0,2*pos+1, (u16)lcd_buf+128,121);
+    308          #else
+    309                          disp_invert(0, 0, 128, 2);           //反选菜单
+    310                          lcd_update(0,2 * pos, (u16)lcd_buf,128);
+    311                          lcd_update(0,2*pos+1, (u16)lcd_buf+128,128);
+    312          #endif
+    313                      }
+    314                  }
+    315                  return;
+    316              }
+    317              t_list.disp_index = t_list.index;
+    318              num = t_list.total - t_list.page_index;         //显示的数量
+    319              if (t_list.total - t_list.page_index > t_list.n_page) {
+    320                  num = t_list.n_page;
+    321              }
+    322              pos = t_list.index - t_list.page_index;         //反选的位置
+    323              item += t_list.page_index;
+    324              line = 0;
+    325          
+    326          
+    327              if (t_list.m_title) {
+    328                  //标题栏模式
+    329                  disp_menu(*t_list.llp_item,0,0, 0,ME_CENTER);
+    330                  line_update_clear(line);
+    331                  item++;
+    332                  line += 2;
+    333              }
+    334          #if SLIDER_EN
+    335               listbox_display_slider_init(num);
+    336          #endif
+    337              //无标题栏模式
+    338              while (num--) {
+    339                  move_ctl.name_x=0;
+    340                  listbox_display_line(*item);
+    341          #if SLIDER_EN
+    342                 listbox_display_slider(line,num);
+    343          #endif
+    344                  if (pos-- == 0) {
+    345                      move_ctl.name_wide = move_ctl.name_wide1;
+    346          #if SLIDER_EN				
+    347                      if(move_ctl.name_wide >= 101)
+    348          #else
+    349                      if(move_ctl.name_wide >= 108)
+    350          #endif
+    351                      {
+    352                          move_ctl.move_flag=1;
+    353                      }
+    354                      else
+    355                      {
+    356                          move_ctl.move_flag=0;
+    357                      }
+    358          #if SLIDER_EN	
+    359                      disp_invert(0, 0, 121, 2);           //反选菜单
+    360          #else			
+    361                      disp_invert(0, 0, 128, 2);           //反选菜单
+    362          #endif
+    363                  }
+    364                  line_update_clear(line);
+    365                  item++;
+    366                  line += 2;
+    367              }
+    368              while (line < 8) {
+    369          #if SLIDER_EN
+    370                  listbox_display_slider(line,255);
+    371          #endif
+    372                  line_update(line);
+    373                  line += 2;
+    374              }
+    375          }
+    376          
+    377          //index: 初始索引;  total: 索引总数;  mode模式选择;  param: 内容参数; show_time: 列表框显示时间
+    378          //返回选中的值
+    379          #pragma location="LIST_BOX_SEG"
+    380          u8 listbox(u8 index, u8 total, u8 mode, u16 param, u8 show_time)
+    381          {
+    382              t_list.disp_index = 0xFFFF;
+    383              t_list.index = index;
+    384              t_list.total = total;
+    385              t_list.m_title = (mode & LB_NO_TITLE) ? 0 : 1;
+    386              t_list.m_res = (mode & LB_RES) ? 1 : 0;
+    387              t_list.m_icon = (mode & LB_NO_ICON) ? 0 : 1;
+    388              t_list.m_roll = (mode & LB_PAGE) ? 0 : 1;
+    389              t_list.m_eq = (mode & LB_EQ) ? 1 : 0;
+    390              t_list.n_page = 4;
+    391              t_list.ok_flag = 0;
+    392              t_list.show_time = show_time;
+    393             // printf_array((string *)param,10);
+    394              if (t_list.m_title) {
+    395                  t_list.n_page--;        //标题栏模式下，每页显示减少一个
+    396                  t_list.total--;         //第一项为标题，不是有效的选项
+    397              }
+    398              if (t_list.m_roll) {
+    399                  if (t_list.index == 0) {
+    400                      t_list.page_index = 0;
+    401                  } else if (t_list.index - 1 + t_list.n_page > t_list.total) {
+    402                      t_list.page_index = (t_list.total > t_list.n_page) ? t_list.total - t_list.n_page : 0;
+    403                  } else {
+    404                      t_list.page_index = t_list.index - 1;
+    405                  }
+    406              } else {
+    407                  t_list.page_index = (t_list.index / t_list.n_page) * t_list.n_page;
+    408              }
+    409              t_list.llp_item = (string *)param;
+    410              ocx_show_cnt = 0;
+    411              while (!t_list.ok_flag) {
+    412                  listbox_event();
+    413                  listbox_deal_msg();
+    414                  listbox_display();
+    415          #if ALARM_EN
+    416                  if (task_ctl.work_sta == TASK_EXIT || task_ctl.work_sta == TASK_ALARM) {
+    417          #else
+    418                  if (task_ctl.work_sta == TASK_EXIT) {
+    419          #endif
+    420                      t_list.ok_flag = 0xfe;
+    421                  }
+    422          
+    423          #if IS_LCD_DISPLAY
+    424                  if (task_ctl.work_sta == TASK_POWEROFF) {
+    425                      return 0xff;
+    426                  }
+    427          #endif
+    428              }
+    429          
+    430              if (t_list.ok_flag == 1) {
+    431                  return t_list.index;
+    432              }
+    433              return 0xff;
+    434          }
+    435          
+    436          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

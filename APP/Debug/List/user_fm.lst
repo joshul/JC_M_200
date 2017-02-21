@@ -1,0 +1,967 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_fm.c
+      4           * Author    : Hanny
+      5           * Function  : FM驱动管理
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xb0
+   \   unsigned char volatile __sfr P3
+   \                     P3:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbd
+   \   unsigned char volatile __sfr P3DIR
+   \                     P3DIR:
+   \   000000                DS 1
+      8          #include "user_fm.h"
+      9          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     10          type_fm_ctl fm_ctl;
+   \                     fm_ctl:
+   \   000000                DS 20
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     11          u8 fm_online_flag = TASK_FM_EN;
+   \                     fm_online_flag:
+   \   000000                DS 1
+     12          
+     13          
+     14          #if !FM_VOUT_THROUGH_MCU
+     15              #define FM_VOL      sys_ctl.volume
+     16          #else
+     17              #define FM_VOL      15
+     18          #endif
+     19          
+     20          #if ICC_REUSE_EN
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     21          volatile u8 iic_busy_flag = 0;
+   \                     iic_busy_flag:
+   \   000000                DS 1
+     22          #endif
+     23          
+     24          
+     25          //1us Delay
+     26          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+     27          __near_func void iic_delay(void)
+   \                     iic_delay:
+     28          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     29             u8 i;
+     30          #if (FM_CLK_SEL == FMOSC_REUSE_32KSDCLK)
+     31             i = 4;  //sys_clk = 12m
+     32          #else
+     33             i = 10; //sys_clk = 24m
+   \   000000   7A0A         MOV     R2,#0xa
+     34          #endif
+     35             for (; i!=0; i--) {  //SysCLK_12M //60-- 35K   //10--86k  //10
+     36                  asm("nop");
+   \                     ??iic_delay_0:
+   \   000002   00           nop
+     37              }
+   \   000003   1A           DEC     R2
+   \   000004   EA           MOV     A,R2
+   \   000005   70FB         JNZ     ??iic_delay_0
+     38          }
+   \   000007   22           RET
+     39          
+     40          //2us Delay
+     41          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+     42          __near_func void iic_delay_2(void)
+   \                     iic_delay_2:
+     43          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     44              u8 i;
+     45          #if (FM_CLK_SEL == FMOSC_REUSE_32KSDCLK)
+     46             i = 7; //sys_clk = 12m
+     47          #else
+     48             i = 15;  //sys_clk = 24m
+     49          #endif
+     50              for (i=7; i!=0; i--) {
+   \   000000   7A07         MOV     R2,#0x7
+     51                  asm("nop");
+   \                     ??iic_delay_2_0:
+   \   000002   00           nop
+     52              }
+   \   000003   1A           DEC     R2
+   \   000004   EA           MOV     A,R2
+   \   000005   70FB         JNZ     ??iic_delay_2_0
+     53          }
+   \   000007   22           RET
+     54          
+     55          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+     56          __near_func void iic_start(void)
+   \                     iic_start:
+     57          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     58          #if IIC_REUSE_SD
+     59              SD_CMD_PU_DIS();
+   \   000000   907843       MOV     DPTR,#0x7843
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   C2E1         CLR     0xE0 /* A   */.1
+   \   000006   F0           MOVX    @DPTR,A
+     60          #endif
+     61              IIC_DATA_CLK_OUT();
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   C2E2         CLR     0xE0 /* A   */.2
+   \   00000A   F0           MOVX    @DPTR,A
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   C2E1         CLR     0xE0 /* A   */.1
+   \   00000E   F0           MOVX    @DPTR,A
+   \   00000F   53BDFB       ANL     0xbd,#0xfb
+   \   000012   53BDFD       ANL     0xbd,#0xfd
+   \   000015                ; Setup parameters for call to function delay
+   \   000015   7A0A         MOV     R2,#0xa
+   \   000017   7B00         MOV     R3,#0x0
+   \   000019   12....       LCALL   delay
+     62              IIC_DATA_CLK_HIGH();
+   \   00001C   D2B1         SETB    0xb0.1
+   \   00001E   D2B2         SETB    0xb0.2
+     63              iic_delay();
+   \   000020                ; Setup parameters for call to function iic_delay
+   \   000020   12....       LCALL   iic_delay
+     64              IIC_DATA_LOW();
+   \   000023   C2B2         CLR     0xb0.2
+     65              iic_delay();
+   \   000025                ; Setup parameters for call to function iic_delay
+   \   000025   12....       LCALL   iic_delay
+     66              IIC_CLK_LOW();
+   \   000028   C2B1         CLR     0xb0.1
+     67          }
+   \   00002A   22           RET
+     68          
+     69          //结束一次IIC通信
+     70          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+     71          __near_func void iic_stop(void)
+   \                     iic_stop:
+     72          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     73              IIC_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine0
+     74              IIC_DATA_LOW();
+     75              iic_delay_2();
+     76              IIC_CLK_HIGH();
+     77              iic_delay();
+     78              IIC_DATA_HIGH();
+   \                     ??CrossCallReturnLabel_0:
+   \   000003   D2B2         SETB    0xb0.2
+     79          #if IIC_REUSE_SD
+     80              SD_CMD_DIR_IN();
+   \   000005   43BD02       ORL     0xbd,#0x2
+     81              SD_CMD_PU_10K();
+   \   000008   9078B3       MOV     DPTR,#0x78b3
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   C2E1         CLR     0xE0 /* A   */.1
+   \   00000E   F0           MOVX    @DPTR,A
+   \   00000F   907843       MOV     DPTR,#0x7843
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   D2E1         SETB    0xE0 /* A   */.1
+   \   000015   F0           MOVX    @DPTR,A
+     82          #endif
+     83          }
+   \   000016   22           RET
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   12....       LCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_12:
+   \   000003   C2B2         CLR     0xb0.2
+   \   000005                ; Setup parameters for call to function iic_delay_2
+   \   000005                ; Setup parameters for call to function iic_delay_2
+   \   000005   12....       LCALL   ?Subroutine4
+   \                     ??CrossCallReturnLabel_8:
+   \   000008   22           RET
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   907843       MOV     DPTR,#0x7843
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   D2E2         SETB    0xE0 /* A   */.2
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   53BDFB       ANL     0xbd,#0xfb
+   \   00000A   22           RET
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   12....       LCALL   iic_delay_2
+   \   000003   D2B1         SETB    0xb0.1
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005                ; Setup parameters for call to function iic_delay
+   \   000005   12....       LCALL   iic_delay
+   \   000008   22           RET
+     84          
+     85          //IIC总线发送1byte
+     86          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+     87          __near_func void iic_sendbyte(u8 val)
+   \                     iic_sendbyte:
+     88          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   E9           MOV     A,R1
+   \   000007   FF           MOV     R7,A
+     89              u8 i;
+     90              IIC_DATA_OUT();
+   \   000008   12....       LCALL   ?Subroutine5
+     91              for (i=8; i!=0; i--) {
+   \                     ??CrossCallReturnLabel_11:
+   \   00000B   7E08         MOV     R6,#0x8
+     92                  if (val & BIT(7)) {
+   \                     ??iic_sendbyte_0:
+   \   00000D   EF           MOV     A,R7
+   \   00000E   A2E7         MOV     C,0xE0 /* A   */.7
+   \   000010   5004         JNC     ??iic_sendbyte_1
+     93                      IIC_DATA_HIGH();
+   \   000012   D2B2         SETB    0xb0.2
+   \   000014   8002         SJMP    ??iic_sendbyte_2
+     94                  } else {
+     95                      IIC_DATA_LOW();
+   \                     ??iic_sendbyte_1:
+   \   000016   C2B2         CLR     0xb0.2
+     96                  }
+     97                  iic_delay_2();
+   \                     ??iic_sendbyte_2:
+   \   000018                ; Setup parameters for call to function iic_delay_2
+   \   000018   12....       LCALL   ?Subroutine1
+     98                  IIC_CLK_HIGH();
+     99                  iic_delay();
+    100                  IIC_CLK_LOW();
+    101                  val <<= 1;
+   \                     ??CrossCallReturnLabel_2:
+   \   00001B   EF           MOV     A,R7
+   \   00001C   C3           CLR     C
+   \   00001D   33           RLC     A
+   \   00001E   FF           MOV     R7,A
+    102              }
+   \   00001F   1E           DEC     R6
+   \   000020   EE           MOV     A,R6
+   \   000021   70EA         JNZ     ??iic_sendbyte_0
+    103          }
+   \   000023                REQUIRE ?Subroutine6
+   \   000023                ; // Fall through to label ?Subroutine6
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   D0E0         POP     A
+   \   000002   FF           MOV     R7,A
+   \   000003   D0E0         POP     A
+   \   000005   FE           MOV     R6,A
+   \   000006   22           RET
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   12....       LCALL   ?Subroutine4
+   \                     ??CrossCallReturnLabel_9:
+   \   000003   C2B1         CLR     0xb0.1
+   \   000005   22           RET
+    104          
+    105          //IIC总线接收1byte
+    106          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+    107          __near_func u8 iic_getbyte(void)
+   \                     iic_getbyte:
+    108          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+    109              u8 i;
+    110              u8 val = 0;
+   \   000006   7F00         MOV     R7,#0x0
+    111              IIC_DATA_IN();
+   \   000008   12....       LCALL   ?Subroutine2
+    112              for (i=8; i!=0; i--) {
+   \                     ??CrossCallReturnLabel_4:
+   \   00000B   7E08         MOV     R6,#0x8
+    113                  iic_delay_2();
+   \                     ??iic_getbyte_0:
+   \   00000D                ; Setup parameters for call to function iic_delay_2
+   \   00000D   12....       LCALL   ?Subroutine3
+    114                  IIC_CLK_HIGH();
+    115                  iic_delay();
+    116                  val <<= 1;
+   \                     ??CrossCallReturnLabel_6:
+   \   000010   EF           MOV     A,R7
+   \   000011   C3           CLR     C
+   \   000012   33           RLC     A
+   \   000013   FF           MOV     R7,A
+    117                  if (IIC_DATA_IS_HIGH()) {
+   \   000014   A2B2         MOV     C,0xb0.2
+   \   000016   5003         JNC     ??iic_getbyte_1
+    118                      val |= BIT(0);
+   \   000018   D2E0         SETB    0xE0 /* A   */.0
+   \   00001A   FF           MOV     R7,A
+    119                  }
+    120                  IIC_CLK_LOW();
+   \                     ??iic_getbyte_1:
+   \   00001B   C2B1         CLR     0xb0.1
+    121              }
+   \   00001D   1E           DEC     R6
+   \   00001E   EE           MOV     A,R6
+   \   00001F   70EC         JNZ     ??iic_getbyte_0
+    122              return val;
+   \   000021   EF           MOV     A,R7
+   \   000022   F9           MOV     R1,A
+   \   000023   80..         SJMP    ?Subroutine6
+    123          }
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?Subroutine4
+   \                     ??CrossCallReturnLabel_10:
+   \   000003   22           RET
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   43BD04       ORL     0xbd,#0x4
+   \   000003   907843       MOV     DPTR,#0x7843
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   D2E2         SETB    0xE0 /* A   */.2
+   \   000009   F0           MOVX    @DPTR,A
+   \   00000A   22           RET
+    124          
+    125          //IIC总线发送ACK
+    126          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+    127          __near_func void iic_sendack(void)
+   \                     iic_sendack:
+    128          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    129              IIC_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine0
+    130              IIC_DATA_LOW();
+    131              iic_delay_2();
+    132              IIC_CLK_HIGH();
+    133              iic_delay();
+    134              IIC_CLK_LOW();
+   \                     ??CrossCallReturnLabel_1:
+   \   000003   C2B1         CLR     0xb0.1
+    135          }
+   \   000005   22           RET
+    136          
+    137          //IIC总线发送NACK
+    138          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+    139          __near_func void iic_sendnack(void)
+   \                     iic_sendnack:
+    140          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    141              IIC_DATA_OUT();
+   \   000000   12....       LCALL   ?Subroutine5
+    142              IIC_DATA_HIGH();
+   \                     ??CrossCallReturnLabel_13:
+   \   000003   D2B2         SETB    0xb0.2
+    143              iic_delay_2();
+   \   000005                ; Setup parameters for call to function iic_delay_2
+   \   000005   12....       LCALL   ?Subroutine1
+    144              IIC_CLK_HIGH();
+    145              iic_delay();
+    146              IIC_CLK_LOW();
+    147          }
+   \                     ??CrossCallReturnLabel_3:
+   \   000008   22           RET
+    148          
+    149          //IIC总线获取ACK状态
+    150          #pragma location="FM_IIC_SEG"
+
+   \                                 In segment FM_IIC_SEG, align 1, keep-with-next
+    151          __near_func bool iic_getack(void)
+   \                     iic_getack:
+    152          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+    153              bool ack = false;
+   \   000002   C2..         CLR     ?VB.0
+    154              IIC_DATA_IN();
+   \   000004   12....       LCALL   ?Subroutine2
+    155              iic_delay_2();
+   \                     ??CrossCallReturnLabel_5:
+   \   000007                ; Setup parameters for call to function iic_delay_2
+   \   000007   12....       LCALL   ?Subroutine3
+    156              IIC_CLK_HIGH();
+    157              iic_delay();
+    158              if (!IIC_DATA_IS_HIGH()) {
+   \                     ??CrossCallReturnLabel_7:
+   \   00000A   A2B2         MOV     C,0xb0.2
+   \   00000C   4002         JC      ??iic_getack_0
+    159                  //printf("t\n");
+    160                  ack = true;
+   \   00000E   D2..         SETB    ?VB.0
+    161              }
+    162              IIC_CLK_LOW();
+   \                     ??iic_getack_0:
+   \   000010   C2B1         CLR     0xb0.1
+    163             // printf("f\n");
+    164              return ack;
+   \   000012   A2..         MOV     C,?VB.0
+   \   000014   D0..         POP     ?VB
+   \   000016   22           RET
+    165          }
+    166          
+    167          #pragma location="FM_SEG"
+    168          #pragma optimize=no_inline  //此处no_inline不能去掉，否则编译时会被优化成内联，从而在其他Bank调用iic_stop()可能会导致死机
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+    169          void iic_reuse_init(void)
+   \                     iic_reuse_init:
+    170          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    171          #if IICCLK_REUSE_USB && !USB_GPIO_EN
+    172              USB_DPDM_GPIO_EN();
+    173          #endif
+    174          
+    175          #if ICC_REUSE_EN
+    176              //防止因ICC复用，在非IIC通信状态下复用脚电平的变化可能会使得ICC判断到iic_start条件，从而在下一次ICC通信时出错
+    177          #if FM_RECORD_EN
+    178                SDCON0 &= ~BIT(0); //再次关闭SD卡，防止占用IIC_CLK
+    179          #endif
+    180              iic_busy_flag = 1;
+   \   000000   7401         MOV     A,#0x1
+   \   000002   90....       MOV     DPTR,#iic_busy_flag
+   \   000005   F0           MOVX    @DPTR,A
+    181              iic_stop();
+   \   000006                ; Setup parameters for call to function iic_stop
+   \   000006   12....       LCALL   iic_stop & 0xFFFF
+    182          #endif
+    183          }
+   \   000009   02....       LJMP    ?BRET
+    184          
+    185          #pragma location="FM_SEG"
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+    186          void iic_reuse_end(void)
+   \                     iic_reuse_end:
+    187          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    188          #if IICCLK_REUSE_USB && !USB_GPIO_EN
+    189              USB_DPDM_GPIO_DIS();
+    190          #endif
+    191          
+    192          #if ICC_REUSE_EN
+    193              iic_busy_flag = 0;
+   \   000000                REQUIRE ?Subroutine8
+   \   000000                ; // Fall through to label ?Subroutine8
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+   \                     ?Subroutine8:
+   \   000000   E4           CLR     A
+   \   000001   90....       MOV     DPTR,#iic_busy_flag
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   02....       LJMP    ?BRET
+    194          #endif
+    195          }
+    196          
+    197          
+    198          #if !FM_VOUT_THROUGH_MCU
+    199          #pragma location="FM_SEG"
+    200          void fm_set_vol(u8 volume)
+    201          {
+    202              iic_reuse_init();
+    203          
+    204          #if(FM_TYPE == FM_RDA5807)
+    205              fmrda5807_set_vol(volume);
+    206          #elif(FM_TYPE == FM_QN8035)
+    207              qn8035_set_vol(volume);
+    208          #elif(FM_TYPE == FM_QN8065)
+    209              qn8065_set_vol(volume);
+    210          #elif(FM_TYPE == FM_AX5111)
+    211              ax5111_set_vol(volume);
+    212          #elif(FM_TYPE == FM_BK1080)
+    213              //bk1080_unmute();
+    214          #elif(FM_TYPE == FM_RTC6218)
+    215              RTC6218_set_vol(volume);
+    216          #elif(FM_TYPE == FM_RTC6207)
+    217              RTC6207_set_vol(volume);
+    218          #endif
+    219          
+    220              iic_reuse_end();
+    221          }
+    222          #endif
+    223          
+    224          #pragma location="FM_SEG"
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+    225          void fm_unmute(void)
+   \                     fm_unmute:
+    226          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    227              iic_reuse_init();
+   \   000000                ; Setup parameters for call to function iic_reuse_init
+   \   000000   90....       MOV     DPTR,#(iic_reuse_init & 0xffff)
+   \   000003   74..         MOV     A,#((iic_reuse_init >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    228          
+    229          #if(FM_TYPE == FM_RDA5807)
+    230              fmrda5807_set_vol(FM_VOL);
+   \   000008                ; Setup parameters for call to function fmrda5807_set_vol
+   \   000008   790F         MOV     R1,#0xf
+   \   00000A   90....       MOV     DPTR,#(fmrda5807_set_vol & 0xffff)
+   \   00000D   74..         MOV     A,#((fmrda5807_set_vol >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    231          #elif(FM_TYPE == FM_QN8035)
+    232              qn8035_unmute();
+    233          #elif(FM_TYPE == FM_QN8065)
+    234              QN8065_SetMute(0);
+    235          #elif(FM_TYPE == FM_AX5111)
+    236              ax5111_set_vol(FM_VOL);
+    237          #elif(FM_TYPE == FM_BK1080)
+    238              bk1080_unmute();
+    239          #elif(FM_TYPE == FM_RTC6218)
+    240              RTC6218_set_vol(FM_VOL);
+    241          #elif(FM_TYPE == FM_RTC6207)
+    242              RTC6207_set_vol(FM_VOL);
+    243          #endif
+    244          
+    245              iic_reuse_end();
+   \   000012   80..         SJMP    ?Subroutine8
+    246          }
+    247          
+    248          
+    249          //设置频率，不判断是否为真台
+    250          #pragma location="FM_SEG"
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+    251          void fm_set_freq(u16 freq)
+   \                     fm_set_freq:
+    252          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    253              iic_reuse_init();
+   \   00000A                ; Setup parameters for call to function iic_reuse_init
+   \   00000A   90....       MOV     DPTR,#(iic_reuse_init & 0xffff)
+   \   00000D   74..         MOV     A,#((iic_reuse_init >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    254          
+    255          #if(FM_TYPE == FM_RDA5807)
+    256              rda5807_set_freq(freq);
+   \   000012                ; Setup parameters for call to function rda5807_set_freq
+   \   000012   EE           MOV     A,R6
+   \   000013   FA           MOV     R2,A
+   \   000014   EF           MOV     A,R7
+   \   000015   FB           MOV     R3,A
+   \   000016   90....       MOV     DPTR,#(rda5807_set_freq & 0xffff)
+   \   000019   74..         MOV     A,#((rda5807_set_freq >> 16) & 0xff)
+   \   00001B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    257             // fmrda5807_set_vol(15);
+    258          #elif(FM_TYPE == FM_QN8035)
+    259              qn8035_set_freq(freq);
+    260          #elif(FM_TYPE == FM_QN8065)
+    261              QN8065_TuneToCH(freq);
+    262          #elif(FM_TYPE == FM_AX5111)
+    263              ax5111_set_freq(freq/10);
+    264          #elif(FM_TYPE == FM_BK1080)
+    265              bk1080_set_freq(freq);
+    266             // bk1080_unmute();
+    267          #elif(FM_TYPE == FM_RTC6218)
+    268              RTC6218_set_freq(freq);
+    269          #elif(FM_TYPE == FM_RTC6207)
+    270              RTC6207_set_freq(freq);
+    271          #endif
+    272          
+    273              iic_reuse_end();
+   \   00001E   E4           CLR     A
+   \   00001F   90....       MOV     DPTR,#iic_busy_flag
+   \   000022   F0           MOVX    @DPTR,A
+    274              fm_unmute();
+   \   000023                ; Setup parameters for call to function fm_unmute
+   \   000023   90....       MOV     DPTR,#(fm_unmute & 0xffff)
+   \   000026   74..         MOV     A,#((fm_unmute >> 16) & 0xff)
+   \   000028   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    275          }
+   \   00002B                REQUIRE ?Subroutine7
+   \   00002B                ; // Fall through to label ?Subroutine7
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+   \                     ?Subroutine7:
+   \   000000   D0E0         POP     A
+   \   000002   FF           MOV     R7,A
+   \   000003   D0E0         POP     A
+   \   000005   FE           MOV     R6,A
+   \   000006   02....       LJMP    ?BRET
+    276          
+    277          //设置频率,若为真台，返回ture
+    278          #pragma location="FM_SEG"
+
+   \                                 In segment FM_SEG, align 1, keep-with-next
+    279          u8 fm_check_freq(u16 freq)
+   \                     fm_check_freq:
+    280          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    281              iic_reuse_init();
+   \   00000A                ; Setup parameters for call to function iic_reuse_init
+   \   00000A   90....       MOV     DPTR,#(iic_reuse_init & 0xffff)
+   \   00000D   74..         MOV     A,#((iic_reuse_init >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    282          
+    283              u8 ret;
+    284          #if(FM_TYPE == FM_RDA5807)
+    285              ret = fm_rda5807_set_freq(freq);
+   \   000012                ; Setup parameters for call to function fm_rda5807_set_freq
+   \   000012   EE           MOV     A,R6
+   \   000013   FA           MOV     R2,A
+   \   000014   EF           MOV     A,R7
+   \   000015   FB           MOV     R3,A
+   \   000016   90....       MOV     DPTR,#(fm_rda5807_set_freq & 0xffff)
+   \   000019   74..         MOV     A,#((fm_rda5807_set_freq >> 16) & 0xff)
+   \   00001B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00001E   E4           CLR     A
+   \   00001F   92E0         MOV     0xE0 /* A   */.0,C
+   \   000021   F9           MOV     R1,A
+    286          #elif(FM_TYPE == FM_QN8035)
+    287              ret = fm_qn8035_set_freq(freq);
+    288          #elif(FM_TYPE == FM_QN8065)
+    289              ret = qn8065_seek(freq);
+    290          #elif(FM_TYPE == FM_AX5111)
+    291              ret = ax5111_seek(freq/10);
+    292          #elif(FM_TYPE == FM_BK1080)
+    293              ret = fm_bk1080_set_freq(freq);
+    294          #elif(FM_TYPE == FM_RTC6218)
+    295              ret = RTC6218_seek(freq);
+    296          #elif(FM_TYPE == FM_RTC6207)
+    297              ret = RTC6207_seek(freq);
+    298          #else
+    299              ret = 0;
+    300          #endif
+    301          
+    302              iic_reuse_end();
+   \   000022   E4           CLR     A
+   \   000023   90....       MOV     DPTR,#iic_busy_flag
+   \   000026   F0           MOVX    @DPTR,A
+    303              return ret;
+   \   000027   80..         SJMP    ?Subroutine7
+    304          }
+    305          
+    306          #pragma location="FM_INIT"
+
+   \                                 In segment FM_INIT, align 1, keep-with-next
+    307          bool fm_init(void)
+   \                     fm_init:
+    308          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    309              iic_reuse_init();
+   \   000000                ; Setup parameters for call to function iic_reuse_init
+   \   000000   90....       MOV     DPTR,#(iic_reuse_init & 0xffff)
+   \   000003   74..         MOV     A,#((iic_reuse_init >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    310          
+    311              bool ret;
+    312          #if(FM_TYPE == FM_RDA5807)
+    313              ret = fm_rda5807_init();                           //初始化
+   \   000008                ; Setup parameters for call to function fm_rda5807_init
+   \   000008   90....       MOV     DPTR,#(fm_rda5807_init & 0xffff)
+   \   00000B   74..         MOV     A,#((fm_rda5807_init >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    314          #elif(FM_TYPE == FM_QN8035)
+    315              ret = fm_qn8035_init();
+    316          #elif(FM_TYPE == FM_QN8065)
+    317              ret = qn8065_online();
+    318          #elif(FM_TYPE == FM_AX5111)
+    319              ret = ax5111_online();
+    320          #elif(FM_TYPE == FM_BK1080)
+    321              ret = fm_bk1080_init();
+    322          #elif(FM_TYPE == FM_RTC6218)
+    323              ret = RTC6218_online();
+    324          #elif(FM_TYPE == FM_RTC6207)
+    325              ret = RTC6207_online();
+    326          #else
+    327              ret = 0;
+    328          #endif
+    329          
+    330              iic_reuse_end();
+   \   000010   E4           CLR     A
+   \   000011   90....       MOV     DPTR,#iic_busy_flag
+   \   000014   F0           MOVX    @DPTR,A
+    331              fm_online_flag = ret;
+   \   000015   92E0         MOV     0xE0 /* A   */.0,C
+   \   000017   90....       MOV     DPTR,#fm_online_flag
+   \   00001A   F0           MOVX    @DPTR,A
+    332              return ret;
+   \   00001B   02....       LJMP    ?BRET
+    333          }
+    334          
+    335          #pragma location="FM_INIT"
+
+   \                                 In segment FM_INIT, align 1, keep-with-next
+    336          void fm_off(void)
+   \                     fm_off:
+    337          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    338              iic_reuse_init();
+   \   000000                ; Setup parameters for call to function iic_reuse_init
+   \   000000   90....       MOV     DPTR,#(iic_reuse_init & 0xffff)
+   \   000003   74..         MOV     A,#((iic_reuse_init >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    339          
+    340          #if IICCLK_REUSE_USB
+    341              USB_DP_OUTPUT();            //2014-4-15, 修正部分U盘在线时退出FM时出现FM关不掉的问题
+    342              USB_DP_HIHG();
+    343          #endif
+    344          
+    345          #if(FM_TYPE == FM_RDA5807)
+    346              fm_rda5807_off();
+   \   000008                ; Setup parameters for call to function fm_rda5807_off
+   \   000008   90....       MOV     DPTR,#(fm_rda5807_off & 0xffff)
+   \   00000B   74..         MOV     A,#((fm_rda5807_off >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    347          #elif(FM_TYPE == FM_QN8035)
+    348              fm_qn8035_off();
+    349          #elif(FM_TYPE == FM_QN8065)
+    350              qn8065_off();
+    351          #elif(FM_TYPE == FM_AX5111)
+    352              ax5111_off();
+    353          #elif(FM_TYPE == FM_BK1080)
+    354              fm_bk1080_off();
+    355          #elif(FM_TYPE == FM_RTC6218)
+    356              RTC6218_off();
+    357          #elif(FM_TYPE == FM_RTC6207)
+    358              RTC6207_off();
+    359          #endif
+    360          
+    361              iic_reuse_end();
+   \   000010   E4           CLR     A
+   \   000011   90....       MOV     DPTR,#iic_busy_flag
+   \   000014   F0           MOVX    @DPTR,A
+    362          }
+   \   000015   02....       LJMP    ?BRET
+    363          
+    364          #pragma location="FM_INIT"
+
+   \                                 In segment FM_INIT, align 1, keep-with-next
+    365          void fm_io_init(void)
+   \                     fm_io_init:
+    366          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    367          #if !IICCLK_REUSE_USB
+    368              IIC_DATA_CLK_OUT();                 //IIC方向设为输出
+   \   000000   907843       MOV     DPTR,#0x7843
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   C2E2         CLR     0xE0 /* A   */.2
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   C2E1         CLR     0xE0 /* A   */.1
+   \   00000A   F0           MOVX    @DPTR,A
+   \   00000B   53BDFB       ANL     0xbd,#0xfb
+   \   00000E   53BDFD       ANL     0xbd,#0xfd
+   \   000011                ; Setup parameters for call to function delay
+   \   000011   7A0A         MOV     R2,#0xa
+   \   000013   7B00         MOV     R3,#0x0
+   \   000015   12....       LCALL   delay & 0xFFFF
+    369              IIC_DATA_HIGH();                    //IIC DATA拉高
+   \   000018   D2B2         SETB    0xb0.2
+    370          #endif
+    371          }
+   \   00001A   02....       LJMP    ?BRET
+
+   Maximum stack usage in bytes:
+
+     Function                 EXT_STACK PSTACK XSTACK
+     --------                 --------- ------ ------
+     fm_check_freq                   2      0      0
+       -> iic_reuse_init             4      0      0
+       -> fm_rda5807_set_freq        4      0      0
+     fm_init                         0      0      0
+       -> iic_reuse_init             0      0      0
+       -> fm_rda5807_init            0      0      0
+     fm_io_init                      0      0      0
+       -> delay                      0      0      0
+     fm_off                          0      0      0
+       -> iic_reuse_init             0      0      0
+       -> fm_rda5807_off             0      0      0
+     fm_set_freq                     2      0      0
+       -> iic_reuse_init             4      0      0
+       -> rda5807_set_freq           4      0      0
+       -> fm_unmute                  4      0      0
+     fm_unmute                       2      0      0
+       -> iic_reuse_init             0      0      0
+       -> fmrda5807_set_vol          0      0      0
+     iic_delay                       2      0      0
+     iic_delay_2                     2      0      0
+     iic_getack                      1      0      0
+       -> iic_delay_2                2      0      0
+       -> iic_delay                  2      0      0
+     iic_getbyte                     2      0      0
+       -> iic_delay_2                4      0      0
+       -> iic_delay                  4      0      0
+     iic_reuse_end                   0      0      0
+     iic_reuse_init                  2      0      0
+       -> iic_stop                   0      0      0
+     iic_sendack                     0      0      0
+       -> iic_delay_2                0      0      0
+       -> iic_delay                  0      0      0
+     iic_sendbyte                    2      0      0
+       -> iic_delay_2                4      0      0
+       -> iic_delay                  4      0      0
+     iic_sendnack                    0      0      0
+       -> iic_delay_2                0      0      0
+       -> iic_delay                  0      0      0
+     iic_start                       0      0      0
+       -> delay                      0      0      0
+       -> iic_delay                  0      0      0
+       -> iic_delay                  0      0      0
+     iic_stop                        0      0      0
+       -> iic_delay_2                0      0      0
+       -> iic_delay                  0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     P3                1
+     P3DIR             1
+     fm_ctl           20
+     fm_online_flag    1
+     iic_busy_flag     1
+     iic_delay         8
+     iic_delay_2       8
+     iic_start        43
+     iic_stop         23
+     ?Subroutine0      9
+     ?Subroutine5     11
+     ?Subroutine4      9
+     iic_sendbyte     35
+     ?Subroutine6      7
+     ?Subroutine1      6
+     iic_getbyte      37
+     ?Subroutine3      4
+     ?Subroutine2     11
+     iic_sendack       6
+     iic_sendnack      9
+     iic_getack       23
+     iic_reuse_init   12
+     iic_reuse_end     0
+     ?Subroutine8      8
+     fm_unmute        20
+     fm_set_freq      43
+     ?Subroutine7      9
+     fm_check_freq    41
+     fm_init          30
+     fm_off           24
+     fm_io_init       29
+
+ 
+ 249 bytes in segment FM_IIC_SEG
+  83 bytes in segment FM_INIT
+ 133 bytes in segment FM_SEG
+   2 bytes in segment SFR_AN
+  22 bytes in segment XDATA_Z
+ 
+ 465 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 2 bytes shared)
+  22 bytes of XDATA memory
+
+Errors: none
+Warnings: none

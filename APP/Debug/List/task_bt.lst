@@ -1,0 +1,3510 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   28/Jun/2016  10:44:30 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_bt.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_bt.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_bt.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_bt.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_bt.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_bt.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙任务流程
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x87
+   \   unsigned char volatile __sfr PCON0
+   \                     PCON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0x9c
+   \   unsigned char volatile __sfr PCON1
+   \                     PCON1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xe3
+   \   unsigned char volatile __sfr AUCON0
+   \                     AUCON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xe8
+   \   unsigned char volatile __sfr AUCON5
+   \                     AUCON5:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xea
+   \   unsigned char volatile __sfr AUCON7
+   \                     AUCON7:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xed
+   \   unsigned char volatile __sfr AUCON10
+   \                     AUCON10:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xf7
+   \   unsigned char volatile __sfr WDTCON
+   \                     WDTCON:
+   \   000000                DS 1
+      8          #include "task_NPCP215X.h" 
+      9          
+     10          #if (TASK_BT_EN | TASK_BTHID_EN)
+     11          #include "task.h"
+     12          #include "user_bt_pbap.h"
+     13          
+     14          #define DEBUG_TASK_BT        0
+     15          
+     16          //蓝牙任务子任务
+     17          enum {
+     18              TASK_BT_NULL,
+     19              TASK_BT_TEST,               //测试盒任务
+     20              TASK_BT_RING,               //响铃任务
+     21              TASK_BT_CALL,               //通话任务
+     22              TASK_BT_LOST,               //蓝牙断开，主要做手机防丢
+     23          };
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     24          bool bt_test_flag = false;
+   \                     bt_test_flag:
+   \   000000                DS 1
+
+   \                                 In segment BT_XDATA, align 1, root
+     25          IAR_XDATA_A type_bt t_bt @ "BT_XDATA";
+   \                     t_bt:
+   \   000000                DS 4
+     26          void test_bt(void);
+     27          bool btdec_load_code(u16 addr, u8 segnum);
+     28          void task_bt_sta_update(void);
+     29          extern IAR_BIT_A bool flag_btmode;            //为1时启用完整的蓝牙功能
+     30          extern IAR_BIT_A bool scoflag;  //for nokia 5000 use sco play music
+     31          extern u8 bt_mic_param[10];
+     32          extern u8 work_sta_interrupt;          //电话中断标志
+     33          extern void bt_play_vol_music(void);
+     34          void bt_play_continue(void);
+     35          
+     36          #pragma constseg="TASK_BT_MINI_SEG_CONST"
+
+   \                                 In segment TASK_BT_MINI_SEG_CONST, align 1
+     37          IAR_CONST char str_show_taskbt[] = "task_bt\n";
+   \                     str_show_taskbt:
+   \   000000   7461736B     DB "task_bt\012"
+   \            5F62740A
+   \            00      
+
+   \                                 In segment TASK_BT_MINI_SEG_CONST, align 1
+     38          IAR_CONST char str_show_taskbtexit[] = "task_bt_exit\n";
+   \                     str_show_taskbtexit:
+   \   000000   7461736B     DB "task_bt_exit\012"
+   \            5F62745F
+   \            65786974
+   \            0A00    
+     39          #pragma constseg=default
+     40          
+     41          #define TASK_SUB
+     42          #include SET_USER_PATH(CFG_UI_BT_DIR, /ui/ui_bt.c)          //UI控制
+
+   \                                 In segment BT_RFC_TX_CONST, align 1
+   \   char const __code at_spp0_ptr[5]
+   \                     at_spp0_ptr:
+   \   000000   50524556     DB "PREV"
+   \            00      
+
+   \                                 In segment BT_RFC_TX_CONST, align 1
+   \   char const __code at_spp1_ptr[5]
+   \                     at_spp1_ptr:
+   \   000000   4E455854     DB "NEXT"
+   \            00      
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_hid_deal_msg(u8)
+   \                     task_bt_hid_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_hid_deal_msg>_0`:
+   \   000004   02           DB        2
+   \   000005   71           DB        113
+   \   000006   76           DB        118
+   \   000007   ....         DW        ??task_bt_hid_deal_msg_0
+   \   000009   7A           DB        122
+   \   00000A   7C           DB        124
+   \   00000B   ....         DW        ??task_bt_hid_deal_msg_0
+   \   00000D   02           DB        2
+   \   00000E   70           DB        112
+   \   00000F   ....         DW        ??task_bt_hid_deal_msg_1
+   \   000011   82           DB        130
+   \   000012   ....         DW        ??task_bt_hid_deal_msg_2
+   \   000014   ....         DW        ??task_bt_hid_deal_msg_3
+   \                     ??task_bt_hid_deal_msg_2:
+   \   000016   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   000019   E0           MOVX    A,@DPTR
+   \   00001A   701B         JNZ     ??task_bt_hid_deal_msg_4
+   \   00001C                ; Setup parameters for call to function bt_hid_photo
+   \   00001C   90....       MOV     DPTR,#(bt_hid_photo & 0xffff)
+   \   00001F   74..         MOV     A,#((bt_hid_photo >> 16) & 0xff)
+   \                     ??task_bt_hid_deal_msg_5:
+   \   000021   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000024   8011         SJMP    ??task_bt_hid_deal_msg_4
+   \                     ??task_bt_hid_deal_msg_0:
+   \   000026                ; Setup parameters for call to function task_bt_deal_notice_msg
+   \   000026   90....       MOV     DPTR,#(task_bt_deal_notice_msg & 0xffff)
+   \   000029   74..         MOV     A,#((task_bt_deal_notice_msg >> 16) & 0xff)
+   \   00002B   80F4         SJMP    ??task_bt_hid_deal_msg_5
+   \                     ??task_bt_hid_deal_msg_1:
+   \   00002D                ; Setup parameters for call to function send_bat_to_iphone_hook
+   \   00002D   90....       MOV     DPTR,#(send_bat_to_iphone_hook & 0xffff)
+   \   000030   74..         MOV     A,#((send_bat_to_iphone_hook >> 16) & 0xff)
+   \   000032   80ED         SJMP    ??task_bt_hid_deal_msg_5
+   \                     ??task_bt_hid_deal_msg_3:
+   \   000034                ; Setup parameters for call to function deal_msg
+   \   000034   12....       LCALL   deal_msg & 0xFFFF
+   \                     ??task_bt_hid_deal_msg_4:
+   \   000037   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_deal_msg(u8)
+   \                     task_bt_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   FA           MOV     R2,A
+   \   000005   E9           MOV     A,R1
+   \   000006   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_deal_msg>_0`:
+   \   000009   02           DB        2
+   \   00000A   71           DB        113
+   \   00000B   76           DB        118
+   \   00000C   ....         DW        ??task_bt_deal_msg_0
+   \   00000E   7A           DB        122
+   \   00000F   7C           DB        124
+   \   000010   ....         DW        ??task_bt_deal_msg_0
+   \   000012   09           DB        9
+   \   000013   6C           DB        108
+   \   000014   ....         DW        ??task_bt_deal_msg_1
+   \   000016   7F           DB        127
+   \   000017   ....         DW        ??task_bt_deal_msg_2
+   \   000019   81           DB        129
+   \   00001A   ....         DW        ??task_bt_deal_msg_3
+   \   00001C   82           DB        130
+   \   00001D   ....         DW        ??task_bt_deal_msg_4
+   \   00001F   83           DB        131
+   \   000020   ....         DW        ??task_bt_deal_msg_5
+   \   000022   91           DB        145
+   \   000023   ....         DW        ??task_bt_deal_msg_3
+   \   000025   92           DB        146
+   \   000026   ....         DW        ??task_bt_deal_msg_4
+   \   000028   93           DB        147
+   \   000029   ....         DW        ??task_bt_deal_msg_5
+   \   00002B   A2           DB        162
+   \   00002C   ....         DW        ??task_bt_deal_msg_6
+   \   00002E   ....         DW        ??task_bt_deal_msg_7
+   \                     ??task_bt_deal_msg_4:
+   \   000030   EA           MOV     A,R2
+   \   000031   6003         JZ      $+5
+   \   000033   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   000036   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   000039   E0           MOVX    A,@DPTR
+   \   00003A   F4           CPL     A
+   \   00003B   A2E0         MOV     C,0xE0 /* A   */.0
+   \   00003D   E4           CLR     A
+   \   00003E   92E0         MOV     0xE0 /* A   */.0,C
+   \   000040   F0           MOVX    @DPTR,A
+   \   000041                ; Setup parameters for call to function bt_pause_play
+   \   000041   90....       MOV     DPTR,#(bt_pause_play & 0xffff)
+   \   000044   74..         MOV     A,#((bt_pause_play >> 16) & 0xff)
+   \                     ??task_bt_deal_msg_9:
+   \   000046   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000049   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \                     ??task_bt_deal_msg_6:
+   \   00004C   EA           MOV     A,R2
+   \   00004D   6003         JZ      $+5
+   \   00004F   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   000052                ; Setup parameters for call to function bt_disconnect
+   \   000052   90....       MOV     DPTR,#(bt_disconnect & 0xffff)
+   \   000055   74..         MOV     A,#((bt_disconnect >> 16) & 0xff)
+   \   000057   80ED         SJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_3:
+   \   000059   EA           MOV     A,R2
+   \   00005A   6003         JZ      $+5
+   \   00005C   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   00005F                ; Setup parameters for call to function bt_prev
+   \   00005F   90....       MOV     DPTR,#(bt_prev & 0xffff)
+   \   000062   74..         MOV     A,#((bt_prev >> 16) & 0xff)
+   \   000064   80E0         SJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_5:
+   \   000066   EA           MOV     A,R2
+   \   000067   6003         JZ      $+5
+   \   000069   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   00006C                ; Setup parameters for call to function bt_next
+   \   00006C   90....       MOV     DPTR,#(bt_next & 0xffff)
+   \   00006F   74..         MOV     A,#((bt_next >> 16) & 0xff)
+   \   000071   80D3         SJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_0:
+   \   000073   EA           MOV     A,R2
+   \   000074   6003         JZ      $+5
+   \   000076   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   000079                ; Setup parameters for call to function task_bt_deal_notice_msg
+   \   000079   90....       MOV     DPTR,#(task_bt_deal_notice_msg & 0xffff)
+   \   00007C   74..         MOV     A,#((task_bt_deal_notice_msg >> 16) & 0xff)
+   \   00007E   80C6         SJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_1:
+   \   000080   EA           MOV     A,R2
+   \   000081   6003         JZ      $+5
+   \   000083   02....       LJMP    ??task_bt_deal_msg_8 & 0xFFFF
+   \   000086   90....       MOV     DPTR,#(ledseg_ocx + 1)
+   \   000089   E0           MOVX    A,@DPTR
+   \   00008A   707C         JNZ     ??task_bt_deal_msg_8
+   \   00008C   90....       MOV     DPTR,#(sys_ctl + 54)
+   \   00008F   E0           MOVX    A,@DPTR
+   \   000090   6012         JZ      ??task_bt_deal_msg_10
+   \   000092   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000095   E0           MOVX    A,@DPTR
+   \   000096   C3           CLR     C
+   \   000097   9405         SUBB    A,#0x5
+   \   000099   5009         JNC     ??task_bt_deal_msg_10
+   \   00009B                ; Setup parameters for call to function ledseg_disp
+   \   00009B   7927         MOV     R1,#0x27
+   \                     ??task_bt_deal_msg_11:
+   \   00009D   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   0000A0   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   0000A2   80A2         SJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_10:
+   \   0000A4                ; Setup parameters for call to function ledseg_disp
+   \   0000A4   7911         MOV     R1,#0x11
+   \   0000A6   80F5         SJMP    ??task_bt_deal_msg_11
+   \                     ??task_bt_deal_msg_2:
+   \   0000A8   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   0000AB   E0           MOVX    A,@DPTR
+   \   0000AC   C3           CLR     C
+   \   0000AD   9406         SUBB    A,#0x6
+   \   0000AF   5026         JNC     ??task_bt_deal_msg_12
+   \   0000B1   90....       MOV     DPTR,#(sys_ctl + 26)
+   \   0000B4   E0           MOVX    A,@DPTR
+   \   0000B5   7020         JNZ     ??task_bt_deal_msg_12
+   \   0000B7   90....       MOV     DPTR,#(sys_ctl + 73)
+   \   0000BA   E0           MOVX    A,@DPTR
+   \   0000BB   C3           CLR     C
+   \   0000BC   9402         SUBB    A,#0x2
+   \   0000BE   5003         JNC     ??task_bt_deal_msg_13
+   \   0000C0   E0           MOVX    A,@DPTR
+   \   0000C1   04           INC     A
+   \   0000C2   F0           MOVX    @DPTR,A
+   \                     ??task_bt_deal_msg_13:
+   \   0000C3   E0           MOVX    A,@DPTR
+   \   0000C4   6401         XRL     A,#0x1
+   \   0000C6   7040         JNZ     ??task_bt_deal_msg_8
+   \   0000C8   7401         MOV     A,#0x1
+   \   0000CA   90....       MOV     DPTR,#(sys_ctl + 74)
+   \   0000CD   F0           MOVX    @DPTR,A
+   \   0000CE                ; Setup parameters for call to function AudioCodec_MUTE
+   \   0000CE   F9           MOV     R1,A
+   \   0000CF   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   0000D2   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   0000D4   02....       LJMP    ??task_bt_deal_msg_9
+   \                     ??task_bt_deal_msg_12:
+   \   0000D7   EA           MOV     A,R2
+   \   0000D8   702E         JNZ     ??task_bt_deal_msg_8
+   \   0000DA   90....       MOV     DPTR,#(sys_ctl + 73)
+   \   0000DD   E0           MOVX    A,@DPTR
+   \   0000DE   C3           CLR     C
+   \   0000DF   9404         SUBB    A,#0x4
+   \   0000E1   4015         JC      ??task_bt_deal_msg_14
+   \   0000E3                ; Setup parameters for call to function AudioCodec_MUTE
+   \   0000E3   7900         MOV     R1,#0x0
+   \   0000E5   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   0000E8   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   0000EA   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000ED   E4           CLR     A
+   \   0000EE   90....       MOV     DPTR,#(sys_ctl + 73)
+   \   0000F1   F0           MOVX    @DPTR,A
+   \   0000F2   90....       MOV     DPTR,#(sys_ctl + 74)
+   \                     ??task_bt_deal_msg_15:
+   \   0000F5   F0           MOVX    @DPTR,A
+   \   0000F6   8010         SJMP    ??task_bt_deal_msg_8
+   \                     ??task_bt_deal_msg_14:
+   \   0000F8   90....       MOV     DPTR,#(sys_ctl + 74)
+   \   0000FB   E0           MOVX    A,@DPTR
+   \   0000FC   600A         JZ      ??task_bt_deal_msg_8
+   \   0000FE   90....       MOV     DPTR,#(sys_ctl + 73)
+   \   000101   E0           MOVX    A,@DPTR
+   \   000102   04           INC     A
+   \   000103   80F0         SJMP    ??task_bt_deal_msg_15
+   \                     ??task_bt_deal_msg_7:
+   \   000105                ; Setup parameters for call to function deal_msg
+   \   000105   12....       LCALL   deal_msg & 0xFFFF
+   \                     ??task_bt_deal_msg_8:
+   \   000108   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_state(void)
+   \                     task_bt_state:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   FA           MOV     R2,A
+   \   000005   90....       MOV     DPTR,#t_bt
+   \   000008   E0           MOVX    A,@DPTR
+   \   000009   6A           XRL     A,R2
+   \   00000A   6061         JZ      ??task_bt_state_0
+   \   00000C   EA           MOV     A,R2
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   74FF         MOV     A,#-0x1
+   \   000010   90....       MOV     DPTR,#(t_bt + 1)
+   \   000013   F0           MOVX    @DPTR,A
+   \   000014   90....       MOV     DPTR,#t_bt
+   \   000017   E0           MOVX    A,@DPTR
+   \   000018   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_state>_0`:
+   \   00001B   01           DB        1
+   \   00001C   08           DB        8
+   \   00001D   09           DB        9
+   \   00001E   ....         DW        ??task_bt_state_1
+   \   000020   03           DB        3
+   \   000021   01           DB        1
+   \   000022   ....         DW        ??task_bt_state_2
+   \   000024   05           DB        5
+   \   000025   ....         DW        ??task_bt_state_3
+   \   000027   06           DB        6
+   \   000028   ....         DW        ??task_bt_state_4
+   \   00002A   ....         DW        ??task_bt_state_0
+   \                     ??task_bt_state_2:
+   \   00002C   E4           CLR     A
+   \   00002D   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   000030   F0           MOVX    @DPTR,A
+   \   000031                ; Setup parameters for call to function led_bt_idle
+   \   000031   90....       MOV     DPTR,#(led_bt_idle & 0xffff)
+   \   000034   74..         MOV     A,#((led_bt_idle >> 16) & 0xff)
+   \   000036   8032         SJMP    ??task_bt_state_5
+   \                     ??task_bt_state_3:
+   \   000038   E4           CLR     A
+   \   000039   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   00003C   F0           MOVX    @DPTR,A
+   \   00003D                ; Setup parameters for call to function led_bt_connect
+   \   00003D   90....       MOV     DPTR,#(led_bt_connect & 0xffff)
+   \   000040   74..         MOV     A,#((led_bt_connect >> 16) & 0xff)
+   \   000042   8026         SJMP    ??task_bt_state_5
+   \                     ??task_bt_state_4:
+   \   000044   7401         MOV     A,#0x1
+   \   000046   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   000049   F0           MOVX    @DPTR,A
+   \   00004A                ; Setup parameters for call to function led_bt_play
+   \   00004A   90....       MOV     DPTR,#(led_bt_play & 0xffff)
+   \   00004D   74..         MOV     A,#((led_bt_play >> 16) & 0xff)
+   \   00004F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000052   90....       MOV     DPTR,#(dac_e + 2)
+   \   000055   E0           MOVX    A,@DPTR
+   \   000056   7015         JNZ     ??task_bt_state_0
+   \   000058                ; Setup parameters for call to function btdec_play
+   \   000058   90....       MOV     DPTR,#(btdec_play & 0xffff)
+   \   00005B   74..         MOV     A,#((btdec_play >> 16) & 0xff)
+   \   00005D   800B         SJMP    ??task_bt_state_5
+   \                     ??task_bt_state_1:
+   \   00005F   7401         MOV     A,#0x1
+   \   000061   90....       MOV     DPTR,#(sys_ctl + 34)
+   \   000064   F0           MOVX    @DPTR,A
+   \   000065                ; Setup parameters for call to function led_bt_play
+   \   000065   90....       MOV     DPTR,#(led_bt_play & 0xffff)
+   \   000068   74..         MOV     A,#((led_bt_play >> 16) & 0xff)
+   \                     ??task_bt_state_5:
+   \   00006A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_state_0:
+   \   00006D   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_display(void)
+   \                     task_bt_display:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function ledseg_ocx_event
+   \   000000   90....       MOV     DPTR,#(ledseg_ocx_event & 0xffff)
+   \   000003   74..         MOV     A,#((ledseg_ocx_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function task_bt_state
+   \   000008   90....       MOV     DPTR,#(task_bt_state & 0xffff)
+   \   00000B   74..         MOV     A,#((task_bt_state >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010   90....       MOV     DPTR,#(ledseg_ocx + 2)
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_bt_display>_0`:
+   \   000017   00           DB        0
+   \   000018   00           DB        0
+   \   000019   ....         DW        ??task_bt_display_0
+   \   00001B   ....         DW        ??task_bt_display_1
+   \                     ??task_bt_display_1:
+   \   00001D   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   000020   E0           MOVX    A,@DPTR
+   \   000021   701A         JNZ     ??task_bt_display_2
+   \   000023   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000026   E0           MOVX    A,@DPTR
+   \   000027   C3           CLR     C
+   \   000028   9405         SUBB    A,#0x5
+   \   00002A   4011         JC      ??task_bt_display_2
+   \   00002C                ; Setup parameters for call to function ledseg_disp
+   \   00002C   7911         MOV     R1,#0x11
+   \   00002E   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   000031   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   000033   8005         SJMP    ??task_bt_display_3
+   \                     ??task_bt_display_0:
+   \   000035                ; Setup parameters for call to function ledseg_ocx_display
+   \   000035   90....       MOV     DPTR,#(ledseg_ocx_display & 0xffff)
+   \   000038   74..         MOV     A,#((ledseg_ocx_display >> 16) & 0xff)
+   \                     ??task_bt_display_3:
+   \   00003A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_display_2:
+   \   00003D   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_ring_deal_msg(u8)
+   \                     task_bt_ring_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_ring_deal_msg>_0`:
+   \   000004   00           DB        0
+   \   000005   02           DB        2
+   \   000006   86           DB        134
+   \   000007   ....         DW        ??task_bt_ring_deal_msg_0
+   \   000009   A6           DB        166
+   \   00000A   ....         DW        ??task_bt_ring_deal_msg_1
+   \   00000C   ....         DW        ??task_bt_ring_deal_msg_2
+   \                     ??task_bt_ring_deal_msg_0:
+   \   00000E                ; Setup parameters for call to function bt_pickup
+   \   00000E   90....       MOV     DPTR,#(bt_pickup & 0xffff)
+   \   000011   74..         MOV     A,#((bt_pickup >> 16) & 0xff)
+   \   000013   8005         SJMP    ??task_bt_ring_deal_msg_3
+   \                     ??task_bt_ring_deal_msg_1:
+   \   000015                ; Setup parameters for call to function bt_hangup
+   \   000015   90....       MOV     DPTR,#(bt_hangup & 0xffff)
+   \   000018   74..         MOV     A,#((bt_hangup >> 16) & 0xff)
+   \                     ??task_bt_ring_deal_msg_3:
+   \   00001A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_ring_deal_msg_2:
+   \   00001D   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_call_deal_msg(u8)
+   \                     task_bt_call_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   FB           MOV     R3,A
+   \   000002   90....       MOV     DPTR,#(sys_ctl + 7)
+   \   000005   E0           MOVX    A,@DPTR
+   \   000006   FA           MOV     R2,A
+   \   000007   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   F9           MOV     R1,A
+   \   00000C   EB           MOV     A,R3
+   \   00000D   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_call_deal_msg>_0`:
+   \   000010   00           DB        0
+   \   000011   0E           DB        14
+   \   000012   04           DB        4
+   \   000013   ....         DW        ??task_bt_call_deal_msg_0
+   \   000015   05           DB        5
+   \   000016   ....         DW        ??task_bt_call_deal_msg_1
+   \   000018   7A           DB        122
+   \   000019   ....         DW        ??task_bt_call_deal_msg_2
+   \   00001B   7B           DB        123
+   \   00001C   ....         DW        ??task_bt_call_deal_msg_3
+   \   00001E   83           DB        131
+   \   00001F   ....         DW        ??task_bt_call_deal_msg_4
+   \   000021   86           DB        134
+   \   000022   ....         DW        ??task_bt_call_deal_msg_5
+   \   000024   A3           DB        163
+   \   000025   ....         DW        ??task_bt_call_deal_msg_4
+   \   000027   A4           DB        164
+   \   000028   ....         DW        ??task_bt_call_deal_msg_0
+   \   00002A   A5           DB        165
+   \   00002B   ....         DW        ??task_bt_call_deal_msg_1
+   \   00002D   A6           DB        166
+   \   00002E   ....         DW        ??task_bt_call_deal_msg_6
+   \   000030   E4           DB        228
+   \   000031   ....         DW        ??task_bt_call_deal_msg_0
+   \   000033   E5           DB        229
+   \   000034   ....         DW        ??task_bt_call_deal_msg_1
+   \   000036   F1           DB        241
+   \   000037   ....         DW        ??task_bt_call_deal_msg_0
+   \   000039   F3           DB        243
+   \   00003A   ....         DW        ??task_bt_call_deal_msg_1
+   \   00003C   ....         DW        ??task_bt_call_deal_msg_7
+   \                     ??task_bt_call_deal_msg_4:
+   \   00003E                ; Setup parameters for call to function bt_sco_switch
+   \   00003E   90....       MOV     DPTR,#(bt_sco_switch & 0xffff)
+   \   000041   74..         MOV     A,#((bt_sco_switch >> 16) & 0xff)
+   \   000043   8074         SJMP    ??task_bt_call_deal_msg_8
+   \                     ??task_bt_call_deal_msg_5:
+   \   000045                ; Setup parameters for call to function bt_get_call_status
+   \   000045   90....       MOV     DPTR,#(bt_get_call_status & 0xffff)
+   \   000048   74..         MOV     A,#((bt_get_call_status >> 16) & 0xff)
+   \   00004A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00004D   E9           MOV     A,R1
+   \   00004E   6402         XRL     A,#0x2
+   \   000050   7007         JNZ     ??task_bt_call_deal_msg_9
+   \   000052                ; Setup parameters for call to function bt_pickup
+   \   000052   90....       MOV     DPTR,#(bt_pickup & 0xffff)
+   \   000055   74..         MOV     A,#((bt_pickup >> 16) & 0xff)
+   \   000057   8060         SJMP    ??task_bt_call_deal_msg_8
+   \                     ??task_bt_call_deal_msg_9:
+   \   000059                ; Setup parameters for call to function bt_hangup
+   \   000059   90....       MOV     DPTR,#(bt_hangup & 0xffff)
+   \   00005C   74..         MOV     A,#((bt_hangup >> 16) & 0xff)
+   \   00005E   8059         SJMP    ??task_bt_call_deal_msg_8
+   \                     ??task_bt_call_deal_msg_6:
+   \   000060                ; Setup parameters for call to function bt_get_call_status
+   \   000060   90....       MOV     DPTR,#(bt_get_call_status & 0xffff)
+   \   000063   74..         MOV     A,#((bt_get_call_status >> 16) & 0xff)
+   \   000065   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000068   E9           MOV     A,R1
+   \   000069   FA           MOV     R2,A
+   \   00006A   7402         MOV     A,#0x2
+   \   00006C   6A           XRL     A,R2
+   \   00006D   60EA         JZ      ??task_bt_call_deal_msg_9
+   \   00006F   7404         MOV     A,#0x4
+   \   000071   6A           XRL     A,R2
+   \   000072   7048         JNZ     ??task_bt_call_deal_msg_7
+   \   000074                ; Setup parameters for call to function bt_callswap
+   \   000074   90....       MOV     DPTR,#(bt_callswap & 0xffff)
+   \   000077   74..         MOV     A,#((bt_callswap >> 16) & 0xff)
+   \   000079   803E         SJMP    ??task_bt_call_deal_msg_8
+   \                     ??task_bt_call_deal_msg_0:
+   \   00007B                ; Setup parameters for call to function user_set_hshfvol
+   \   00007B                ; Setup parameters for call to function user_volume_dec
+   \   00007B   EA           MOV     A,R2
+   \   00007C   F9           MOV     R1,A
+   \   00007D   90....       MOV     DPTR,#(user_volume_dec & 0xffff)
+   \   000080   74..         MOV     A,#((user_volume_dec >> 16) & 0xff)
+   \                     ??task_bt_call_deal_msg_10:
+   \   000082   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000085   90....       MOV     DPTR,#(user_set_hshfvol & 0xffff)
+   \   000088   74..         MOV     A,#((user_set_hshfvol >> 16) & 0xff)
+   \   00008A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00008D                ; Setup parameters for call to function send_hshfvol_hook
+   \   00008D   90....       MOV     DPTR,#(send_hshfvol_hook & 0xffff)
+   \   000090   74..         MOV     A,#((send_hshfvol_hook >> 16) & 0xff)
+   \   000092   801D         SJMP    ??task_bt_call_deal_msg_11
+   \                     ??task_bt_call_deal_msg_1:
+   \   000094                ; Setup parameters for call to function user_set_hshfvol
+   \   000094                ; Setup parameters for call to function user_volume_inc
+   \   000094   EA           MOV     A,R2
+   \   000095   F9           MOV     R1,A
+   \   000096   90....       MOV     DPTR,#(user_volume_inc & 0xffff)
+   \   000099   74..         MOV     A,#((user_volume_inc >> 16) & 0xff)
+   \   00009B   80E5         SJMP    ??task_bt_call_deal_msg_10
+   \                     ??task_bt_call_deal_msg_3:
+   \   00009D                ; Setup parameters for call to function user_set_volume
+   \   00009D                ; Setup parameters for call to function user_volume_dec
+   \   00009D   90....       MOV     DPTR,#(user_volume_dec & 0xffff)
+   \   0000A0   74..         MOV     A,#((user_volume_dec >> 16) & 0xff)
+   \   0000A2   8005         SJMP    ??task_bt_call_deal_msg_12
+   \                     ??task_bt_call_deal_msg_2:
+   \   0000A4                ; Setup parameters for call to function user_set_volume
+   \   0000A4                ; Setup parameters for call to function user_volume_inc
+   \   0000A4   90....       MOV     DPTR,#(user_volume_inc & 0xffff)
+   \   0000A7   74..         MOV     A,#((user_volume_inc >> 16) & 0xff)
+   \                     ??task_bt_call_deal_msg_12:
+   \   0000A9   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000AC   90....       MOV     DPTR,#(user_set_volume & 0xffff)
+   \   0000AF   74..         MOV     A,#((user_set_volume >> 16) & 0xff)
+   \                     ??task_bt_call_deal_msg_11:
+   \   0000B1   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000B4                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   0000B4   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   0000B7   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \                     ??task_bt_call_deal_msg_8:
+   \   0000B9   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_call_deal_msg_7:
+   \   0000BC   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_test_deal_msg(u8)
+   \                     task_bt_test_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_test_deal_msg>_0`:
+   \   000004   00           DB        0
+   \   000005   0A           DB        10
+   \   000006   04           DB        4
+   \   000007   ....         DW        ??task_bt_test_deal_msg_0
+   \   000009   05           DB        5
+   \   00000A   ....         DW        ??task_bt_test_deal_msg_1
+   \   00000C   81           DB        129
+   \   00000D   ....         DW        ??task_bt_test_deal_msg_2
+   \   00000F   82           DB        130
+   \   000010   ....         DW        ??task_bt_test_deal_msg_3
+   \   000012   83           DB        131
+   \   000013   ....         DW        ??task_bt_test_deal_msg_4
+   \   000015   86           DB        134
+   \   000016   ....         DW        ??task_bt_test_deal_msg_5
+   \   000018   8E           DB        142
+   \   000019   ....         DW        ??task_bt_test_deal_msg_6
+   \   00001B   91           DB        145
+   \   00001C   ....         DW        ??task_bt_test_deal_msg_2
+   \   00001E   92           DB        146
+   \   00001F   ....         DW        ??task_bt_test_deal_msg_3
+   \   000021   93           DB        147
+   \   000022   ....         DW        ??task_bt_test_deal_msg_4
+   \   000024   ....         DW        ??task_bt_test_deal_msg_7
+   \                     ??task_bt_test_deal_msg_6:
+   \   000026   7401         MOV     A,#0x1
+   \   000028   90....       MOV     DPTR,#bt_test_flag
+   \   00002B   F0           MOVX    @DPTR,A
+   \   00002C   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00002F   E0           MOVX    A,@DPTR
+   \   000030   C3           CLR     C
+   \   000031   9407         SUBB    A,#0x7
+   \   000033   4025         JC      ??task_bt_test_deal_msg_8
+   \   000035                ; Setup parameters for call to function adc_stop
+   \   000035   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   000038   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   00003A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00003D                ; Setup parameters for call to function pcm_stop
+   \   00003D   90....       MOV     DPTR,#(pcm_stop & 0xffff)
+   \   000040   74..         MOV     A,#((pcm_stop >> 16) & 0xff)
+   \   000042   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000045                ; Setup parameters for call to function adc_exit
+   \   000045   90....       MOV     DPTR,#(adc_exit & 0xffff)
+   \   000048   74..         MOV     A,#((adc_exit >> 16) & 0xff)
+   \   00004A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00004D   E4           CLR     A
+   \   00004E   90....       MOV     DPTR,#Test_Mode_Flag
+   \   000051   F0           MOVX    @DPTR,A
+   \   000052                ; Setup parameters for call to function bt_init
+   \   000052   90....       MOV     DPTR,#(bt_init & 0xffff)
+   \   000055   74..         MOV     A,#((bt_init >> 16) & 0xff)
+   \   000057   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_test_deal_msg_8:
+   \   00005A   741B         MOV     A,#0x1b
+   \   00005C   90....       MOV     DPTR,#task_ctl
+   \   00005F   F0           MOVX    @DPTR,A
+   \   000060   801E         SJMP    ??task_bt_test_deal_msg_7
+   \                     ??task_bt_test_deal_msg_3:
+   \   000062                ; Setup parameters for call to function bt_test_vendor
+   \   000062   7944         MOV     R1,#0x44
+   \   000064   8012         SJMP    ??task_bt_test_deal_msg_9
+   \                     ??task_bt_test_deal_msg_5:
+   \   000066                ; Setup parameters for call to function bt_test_vendor
+   \   000066   7988         MOV     R1,#-0x78
+   \   000068   800E         SJMP    ??task_bt_test_deal_msg_9
+   \                     ??task_bt_test_deal_msg_2:
+   \   00006A                ; Setup parameters for call to function bt_test_vendor
+   \   00006A   794C         MOV     R1,#0x4c
+   \   00006C   800A         SJMP    ??task_bt_test_deal_msg_9
+   \                     ??task_bt_test_deal_msg_4:
+   \   00006E                ; Setup parameters for call to function bt_test_vendor
+   \   00006E   794B         MOV     R1,#0x4b
+   \   000070   8006         SJMP    ??task_bt_test_deal_msg_9
+   \                     ??task_bt_test_deal_msg_0:
+   \   000072                ; Setup parameters for call to function bt_test_vendor
+   \   000072   7942         MOV     R1,#0x42
+   \   000074   8002         SJMP    ??task_bt_test_deal_msg_9
+   \                     ??task_bt_test_deal_msg_1:
+   \   000076                ; Setup parameters for call to function bt_test_vendor
+   \   000076   7941         MOV     R1,#0x41
+   \                     ??task_bt_test_deal_msg_9:
+   \   000078   90....       MOV     DPTR,#(bt_test_vendor & 0xffff)
+   \   00007B   74..         MOV     A,#((bt_test_vendor >> 16) & 0xff)
+   \   00007D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_test_deal_msg_7:
+   \   000080   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_bt_lost_deal_msg(u8)
+   \                     task_bt_lost_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_bt_lost_deal_msg>_0`:
+   \   000004   00           DB        0
+   \   000005   03           DB        3
+   \   000006   7E           DB        126
+   \   000007   ....         DW        ??task_bt_lost_deal_msg_0
+   \   000009   86           DB        134
+   \   00000A   ....         DW        ??task_bt_lost_deal_msg_1
+   \   00000C   8E           DB        142
+   \   00000D   ....         DW        ??task_bt_lost_deal_msg_1
+   \   00000F   ....         DW        ??task_bt_lost_deal_msg_2
+   \                     ??task_bt_lost_deal_msg_1:
+   \   000011   E4           CLR     A
+   \   000012   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000015   F0           MOVX    @DPTR,A
+   \   000016   800A         SJMP    ??task_bt_lost_deal_msg_2
+   \                     ??task_bt_lost_deal_msg_0:
+   \   000018                ; Setup parameters for call to function mp3res_play_btmode
+   \   000018   7903         MOV     R1,#0x3
+   \   00001A   90....       MOV     DPTR,#(mp3res_play_btmode & 0xffff)
+   \   00001D   74..         MOV     A,#((mp3res_play_btmode >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_lost_deal_msg_2:
+   \   000022   02....       LJMP    ?BRET
+     43          #include "sub/tasksub_bt_ring.c"                            //响铃子任务
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   struct <unnamed> __xdata t_bt_ring
+   \                     t_bt_ring:
+   \   000000                DS 26
+
+   \                                 In segment TASK_BT_RING_CONST, align 1
+   \   unsigned char const __code tbl_ring_mp3[10]
+   \                     tbl_ring_mp3:
+   \   000000   08090A0B     DB 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
+   \            0C0D0E0F
+   \            1011    
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void BT_IncomingCallNumber(unsigned char *, u8)
+   \                     BT_IncomingCallNumber:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant u8 get_num_len(void)
+   \                     get_num_len:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   90....       MOV     DPTR,#(t_bt_ring + 24)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F9           MOV     R1,A
+   \   000005   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void set_num_len(u8)
+   \                     set_num_len:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   90....       MOV     DPTR,#(t_bt_ring + 24)
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant unsigned char *get_num_buf(void)
+   \                     get_num_buf:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   7A..         MOV     R2,#(t_bt_ring & 0xff)
+   \   000002   7B..         MOV     R3,#((t_bt_ring >> 8) & 0xff)
+   \   000004   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_ring_enter(void)
+   \                     tasksub_bt_ring_enter:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   7402         MOV     A,#0x2
+   \   000002   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006                ; Setup parameters for call to function btdec_stop
+   \   000006   90....       MOV     DPTR,#(btdec_stop & 0xffff)
+   \   000009   74..         MOV     A,#((btdec_stop >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000E                ; Setup parameters for call to function dac_dynamic
+   \   00000E   7900         MOV     R1,#0x0
+   \   000010   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   000013   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000018   E4           CLR     A
+   \   000019   90....       MOV     DPTR,#(t_bt_ring + 24)
+   \   00001C   F0           MOVX    @DPTR,A
+   \   00001D                ; Setup parameters for call to function btmode_exit
+   \   00001D   90....       MOV     DPTR,#(btmode_exit & 0xffff)
+   \   000020   74..         MOV     A,#((btmode_exit >> 16) & 0xff)
+   \   000022   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000025                ; Setup parameters for call to function user_change_volume
+   \   000025   7910         MOV     R1,#0x10
+   \   000027   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   00002A   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00002F   7401         MOV     A,#0x1
+   \   000031   90....       MOV     DPTR,#(sys_ctl + 26)
+   \   000034   F0           MOVX    @DPTR,A
+   \   000035                ; Setup parameters for call to function mp3_res_play
+   \   000035   7917         MOV     R1,#0x17
+   \   000037   90....       MOV     DPTR,#(mp3_res_play & 0xffff)
+   \   00003A   74..         MOV     A,#((mp3_res_play >> 16) & 0xff)
+   \   00003C                REQUIRE ?Subroutine3
+   \   00003C                ; // Fall through to label ?Subroutine3
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_ring_exit(void)
+   \                     tasksub_bt_ring_exit:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function music_stop
+   \   000000   90....       MOV     DPTR,#(music_stop & 0xffff)
+   \   000003   74..         MOV     A,#((music_stop >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function my_memset
+   \   000008   7C00         MOV     R4,#0x0
+   \   00000A   7D08         MOV     R5,#0x8
+   \   00000C   7900         MOV     R1,#0x0
+   \   00000E   7A00         MOV     R2,#0x0
+   \   000010   7B40         MOV     R3,#0x40
+   \   000012   12....       LCALL   my_memset & 0xFFFF
+   \   000015                ; Setup parameters for call to function btdec_load_code
+   \   000015   7903         MOV     R1,#0x3
+   \   000017   7A10         MOV     R2,#0x10
+   \   000019   7B00         MOV     R3,#0x0
+   \   00001B   90....       MOV     DPTR,#(btdec_load_code & 0xffff)
+   \   00001E   74..         MOV     A,#((btdec_load_code >> 16) & 0xff)
+   \   000020   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000023                ; Setup parameters for call to function btmode_enter
+   \   000023   90....       MOV     DPTR,#(btmode_enter & 0xffff)
+   \   000026   74..         MOV     A,#((btmode_enter >> 16) & 0xff)
+   \   000028   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00002B   90....       MOV     DPTR,#(t_bt + 2)
+   \   00002E   E0           MOVX    A,@DPTR
+   \   00002F   700A         JNZ     ??tasksub_bt_ring_exit_0
+   \   000031                ; Setup parameters for call to function dac_dynamic
+   \   000031   7902         MOV     R1,#0x2
+   \   000033   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   000036   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   000038   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_ring_exit_0:
+   \   00003B   E4           CLR     A
+   \   00003C   90....       MOV     DPTR,#(t_bt + 2)
+   \   00003F   F0           MOVX    @DPTR,A
+   \   000040   90....       MOV     DPTR,#(sys_ctl + 26)
+   \   000043   F0           MOVX    @DPTR,A
+   \   000044                ; Setup parameters for call to function user_change_volume
+   \   000044   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000047   E0           MOVX    A,@DPTR
+   \   000048   F9           MOV     R1,A
+   \   000049   90....       MOV     DPTR,#(user_change_volume & 0xffff)
+   \   00004C   74..         MOV     A,#((user_change_volume >> 16) & 0xff)
+   \   00004E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000051                ; Setup parameters for call to function task_bt_sta_update
+   \   000051   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   000054   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \   000056   80..         SJMP    ?Subroutine3
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_ring_event(void)
+   \                     tasksub_bt_ring_event:
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+   \   000004   43F720       ORL     0xf7,#0x20
+   \   000007                ; Setup parameters for call to function comm_event
+   \   000007   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   00000A   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   00000C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000F   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   6407         XRL     A,#0x7
+   \   000015   6007         JZ      ??tasksub_bt_ring_event_0
+   \   000017   E4           CLR     A
+   \   000018   90....       MOV     DPTR,#(task_ctl + 2)
+   \   00001B   F0           MOVX    @DPTR,A
+   \   00001C   801B         SJMP    ??tasksub_bt_ring_event_1
+   \                     ??tasksub_bt_ring_event_0:
+   \   00001E                ; Setup parameters for call to function music_event
+   \   00001E   90....       MOV     DPTR,#(music_event & 0xffff)
+   \   000021   74..         MOV     A,#((music_event >> 16) & 0xff)
+   \   000023   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000026                ; Setup parameters for call to function music_get_status
+   \   000026   12....       LCALL   music_get_status & 0xFFFF
+   \   000029   C3           CLR     C
+   \   00002A   EA           MOV     A,R2
+   \   00002B   9402         SUBB    A,#0x2
+   \   00002D   EB           MOV     A,R3
+   \   00002E   9400         SUBB    A,#0x0
+   \   000030   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000032   65D0         XRL     A,PSW
+   \   000034   33           RLC     A
+   \   000035   5002         JNC     ??tasksub_bt_ring_event_1
+   \   000037   E5E8         MOV     A,0xe8
+   \                     ??tasksub_bt_ring_event_1:
+   \   000039   D0..         POP     ?V0 + 1
+   \   00003B   D0..         POP     ?V0 + 0
+   \   00003D   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_ring_loop(void)
+   \                     tasksub_bt_ring_loop:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   8016         SJMP    ??tasksub_bt_ring_loop_0
+   \                     ??tasksub_bt_ring_loop_1:
+   \   000002                ; Setup parameters for call to function task_bt_ring_deal_msg
+   \   000002   90....       MOV     DPTR,#(task_bt_ring_deal_msg & 0xffff)
+   \   000005   74..         MOV     A,#((task_bt_ring_deal_msg >> 16) & 0xff)
+   \                     ??tasksub_bt_ring_loop_2:
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000A                ; Setup parameters for call to function get_msg
+   \   00000A   12....       LCALL   get_msg & 0xFFFF
+   \   00000D   E9           MOV     A,R1
+   \   00000E   70F2         JNZ     ??tasksub_bt_ring_loop_1
+   \   000010                ; Setup parameters for call to function task_bt_display
+   \   000010   90....       MOV     DPTR,#(task_bt_display & 0xffff)
+   \   000013   74..         MOV     A,#((task_bt_display >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_ring_loop_0:
+   \   000018   90....       MOV     DPTR,#task_ctl
+   \   00001B   E0           MOVX    A,@DPTR
+   \   00001C   640D         XRL     A,#0xd
+   \   00001E   700F         JNZ     ??tasksub_bt_ring_loop_3
+   \   000020   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   6402         XRL     A,#0x2
+   \   000026   7007         JNZ     ??tasksub_bt_ring_loop_3
+   \   000028                ; Setup parameters for call to function tasksub_bt_ring_event
+   \   000028   90....       MOV     DPTR,#(tasksub_bt_ring_event & 0xffff)
+   \   00002B   74..         MOV     A,#((tasksub_bt_ring_event >> 16) & 0xff)
+   \   00002D   80D8         SJMP    ??tasksub_bt_ring_loop_2
+   \                     ??tasksub_bt_ring_loop_3:
+   \   00002F   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_RING_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_ring(void)
+   \                     tasksub_bt_ring:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function tasksub_bt_ring_enter
+   \   000000   90....       MOV     DPTR,#(tasksub_bt_ring_enter & 0xffff)
+   \   000003   74..         MOV     A,#((tasksub_bt_ring_enter >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function tasksub_bt_ring_loop
+   \   000008   90....       MOV     DPTR,#(tasksub_bt_ring_loop & 0xffff)
+   \   00000B   74..         MOV     A,#((tasksub_bt_ring_loop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010                ; Setup parameters for call to function tasksub_bt_ring_exit
+   \   000010   90....       MOV     DPTR,#(tasksub_bt_ring_exit & 0xffff)
+   \   000013   74..         MOV     A,#((tasksub_bt_ring_exit >> 16) & 0xff)
+   \   000015   02....       LJMP    ?Subroutine3
+     44          #include "sub/tasksub_bt_call.c"                            //通话子任务
+
+   \                                 In segment BT_SCOFAR_XDATA, align 1, root
+   \   s16 __xdata sco_farpcm[1024]
+   \                     sco_farpcm:
+   \   000000                DS 2048
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata far_vol
+   \                     far_vol:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   s16 __xdata far_noise_pow_cnt
+   \                     far_noise_pow_cnt:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata far_noise_pow
+   \                     far_noise_pow:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   s16 *__xdata sco_farpcm_wptr
+   \                     sco_farpcm_wptr:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   s16 *__xdata sco_farpcm_rptr
+   \                     sco_farpcm_rptr:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u16 __xdata sco_farpcm_len
+   \                     sco_farpcm_len:
+   \   000000                DS 2
+
+   \                                 In segment SCO_VAD_BUF, align 1, root
+   \   u8 __xdata sco_spk_vad[1]
+   \                     sco_spk_vad:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_spk_vad_last
+   \                     sco_spk_vad_last:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_spk_vad_index
+   \                     sco_spk_vad_index:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_spk_vad_mute
+   \                     sco_spk_vad_mute:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_far_vad
+   \                     sco_far_vad:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_far_vad_last
+   \                     sco_far_vad_last:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_near_mic_mute
+   \                     sco_near_mic_mute:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_spk_stable
+   \                     sco_spk_stable:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_mic_pow
+   \                     sco_mic_pow:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_mic_stable
+   \                     sco_mic_stable:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   u8 __xdata sco_cal_index
+   \                     sco_cal_index:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   s8 __xdata sco_cal_max
+   \                     sco_cal_max:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   s8 __xdata sco_cal_min
+   \                     sco_cal_min:
+   \   000000                DS 1
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void bt_mic_init(void)
+   \                     bt_mic_init:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function adc_init
+   \   000000   7901         MOV     R1,#0x1
+   \   000002   90....       MOV     DPTR,#(adc_init & 0xffff)
+   \   000005   74..         MOV     A,#((adc_init >> 16) & 0xff)
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000A                ; Setup parameters for call to function adc_start
+   \   00000A   90....       MOV     DPTR,#(adc_start & 0xffff)
+   \   00000D   74..         MOV     A,#((adc_start >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000012   02....       LJMP    ?BRET
+
+   \                                 In segment BT_SCO_SEG, align 1, keep-with-next
+   \   __near_func __ext_stack_reentrant u8 bt_voice_sco(void)
+   \                     bt_voice_sco:
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+   \   000004   8028         SJMP    ??bt_voice_sco_0
+   \                     ??bt_voice_sco_1:
+   \   000006   C2F0         CLR     B.0
+   \                     ??bt_voice_sco_2:
+   \   000008   C2AF         CLR     0xa8.7
+   \   00000A   90....       MOV     DPTR,#sco_farpcm_len
+   \   00000D   E0           MOVX    A,@DPTR
+   \   00000E   24FF         ADD     A,#-0x1
+   \   000010   F0           MOVX    @DPTR,A
+   \   000011   A3           INC     DPTR
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   34FF         ADDC    A,#-0x1
+   \   000015   F0           MOVX    @DPTR,A
+   \   000016   A2F0         MOV     C,B.0
+   \   000018   92AF         MOV     0xa8.7,C
+   \                     ??bt_voice_sco_3:
+   \   00001A   E5EA         MOV     A,0xea
+   \   00001C   A2E7         MOV     C,0xE0 /* A   */.7
+   \   00001E   50FA         JNC     ??bt_voice_sco_3
+   \   000020   8AE8         MOV     0xe8,R2
+   \   000022   8BE8         MOV     0xe8,R3
+   \                     ??bt_voice_sco_4:
+   \   000024   E5EA         MOV     A,0xea
+   \   000026   A2E7         MOV     C,0xE0 /* A   */.7
+   \   000028   50FA         JNC     ??bt_voice_sco_4
+   \   00002A   8AE8         MOV     0xe8,R2
+   \   00002C   8BE8         MOV     0xe8,R3
+   \                     ??bt_voice_sco_0:
+   \   00002E   90....       MOV     DPTR,#sco_farpcm_len
+   \   000031   E0           MOVX    A,@DPTR
+   \   000032   7002         JNZ     ??bt_voice_sco_5
+   \   000034   A3           INC     DPTR
+   \   000035   E0           MOVX    A,@DPTR
+   \                     ??bt_voice_sco_5:
+   \   000036   605F         JZ      ??bt_voice_sco_6
+   \   000038   E5E8         MOV     A,0xe8
+   \   00003A   C3           CLR     C
+   \   00003B   9488         SUBB    A,#-0x78
+   \   00003D   5058         JNC     ??bt_voice_sco_6
+   \   00003F   43F720       ORL     0xf7,#0x20
+   \   000042   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000045   E0           MOVX    A,@DPTR
+   \   000046   F8           MOV     R0,A
+   \   000047   A3           INC     DPTR
+   \   000048   E0           MOVX    A,@DPTR
+   \   000049   F583         MOV     DPH,A
+   \   00004B   8882         MOV     DPL,R0
+   \   00004D   E0           MOVX    A,@DPTR
+   \   00004E   F5..         MOV     ?V0 + 0,A
+   \   000050   A3           INC     DPTR
+   \   000051   E0           MOVX    A,@DPTR
+   \   000052   F5..         MOV     ?V0 + 1,A
+   \   000054   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000057   E0           MOVX    A,@DPTR
+   \   000058   2402         ADD     A,#0x2
+   \   00005A   08           INC     R0
+   \   00005B   08           INC     R0
+   \   00005C   A3           INC     DPTR
+   \   00005D   E0           MOVX    A,@DPTR
+   \   00005E   3400         ADDC    A,#0x0
+   \   000060   F9           MOV     R1,A
+   \   000061   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000064   E8           MOV     A,R0
+   \   000065   F0           MOVX    @DPTR,A
+   \   000066   A3           INC     DPTR
+   \   000067   E9           MOV     A,R1
+   \   000068   F0           MOVX    @DPTR,A
+   \   000069   AA..         MOV     R2,?V0 + 0
+   \   00006B   7408         MOV     A,#0x8
+   \   00006D   78..         MOV     R0,#?V0 + 0
+   \   00006F   12....       LCALL   ?SS_SHR
+   \   000072   AB..         MOV     R3,?V0 + 0
+   \   000074   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000077   C3           CLR     C
+   \   000078   E0           MOVX    A,@DPTR
+   \   000079   94..         SUBB    A,#(sco_farpcm & 0xff)
+   \   00007B   A3           INC     DPTR
+   \   00007C   E0           MOVX    A,@DPTR
+   \   00007D   94..         SUBB    A,#(((sco_farpcm + 2048) >> 8) & 0xff)
+   \   00007F   400A         JC      ??bt_voice_sco_7
+   \   000081   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000084   74..         MOV     A,#(sco_farpcm & 0xff)
+   \   000086   F0           MOVX    @DPTR,A
+   \   000087   A3           INC     DPTR
+   \   000088   74..         MOV     A,#((sco_farpcm >> 8) & 0xff)
+   \   00008A   F0           MOVX    @DPTR,A
+   \                     ??bt_voice_sco_7:
+   \   00008B   A2AF         MOV     C,0xa8.7
+   \   00008D   4003         JC      $+5
+   \   00008F   02....       LJMP    ??bt_voice_sco_1
+   \   000092   D2F0         SETB    B.0
+   \   000094   02....       LJMP    ??bt_voice_sco_2
+   \                     ??bt_voice_sco_6:
+   \   000097   7900         MOV     R1,#0x0
+   \   000099   D0..         POP     ?V0 + 1
+   \   00009B   D0..         POP     ?V0 + 0
+   \   00009D   22           RET
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+   \   __near_func __ext_stack_reentrant void bt_voice_softisr(void)
+   \                     bt_voice_softisr:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   A2..         MOV     C,scoflag
+   \   000002   82..         ANL     C,flag_btmode
+   \   000004   500B         JNC     ??bt_voice_softisr_0
+   \   000006   90....       MOV     DPTR,#aec_proc_kick
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   6005         JZ      ??bt_voice_softisr_0
+   \   00000C   E4           CLR     A
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E                ; Setup parameters for call to function aec_process
+   \   00000E   12....       LCALL   aec_process
+   \                     ??bt_voice_softisr_0:
+   \   000011   22           RET
+
+   \                                 In segment BT_RFC_TX, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant bool send_hshfvol_hook(void)
+   \                     send_hshfvol_hook:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function send_at_vgs
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 7)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F9           MOV     R1,A
+   \   000005   90....       MOV     DPTR,#(send_at_vgs & 0xffff)
+   \   000008   74..         MOV     A,#((send_at_vgs >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000D   02....       LJMP    ?BRET
+
+   \                                 In segment BT_RXAT_CMD, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void hshfvol_change_hook(u8)
+   \                     hshfvol_change_hook:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_call_enter(void)
+   \                     tasksub_bt_call_enter:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   7403         MOV     A,#0x3
+   \   000002   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006                ; Setup parameters for call to function bt_enter_call
+   \   000006   90....       MOV     DPTR,#(bt_enter_call & 0xffff)
+   \   000009   74..         MOV     A,#((bt_enter_call >> 16) & 0xff)
+   \   00000B   80..         SJMP    ??Subroutine4_0
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   90....       MOV     DPTR,#(bt_exit_call & 0xffff)
+   \   000003   74..         MOV     A,#((bt_exit_call >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function task_bt_sta_update
+   \   000008                ; Setup parameters for call to function task_bt_sta_update
+   \   000008   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   00000B   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \                     ??Subroutine4_0:
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_call_exit(void)
+   \                     tasksub_bt_call_exit:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_exit_call
+   \   000000                REQUIRE ?Subroutine4
+   \   000000                ; // Fall through to label ?Subroutine4
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_call_event(void)
+   \                     tasksub_bt_call_event:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   43F720       ORL     0xf7,#0x20
+   \   000003                ; Setup parameters for call to function comm_event
+   \   000003   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000006   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000008   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000B   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   FA           MOV     R2,A
+   \   000010   7408         MOV     A,#0x8
+   \   000012   6A           XRL     A,R2
+   \   000013   6005         JZ      ??tasksub_bt_call_event_0
+   \   000015   7409         MOV     A,#0x9
+   \   000017   6A           XRL     A,R2
+   \   000018   7008         JNZ     ??tasksub_bt_call_event_1
+   \                     ??tasksub_bt_call_event_0:
+   \   00001A                ; Setup parameters for call to function bt_sco_disconnect
+   \   00001A   90....       MOV     DPTR,#(bt_sco_disconnect & 0xffff)
+   \   00001D   74..         MOV     A,#((bt_sco_disconnect >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_call_event_1:
+   \   000022   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000025   E0           MOVX    A,@DPTR
+   \   000026   FA           MOV     R2,A
+   \   000027   7408         MOV     A,#0x8
+   \   000029   6A           XRL     A,R2
+   \   00002A   600A         JZ      ??tasksub_bt_call_event_2
+   \   00002C   7409         MOV     A,#0x9
+   \   00002E   6A           XRL     A,R2
+   \   00002F   6005         JZ      ??tasksub_bt_call_event_2
+   \   000031   E4           CLR     A
+   \   000032   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000035   F0           MOVX    @DPTR,A
+   \                     ??tasksub_bt_call_event_2:
+   \   000036   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_call_loop(void)
+   \                     tasksub_bt_call_loop:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   8016         SJMP    ??tasksub_bt_call_loop_0
+   \                     ??tasksub_bt_call_loop_1:
+   \   000002                ; Setup parameters for call to function task_bt_call_deal_msg
+   \   000002   90....       MOV     DPTR,#(task_bt_call_deal_msg & 0xffff)
+   \   000005   74..         MOV     A,#((task_bt_call_deal_msg >> 16) & 0xff)
+   \                     ??tasksub_bt_call_loop_2:
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000A                ; Setup parameters for call to function get_msg
+   \   00000A   12....       LCALL   get_msg & 0xFFFF
+   \   00000D   E9           MOV     A,R1
+   \   00000E   70F2         JNZ     ??tasksub_bt_call_loop_1
+   \   000010                ; Setup parameters for call to function task_bt_display
+   \   000010   90....       MOV     DPTR,#(task_bt_display & 0xffff)
+   \   000013   74..         MOV     A,#((task_bt_display >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_call_loop_0:
+   \   000018   90....       MOV     DPTR,#task_ctl
+   \   00001B   E0           MOVX    A,@DPTR
+   \   00001C   640D         XRL     A,#0xd
+   \   00001E   700F         JNZ     ??tasksub_bt_call_loop_3
+   \   000020   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   6403         XRL     A,#0x3
+   \   000026   7007         JNZ     ??tasksub_bt_call_loop_3
+   \   000028                ; Setup parameters for call to function tasksub_bt_call_event
+   \   000028   90....       MOV     DPTR,#(tasksub_bt_call_event & 0xffff)
+   \   00002B   74..         MOV     A,#((tasksub_bt_call_event >> 16) & 0xff)
+   \   00002D   80D8         SJMP    ??tasksub_bt_call_loop_2
+   \                     ??tasksub_bt_call_loop_3:
+   \   00002F   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_CALL_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_call(void)
+   \                     tasksub_bt_call:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function tasksub_bt_call_enter
+   \   000000   90....       MOV     DPTR,#(tasksub_bt_call_enter & 0xffff)
+   \   000003   74..         MOV     A,#((tasksub_bt_call_enter >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function tasksub_bt_call_loop
+   \   000008   90....       MOV     DPTR,#(tasksub_bt_call_loop & 0xffff)
+   \   00000B   74..         MOV     A,#((tasksub_bt_call_loop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010                ; Setup parameters for call to function bt_exit_call
+   \   000010   02....       LJMP    ?Subroutine4
+     45          #include "sub/tasksub_bt_test.c"                            //测试盒子任务
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_test_enter(void)
+   \                     tasksub_bt_test_enter:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   7401         MOV     A,#0x1
+   \   000002   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006                ; Setup parameters for call to function dac_dynamic
+   \   000006   7900         MOV     R1,#0x0
+   \   000008   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   00000B   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010                ; Setup parameters for call to function btdec_play
+   \   000010   90....       MOV     DPTR,#(btdec_play & 0xffff)
+   \   000013   74..         MOV     A,#((btdec_play >> 16) & 0xff)
+   \   000015   80..         SJMP    ??Subroutine6_0
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   90....       MOV     DPTR,#(bt_test_vendor & 0xffff)
+   \   000003   74..         MOV     A,#((bt_test_vendor >> 16) & 0xff)
+   \                     ??Subroutine6_0:
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_test_exit(void)
+   \                     tasksub_bt_test_exit:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function dac_dynamic
+   \   000000   7902         MOV     R1,#0x2
+   \   000002   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   000005   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000A                ; Setup parameters for call to function task_bt_sta_update
+   \   00000A   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   00000D   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \   00000F   80..         SJMP    ??Subroutine6_0
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_test_event(void)
+   \                     tasksub_bt_test_event:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   43F720       ORL     0xf7,#0x20
+   \   000003                ; Setup parameters for call to function comm_event
+   \   000003   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000006   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000008   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000B                ; Setup parameters for call to function bt_testmode
+   \   00000B   12....       LCALL   bt_testmode & 0xFFFF
+   \   00000E   E9           MOV     A,R1
+   \   00000F   7005         JNZ     ??tasksub_bt_test_event_0
+   \   000011   E4           CLR     A
+   \   000012   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000015   F0           MOVX    @DPTR,A
+   \                     ??tasksub_bt_test_event_0:
+   \   000016   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_test_loop(void)
+   \                     tasksub_bt_test_loop:
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   90....       MOV     DPTR,#task_ctl
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   FE           MOV     R6,A
+   \   000008   8016         SJMP    ??tasksub_bt_test_loop_0
+   \                     ??tasksub_bt_test_loop_1:
+   \   00000A                ; Setup parameters for call to function task_bt_test_deal_msg
+   \   00000A   90....       MOV     DPTR,#(task_bt_test_deal_msg & 0xffff)
+   \   00000D   74..         MOV     A,#((task_bt_test_deal_msg >> 16) & 0xff)
+   \                     ??tasksub_bt_test_loop_2:
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000012                ; Setup parameters for call to function get_msg
+   \   000012   12....       LCALL   get_msg & 0xFFFF
+   \   000015   E9           MOV     A,R1
+   \   000016   70F2         JNZ     ??tasksub_bt_test_loop_1
+   \   000018                ; Setup parameters for call to function task_bt_display
+   \   000018   90....       MOV     DPTR,#(task_bt_display & 0xffff)
+   \   00001B   74..         MOV     A,#((task_bt_display >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_test_loop_0:
+   \   000020   90....       MOV     DPTR,#task_ctl
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   6E           XRL     A,R6
+   \   000025   700F         JNZ     ??tasksub_bt_test_loop_3
+   \   000027   90....       MOV     DPTR,#(task_ctl + 2)
+   \   00002A   E0           MOVX    A,@DPTR
+   \   00002B   6401         XRL     A,#0x1
+   \   00002D   7007         JNZ     ??tasksub_bt_test_loop_3
+   \   00002F                ; Setup parameters for call to function tasksub_bt_test_event
+   \   00002F   90....       MOV     DPTR,#(tasksub_bt_test_event & 0xffff)
+   \   000032   74..         MOV     A,#((tasksub_bt_test_event >> 16) & 0xff)
+   \   000034   80D9         SJMP    ??tasksub_bt_test_loop_2
+   \                     ??tasksub_bt_test_loop_3:
+   \   000036   D0E0         POP     A
+   \   000038   FE           MOV     R6,A
+   \   000039   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_play(void)
+   \                     tasksb_bt_test_play:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   7944         MOV     R1,#0x44
+   \   000002   80..         SJMP    ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_prev(void)
+   \                     tasksb_bt_test_prev:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   794C         MOV     R1,#0x4c
+   \   000002   80..         SJMP    ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_next(void)
+   \                     tasksb_bt_test_next:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   794B         MOV     R1,#0x4b
+   \   000002   80..         SJMP    ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_voldown(void)
+   \                     tasksb_bt_test_voldown:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   7942         MOV     R1,#0x42
+   \   000002   80..         SJMP    ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_volup(void)
+   \                     tasksb_bt_test_volup:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   7941         MOV     R1,#0x41
+   \   000002                REQUIRE ?Subroutine6
+   \   000002                ; // Fall through to label ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksb_bt_test_hsf(void)
+   \                     tasksb_bt_test_hsf:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function bt_test_vendor
+   \   000000   7988         MOV     R1,#-0x78
+   \   000002   80..         SJMP    ?Subroutine6
+
+   \                                 In segment TASK_BT_TEST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_test(void)
+   \                     tasksub_bt_test:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function tasksub_bt_test_enter
+   \   000000   90....       MOV     DPTR,#(tasksub_bt_test_enter & 0xffff)
+   \   000003   74..         MOV     A,#((tasksub_bt_test_enter >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function tasksub_bt_test_loop
+   \   000008   90....       MOV     DPTR,#(tasksub_bt_test_loop & 0xffff)
+   \   00000B   74..         MOV     A,#((tasksub_bt_test_loop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010                ; Setup parameters for call to function tasksub_bt_test_exit
+   \   000010   90....       MOV     DPTR,#(tasksub_bt_test_exit & 0xffff)
+   \   000013   74..         MOV     A,#((tasksub_bt_test_exit >> 16) & 0xff)
+   \   000015   80..         SJMP    ??Subroutine6_0
+     46          #include "sub/tasksub_bt_menu.c"                            //菜单子任务
+     47          #include "sub/tasksub_bt_lost.c"                            //防丢子任务
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_lost_enter(void)
+   \                     tasksub_bt_lost_enter:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   7404         MOV     A,#0x4
+   \   000002   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006                ; Setup parameters for call to function led_bt_idle
+   \   000006   90....       MOV     DPTR,#(led_bt_idle & 0xffff)
+   \   000009   74..         MOV     A,#((led_bt_idle >> 16) & 0xff)
+   \   00000B   80..         SJMP    ??Subroutine5_0
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   000003   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \                     ??Subroutine5_0:
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_lost_exit(void)
+   \                     tasksub_bt_lost_exit:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function task_bt_sta_update
+   \   000000                REQUIRE ?Subroutine5
+   \   000000                ; // Fall through to label ?Subroutine5
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_lost_event(void)
+   \                     tasksub_bt_lost_event:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   43F720       ORL     0xf7,#0x20
+   \   000003                ; Setup parameters for call to function comm_event
+   \   000003   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000006   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000008   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000B   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   C3           CLR     C
+   \   000010   9405         SUBB    A,#0x5
+   \   000012   4005         JC      ??tasksub_bt_lost_event_0
+   \   000014   E4           CLR     A
+   \   000015   90....       MOV     DPTR,#(task_ctl + 2)
+   \   000018   F0           MOVX    @DPTR,A
+   \                     ??tasksub_bt_lost_event_0:
+   \   000019   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_lost_loop(void)
+   \                     tasksub_bt_lost_loop:
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   90....       MOV     DPTR,#task_ctl
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   FE           MOV     R6,A
+   \   000008   8016         SJMP    ??tasksub_bt_lost_loop_0
+   \                     ??tasksub_bt_lost_loop_1:
+   \   00000A                ; Setup parameters for call to function task_bt_lost_deal_msg
+   \   00000A   90....       MOV     DPTR,#(task_bt_lost_deal_msg & 0xffff)
+   \   00000D   74..         MOV     A,#((task_bt_lost_deal_msg >> 16) & 0xff)
+   \                     ??tasksub_bt_lost_loop_2:
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000012                ; Setup parameters for call to function get_msg
+   \   000012   12....       LCALL   get_msg & 0xFFFF
+   \   000015   E9           MOV     A,R1
+   \   000016   70F2         JNZ     ??tasksub_bt_lost_loop_1
+   \   000018                ; Setup parameters for call to function task_bt_display
+   \   000018   90....       MOV     DPTR,#(task_bt_display & 0xffff)
+   \   00001B   74..         MOV     A,#((task_bt_display >> 16) & 0xff)
+   \   00001D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??tasksub_bt_lost_loop_0:
+   \   000020   90....       MOV     DPTR,#task_ctl
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   6E           XRL     A,R6
+   \   000025   700F         JNZ     ??tasksub_bt_lost_loop_3
+   \   000027   90....       MOV     DPTR,#(task_ctl + 2)
+   \   00002A   E0           MOVX    A,@DPTR
+   \   00002B   6404         XRL     A,#0x4
+   \   00002D   7007         JNZ     ??tasksub_bt_lost_loop_3
+   \   00002F                ; Setup parameters for call to function tasksub_bt_lost_event
+   \   00002F   90....       MOV     DPTR,#(tasksub_bt_lost_event & 0xffff)
+   \   000032   74..         MOV     A,#((tasksub_bt_lost_event >> 16) & 0xff)
+   \   000034   80D9         SJMP    ??tasksub_bt_lost_loop_2
+   \                     ??tasksub_bt_lost_loop_3:
+   \   000036   D0E0         POP     A
+   \   000038   FE           MOV     R6,A
+   \   000039   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_BT_LOST_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void tasksub_bt_lost(void)
+   \                     tasksub_bt_lost:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function tasksub_bt_lost_enter
+   \   000000   90....       MOV     DPTR,#(tasksub_bt_lost_enter & 0xffff)
+   \   000003   74..         MOV     A,#((tasksub_bt_lost_enter >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008                ; Setup parameters for call to function tasksub_bt_lost_loop
+   \   000008   90....       MOV     DPTR,#(tasksub_bt_lost_loop & 0xffff)
+   \   00000B   74..         MOV     A,#((tasksub_bt_lost_loop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010                ; Setup parameters for call to function task_bt_sta_update
+   \   000010   80..         SJMP    ?Subroutine5
+     48          
+     49          #pragma location="TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+     50          void task_bt_enter(void)
+   \                     task_bt_enter:
+     51          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     52              if(device_is_online(DEVICE_UDISK)){
+   \   000000                ; Setup parameters for call to function device_is_online
+   \   000000   7901         MOV     R1,#0x1
+   \   000002   12....       LCALL   device_is_online & 0xFFFF
+   \   000005   5003         JNC     ??task_bt_enter_0
+     53                  usb_host_suspend();
+   \   000007                ; Setup parameters for call to function usb_host_suspend
+   \   000007   12....       LCALL   usb_host_suspend & 0xFFFF
+     54              }
+     55              task_ctl.work_sub = TASK_NULL;
+   \                     ??task_bt_enter_0:
+   \   00000A   E4           CLR     A
+   \   00000B   90....       MOV     DPTR,#(task_ctl + 2)
+   \   00000E   F0           MOVX    @DPTR,A
+     56              set_sys_clk(SYS_48M);                                   //蓝牙任务的系统时钟
+   \   00000F                ; Setup parameters for call to function set_sys_clk
+   \   00000F   F9           MOV     R1,A
+   \   000010   90....       MOV     DPTR,#(set_sys_clk & 0xffff)
+   \   000013   74..         MOV     A,#((set_sys_clk >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     57              ledseg_disp(MENU_BT);
+   \   000018                ; Setup parameters for call to function ledseg_disp
+   \   000018   7911         MOV     R1,#0x11
+   \   00001A   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   00001D   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     58              
+     59          #if !BT_ALL_TASK
+     60              user_bt_init();
+   \   000022                ; Setup parameters for call to function user_bt_init
+   \   000022   90....       MOV     DPTR,#(user_bt_init & 0xffff)
+   \   000025   74..         MOV     A,#((user_bt_init >> 16) & 0xff)
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     61              bt_connect();                                           //进入蓝牙任务，发起回连
+   \   00002A                ; Setup parameters for call to function bt_connect
+   \   00002A   90....       MOV     DPTR,#(bt_connect & 0xffff)
+   \   00002D   74..         MOV     A,#((bt_connect >> 16) & 0xff)
+   \   00002F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     62              sys_ctl.bt_sta = bt_status_get();
+   \   000032                ; Setup parameters for call to function bt_status_get
+   \   000032   90....       MOV     DPTR,#(bt_status_get & 0xffff)
+   \   000035   74..         MOV     A,#((bt_status_get >> 16) & 0xff)
+   \   000037   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00003A   E9           MOV     A,R1
+   \   00003B   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00003E   F0           MOVX    @DPTR,A
+     63              sys_ctl.connected = (sys_ctl.bt_sta >= BT_STA_CONNECTED) ? 1 : 0;
+   \   00003F   C3           CLR     C
+   \   000040   9405         SUBB    A,#0x5
+   \   000042   4004         JC      ??task_bt_enter_1
+   \   000044   7A01         MOV     R2,#0x1
+   \   000046   8002         SJMP    ??task_bt_enter_2
+   \                     ??task_bt_enter_1:
+   \   000048   7A00         MOV     R2,#0x0
+   \                     ??task_bt_enter_2:
+   \   00004A   EA           MOV     A,R2
+   \   00004B   90....       MOV     DPTR,#(sys_ctl + 25)
+   \   00004E   F0           MOVX    @DPTR,A
+     64          #else
+     65              btinfo_get_mic(bt_mic_param);
+     66              btinfo_get_voice(bt_mic_param+2);
+     67          #endif
+     68              sys_ctl.bt_sta = bt_status_get();
+   \   00004F                ; Setup parameters for call to function bt_status_get
+   \   00004F   90....       MOV     DPTR,#(bt_status_get & 0xffff)
+   \   000052   74..         MOV     A,#((bt_status_get >> 16) & 0xff)
+   \   000054   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000057   E9           MOV     A,R1
+   \   000058   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00005B   F0           MOVX    @DPTR,A
+     69          
+     70              //sound_ctl_init(3, 0x80, 25, 0x40);        //连续3次超过0x80认为开始有声；连续25次0x40认为静音
+     71              memset(&t_bt, 0, sizeof(t_bt));
+   \   00005C                ; Setup parameters for call to function my_memset
+   \   00005C   7C04         MOV     R4,#0x4
+   \   00005E   7D00         MOV     R5,#0x0
+   \   000060   7900         MOV     R1,#0x0
+   \   000062   7A..         MOV     R2,#(t_bt & 0xff)
+   \   000064   7B..         MOV     R3,#((t_bt >> 8) & 0xff)
+   \   000066   12....       LCALL   my_memset & 0xFFFF
+     72          #if IS_LCD_DISPLAY
+     73              t_bt.updata_flag = 1;   //更新显示标志
+     74          #endif
+     75              //先更新显示
+     76              //task_bt_display();
+     77              
+     78              t_bt.disp_bt_sta = 0xff;
+   \   000069   74FF         MOV     A,#-0x1
+   \   00006B   90....       MOV     DPTR,#t_bt
+   \   00006E   F0           MOVX    @DPTR,A
+     79              t_bt.disp_dev_bat = 0xff;
+   \   00006F   90....       MOV     DPTR,#(t_bt + 1)
+   \   000072   F0           MOVX    @DPTR,A
+     80              t_bt.add_sco_flag = 0;
+   \   000073   E4           CLR     A
+   \   000074   90....       MOV     DPTR,#(t_bt + 2)
+   \   000077   F0           MOVX    @DPTR,A
+     81              led_bt_none();
+   \   000078                ; Setup parameters for call to function led_bt_none
+   \   000078   90....       MOV     DPTR,#(led_bt_none & 0xffff)
+   \   00007B   74..         MOV     A,#((led_bt_none >> 16) & 0xff)
+   \   00007D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     82              dac_enable();
+   \   000080                ; Setup parameters for call to function dac_enable
+   \   000080   90....       MOV     DPTR,#(dac_enable & 0xffff)
+   \   000083   74..         MOV     A,#((dac_enable >> 16) & 0xff)
+   \   000085   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     83              //Audio_Slow_Volume(UNMUTE);
+     84          #if WARNING_TASK_BT
+     85              led_bt_voice();
+     86              if(work_sta_interrupt == TASK_NULL){
+     87                  mp3_res_play_wait(RES_MP3_BT_MODE);
+     88              }
+     89          #endif
+     90              flush_msg();                        //清空消息池
+   \   000088                ; Setup parameters for call to function flush_msg
+   \   000088   12....       LCALL   flush_msg & 0xFFFF
+     91          #if 0
+     92          #if IIS_TYPE == IIS_TAS5711
+     93              TAS5711_AMP_Mute_Set(FALSE);
+     94          #endif
+     95          #endif
+     96          
+     97          #if BT_DYNAMIC_NOISE
+     98              sound_ctl_init(8, 0x08, 100, 0x03);        //连续10次超过0x08认为开始有声；连续100次0x03以下认为静音
+   \   00008B                ; Setup parameters for call to function sound_ctl_init
+   \   00008B   7403         MOV     A,#0x3
+   \   00008D   C0E0         PUSH    A
+   \   00008F   E4           CLR     A
+   \   000090   C0E0         PUSH    A
+   \   000092   7C64         MOV     R4,#0x64
+   \   000094   7A08         MOV     R2,#0x8
+   \   000096   FB           MOV     R3,A
+   \   000097   7908         MOV     R1,#0x8
+   \   000099   12....       LCALL   sound_ctl_init & 0xFFFF
+   \   00009C   D0E0         POP     A
+   \   00009E   D0E0         POP     A
+     99              sound_set_flag(0, 0);
+   \   0000A0                ; Setup parameters for call to function sound_set_flag
+   \   0000A0   7A00         MOV     R2,#0x0
+   \   0000A2   7900         MOV     R1,#0x0
+   \   0000A4   12....       LCALL   sound_set_flag & 0xFFFF
+    100          #endif
+    101          
+    102          #if BT_VOLUME_MAX
+    103              user_set_volume(VOLUME_MAX);
+    104          #endif
+    105          
+    106              btdec_load_code(0x10, 3);
+   \   0000A7                ; Setup parameters for call to function btdec_load_code
+   \   0000A7   7903         MOV     R1,#0x3
+   \   0000A9   7A10         MOV     R2,#0x10
+   \   0000AB   7B00         MOV     R3,#0x0
+   \   0000AD   90....       MOV     DPTR,#(btdec_load_code & 0xffff)
+   \   0000B0   74..         MOV     A,#((btdec_load_code >> 16) & 0xff)
+   \   0000B2   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    107              btmode_enter();
+   \   0000B5                ; Setup parameters for call to function btmode_enter
+   \   0000B5   90....       MOV     DPTR,#(btmode_enter & 0xffff)
+   \   0000B8   74..         MOV     A,#((btmode_enter >> 16) & 0xff)
+   \   0000BA   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    108          
+    109          #if (DISPLAY_SEL != DISPLAY_NO)
+    110          #if IS_LEDSEG_DISPLAY
+    111              ledseg_ocx.disp_flag = 1;
+   \   0000BD   7401         MOV     A,#0x1
+   \   0000BF   90....       MOV     DPTR,#(ledseg_ocx + 5)
+   \   0000C2   F0           MOVX    @DPTR,A
+    112          #endif
+    113          #endif
+    114              sys_ctl.sleep_cnt = 0xffff;
+   \   0000C3   90....       MOV     DPTR,#(sys_ctl + 21)
+   \   0000C6   74FF         MOV     A,#-0x1
+   \   0000C8   F0           MOVX    @DPTR,A
+   \   0000C9   A3           INC     DPTR
+   \   0000CA   F0           MOVX    @DPTR,A
+    115              sys_ctl.vol_maxmin_music_flag = 0;
+   \   0000CB   E4           CLR     A
+   \   0000CC   90....       MOV     DPTR,#(sys_ctl + 43)
+   \   0000CF   F0           MOVX    @DPTR,A
+    116              sys_ctl.vol_maxmin_music_play = 0;
+   \   0000D0   90....       MOV     DPTR,#(sys_ctl + 44)
+   \   0000D3   F0           MOVX    @DPTR,A
+    117              phonebook_total_num = sys_param_read16(PARAM_PHONEBOOK_NUM);
+   \   0000D4                ; Setup parameters for call to function spi_read16
+   \   0000D4                ; Setup parameters for call to function spi_param_addr
+   \   0000D4   7A29         MOV     R2,#0x29
+   \   0000D6   F9           MOV     R1,A
+   \   0000D7   12....       LCALL   spi_param_addr & 0xFFFF
+   \   0000DA   12....       LCALL   spi_read16 & 0xFFFF
+   \   0000DD   90....       MOV     DPTR,#phonebook_total_num
+   \   0000E0   EA           MOV     A,R2
+   \   0000E1   F0           MOVX    @DPTR,A
+   \   0000E2   A3           INC     DPTR
+   \   0000E3   EB           MOV     A,R3
+   \   0000E4   F0           MOVX    @DPTR,A
+    118          #if IR_HARD_POWERDOWN_EN
+    119              sys_ctl.ir_power_flag = 0;
+    120          #endif
+    121              dac_dynamic(BT_DYNAMIC_NOISE);              //启用动态降噪
+   \   0000E5                ; Setup parameters for call to function dac_dynamic
+   \   0000E5   7902         MOV     R1,#0x2
+   \   0000E7   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   0000EA   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   0000EC   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    122          #if BT_ALL_TASK
+    123              delay_5ms(60);  //需要延时一段时间，动态检测才能获取蓝牙P/P状态
+    124              task_bt_sta_update();
+    125          #endif
+    126          #if MIC_DIRECT_OUT_EN
+    127              mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    128              btdec_play();
+    129          #endif
+    130          
+    131          #if IS_LCD_DISPLAY
+    132              ocx_init(task_bt_event, NULL);  // 初始化控件，能在调音量时也处理蓝牙事件
+    133          #if THEME_SELECT==THEME_LCD_DEFAULT
+    134              lcd_buf=lcd_buf3;   // bt播放音乐使用lcd_buf3，否则会花屏
+    135          #endif
+    136          #endif
+    137              sys_ctl.mode_switch_flag = 1;
+   \   0000EF   7401         MOV     A,#0x1
+   \   0000F1   90....       MOV     DPTR,#(sys_ctl + 61)
+   \   0000F4   F0           MOVX    @DPTR,A
+    138          }
+   \   0000F5   02....       LJMP    ?BRET
+    139          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    140          void bt_close(void)
+   \                     bt_close:
+    141          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    142              void BtMainLoop(void);
+    143              bt_disconnect();
+   \   000000                ; Setup parameters for call to function bt_disconnect
+   \   000000   90....       MOV     DPTR,#(bt_disconnect & 0xffff)
+   \   000003   74..         MOV     A,#((bt_disconnect >> 16) & 0xff)
+   \   000005   8008         SJMP    ??bt_close_0
+    144              while (bt_status_get() >= BT_STA_DISCONNECTING) {
+    145                  WATCHDOG_CLR();
+   \                     ??bt_close_1:
+   \   000007   43F720       ORL     0xf7,#0x20
+    146                  user_bt_event();
+   \   00000A                ; Setup parameters for call to function user_bt_event
+   \   00000A   90....       MOV     DPTR,#(user_bt_event & 0xffff)
+   \   00000D   74..         MOV     A,#((user_bt_event >> 16) & 0xff)
+   \                     ??bt_close_0:
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    147              }
+   \   000012                ; Setup parameters for call to function bt_status_get
+   \   000012   90....       MOV     DPTR,#(bt_status_get & 0xffff)
+   \   000015   74..         MOV     A,#((bt_status_get >> 16) & 0xff)
+   \   000017   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00001A   E9           MOV     A,R1
+   \   00001B   C3           CLR     C
+   \   00001C   9403         SUBB    A,#0x3
+   \   00001E   50E7         JNC     ??bt_close_1
+    148              bt_set_scan(0, 0);
+   \   000020                ; Setup parameters for call to function bt_set_scan
+   \   000020   C2F1         CLR     B.1
+   \   000022   C2F0         CLR     B.0
+   \   000024   90....       MOV     DPTR,#(bt_set_scan & 0xffff)
+   \   000027   74..         MOV     A,#((bt_set_scan >> 16) & 0xff)
+   \   000029   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    149              btmode_exit();
+   \   00002C                ; Setup parameters for call to function btmode_exit
+   \   00002C   90....       MOV     DPTR,#(btmode_exit & 0xffff)
+   \   00002F   74..         MOV     A,#((btmode_exit >> 16) & 0xff)
+   \   000031   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    150              user_bt_off();
+   \   000034                ; Setup parameters for call to function user_bt_off
+   \   000034   90....       MOV     DPTR,#(user_bt_off & 0xffff)
+   \   000037   74..         MOV     A,#((user_bt_off >> 16) & 0xff)
+   \   000039   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    151              sys_ctl.voice_play_flag = 0;
+   \   00003C   E4           CLR     A
+   \   00003D   90....       MOV     DPTR,#(sys_ctl + 26)
+   \   000040   F0           MOVX    @DPTR,A
+    152              BTLDO_DIS();
+    153          }
+   \   000041   02....       LJMP    ?BRET
+    154          
+    155          //退出蓝牙任务
+    156          #pragma location="TASK_BT_SEG_1"
+
+   \                                 In segment TASK_BT_SEG_1, align 1, keep-with-next
+    157          void task_bt_exit(void)
+   \                     task_bt_exit:
+    158          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    159          #if NPCP215X
+    160              //Audio_Slow_Volume(MUTE);
+    161              AudioCodec_MUTE(MUTE);
+   \   000000                ; Setup parameters for call to function AudioCodec_MUTE
+   \   000000   7901         MOV     R1,#0x1
+   \   000002   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   000005   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    162          #endif
+    163              //sys_mute();    
+    164          #if IIS_TYPE == IIS_TAS5711
+    165              TAS5711_AMP_Mute_Set(TRUE);
+    166          #endif
+    167              t_bt.hid_enable = 0;
+   \   00000A   E4           CLR     A
+   \   00000B   90....       MOV     DPTR,#(t_bt + 3)
+   \   00000E   F0           MOVX    @DPTR,A
+    168          #if TASK_BT_EN
+    169          #if BT_ALL_TASK
+    170              if (sys_ctl.bt_sta == BT_STA_PLAYING) {     //后台时切换到其它模式暂停手机播放
+    171                  bt_pause_play();
+    172                  while (bt_get_status() == BT_STA_PLAYING) {
+    173                      bt_event();
+    174                      delay_5ms(30);
+    175                      WATCHDOG_CLR();
+    176                  }
+    177              }
+    178              if(bt_test_flag){
+    179                  bt_test_flag = false;
+    180                  user_bt_init();
+    181                  bt_reset();
+    182              }else{
+    183                  btmode_exit();
+    184              }
+    185          #else
+    186              if(bt_testmode()) {
+   \   00000F                ; Setup parameters for call to function bt_testmode
+   \   00000F   12....       LCALL   bt_testmode & 0xFFFF
+   \   000012   E9           MOV     A,R1
+   \   000013   6014         JZ      ??task_bt_exit_0
+    187                  bt_test_flag = false;
+   \   000015   E4           CLR     A
+   \   000016   90....       MOV     DPTR,#bt_test_flag
+   \   000019   F0           MOVX    @DPTR,A
+    188                  bt_reset();
+   \   00001A                ; Setup parameters for call to function bt_reset
+   \   00001A   90....       MOV     DPTR,#(bt_reset & 0xffff)
+   \   00001D   74..         MOV     A,#((bt_reset >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    189                  user_bt_off(); //关闭蓝牙通信
+   \   000022                ; Setup parameters for call to function user_bt_off
+   \   000022   90....       MOV     DPTR,#(user_bt_off & 0xffff)
+   \   000025   74..         MOV     A,#((user_bt_off >> 16) & 0xff)
+   \   000027   8005         SJMP    ??task_bt_exit_1
+    190              } else {
+    191                  bt_close();
+   \                     ??task_bt_exit_0:
+   \   000029                ; Setup parameters for call to function bt_close
+   \   000029   90....       MOV     DPTR,#(bt_close & 0xffff)
+   \   00002C   74..         MOV     A,#((bt_close >> 16) & 0xff)
+   \                     ??task_bt_exit_1:
+   \   00002E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    192              }
+    193          #endif
+    194              btdec_stop();
+   \   000031                ; Setup parameters for call to function btdec_stop
+   \   000031   90....       MOV     DPTR,#(btdec_stop & 0xffff)
+   \   000034   74..         MOV     A,#((btdec_stop >> 16) & 0xff)
+   \   000036   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    195          #endif
+    196              dac_dynamic(DYNAMIC_NO);                    //退出蓝牙，关闭动态降噪
+   \   000039                ; Setup parameters for call to function dac_dynamic
+   \   000039   7900         MOV     R1,#0x0
+   \   00003B   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   00003E   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   000040   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    197          #if MIC_DIRECT_OUT_EN
+    198              mic_direct_out_exit();
+    199          #endif
+    200           
+    201              dac_disable();
+   \   000043                ; Setup parameters for call to function dac_disable
+   \   000043   90....       MOV     DPTR,#(dac_disable & 0xffff)
+   \   000046   74..         MOV     A,#((dac_disable >> 16) & 0xff)
+   \   000048   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    202              amux_exit();
+   \   00004B                ; Setup parameters for call to function amux_exit
+   \   00004B   90....       MOV     DPTR,#(amux_exit & 0xffff)
+   \   00004E   74..         MOV     A,#((amux_exit >> 16) & 0xff)
+   \   000050   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    203          #if THEME_SELECT==THEME_LCD_DEFAULT
+    204              lcd_buf=lcd_buf1;   // 退出时，lcd恢复使用大buf
+    205              work_sta_interrupt = TASK_NULL;
+    206          #endif
+    207              if(device_is_online(DEVICE_UDISK)){
+   \   000053                ; Setup parameters for call to function device_is_online
+   \   000053   7901         MOV     R1,#0x1
+   \   000055   12....       LCALL   device_is_online & 0xFFFF
+   \   000058   5003         JNC     ??task_bt_exit_2
+    208                  usb_host_resume();
+   \   00005A                ; Setup parameters for call to function usb_host_resume
+   \   00005A   12....       LCALL   usb_host_resume & 0xFFFF
+    209              }
+    210          }
+   \                     ??task_bt_exit_2:
+   \   00005D   02....       LJMP    ?BRET
+    211          
+    212          #if BT_AUTO_PLAY
+    213          u8 temp_remote_dev_addr[6];
+    214          #endif
+    215          //蓝牙事件
+    216          #pragma location="TASK_BT_MINI_SEG"//"TASK_BTEVENT_SEG"
+
+   \                                 In segment TASK_BT_MINI_SEG, align 1, keep-with-next
+    217          void task_bt_event(void)
+   \                     task_bt_event:
+    218          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    219              comm_event();
+   \   000000                ; Setup parameters for call to function comm_event
+   \   000000   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000003   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    220              if (work_sta_interrupt) {
+   \   000008   90....       MOV     DPTR,#work_sta_interrupt
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   601E         JZ      ??task_bt_event_0
+    221                  if(sys_ctl.bt_sta == BT_STA_PLAYING) {
+   \   00000E   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000011   E0           MOVX    A,@DPTR
+   \   000012   FA           MOV     R2,A
+   \   000013   7406         MOV     A,#0x6
+   \   000015   6A           XRL     A,R2
+   \   000016   7006         JNZ     ??task_bt_event_1
+    222                      work_sta_interrupt = TASK_NULL;
+   \   000018   E4           CLR     A
+   \   000019   90....       MOV     DPTR,#work_sta_interrupt
+   \   00001C   800D         SJMP    ??task_bt_event_2
+    223                  }else if (sys_ctl.bt_sta < BT_STA_INCOMING) {
+   \                     ??task_bt_event_1:
+   \   00001E   EA           MOV     A,R2
+   \   00001F   C3           CLR     C
+   \   000020   9407         SUBB    A,#0x7
+   \   000022   5008         JNC     ??task_bt_event_0
+    224                      task_ctl.work_sta = work_sta_interrupt;
+   \   000024   90....       MOV     DPTR,#work_sta_interrupt
+   \   000027   E0           MOVX    A,@DPTR
+   \   000028   90....       MOV     DPTR,#task_ctl
+   \                     ??task_bt_event_2:
+   \   00002B   F0           MOVX    @DPTR,A
+    225                      //printf("ret %d\n", work_sta_interrupt);
+    226                  }
+    227              }
+    228          #if BT_AUTO_STANDBY_EN
+    229              if (!BT_IS_SLEEP) {
+    230                  sys_ctl.sleep_cnt = STANDBY_TIME;
+    231              }
+    232              if (sys_ctl.sleep_cnt == 0) {
+    233                  task_hold();
+    234              }
+    235          #endif
+    236          
+    237          #if WARNING_LOWPOWER
+    238              if(sys_ctl.lowpower_warning_flag == 1){
+    239                  sys_ctl.lowpower_warning_flag = 2;
+    240                  mp3res_play_btmode(RES_MP3_PLEASE_CHARGE);
+    241              }
+    242          #endif
+    243          
+    244          #if BT_AUTO_PLAY
+    245              static bool temp_play = 0;
+    246              if(t_bt.bt_sta == BT_STA_CONNECTED && !temp_play){
+    247                  temp_play = 1;
+    248                  sys_ctl.bt_auto_play_flag = sys_param_read8(PARAM_BT_AUTO_PLAY);//printf("auto: %d\n",sys_ctl.bt_auto_play_flag);
+    249                  param_read(temp_remote_dev_addr, PARAM_REMOTE_DEV_ADDR, 6);
+    250                  if(sys_ctl.bt_auto_play_flag && 0 == memcmp(temp_remote_dev_addr, Link_BdAddr, 6)){
+    251                      //need_send_ppkey = 1;
+    252                  }
+    253                  sys_ctl.bt_auto_play_flag = 0;
+    254                  sys_param_write8(PARAM_BT_AUTO_PLAY, sys_ctl.bt_auto_play_flag);
+    255              }
+    256          #endif
+    257          
+    258              if (bt_testmode()) {
+   \                     ??task_bt_event_0:
+   \   00002C                ; Setup parameters for call to function bt_testmode
+   \   00002C   12....       LCALL   bt_testmode & 0xFFFF
+   \   00002F   E9           MOV     A,R1
+   \   000030   6008         JZ      ??task_bt_event_3
+    259                  tasksub_bt_test();
+   \   000032                ; Setup parameters for call to function tasksub_bt_test
+   \   000032   90....       MOV     DPTR,#(tasksub_bt_test & 0xffff)
+   \   000035   74..         MOV     A,#((tasksub_bt_test >> 16) & 0xff)
+   \   000037   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    260              }
+    261          }
+   \                     ??task_bt_event_3:
+   \   00003A   02....       LJMP    ?BRET
+    262          
+    263          //蓝牙任务下，1S消息处理
+    264          #pragma location="TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+    265          void task_bt_deal_msg_10s(void)
+   \                     task_bt_deal_msg_10s:
+    266          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    267              send_bat_to_iphone_hook();
+   \   000000                ; Setup parameters for call to function send_bat_to_iphone_hook
+   \   000000   90....       MOV     DPTR,#(send_bat_to_iphone_hook & 0xffff)
+   \   000003   74..         MOV     A,#((send_bat_to_iphone_hook >> 16) & 0xff)
+   \   000005                REQUIRE ?Subroutine2
+   \   000005                ; // Fall through to label ?Subroutine2
+    268          }
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+    269          
+    270          #pragma location="BT_API_SEG"
+
+   \                                 In segment BT_API_SEG, align 1, keep-with-next
+    271          void bt_add_sco(void)
+   \                     bt_add_sco:
+    272          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+    273              printf("ADD SCO\n");
+   \   000002                ; Setup parameters for call to function my_printf
+   \   000002   7A..         MOV     R2,#(`?<Constant "ADD SCO\\n">` & 0xff)
+   \   000004   7B..         MOV     R3,#((`?<Constant "ADD SCO\\n">` >> 8) & 0xff)
+   \   000006   12....       LCALL   my_printf & 0xFFFF
+    274          
+    275              btdec_stop();                               //停止当前的蓝牙音乐播放
+   \   000009                ; Setup parameters for call to function btdec_stop
+   \   000009   90....       MOV     DPTR,#(btdec_stop & 0xffff)
+   \   00000C   74..         MOV     A,#((btdec_stop >> 16) & 0xff)
+   \   00000E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    276              t_bt.add_sco_flag = 1;
+   \   000011   7401         MOV     A,#0x1
+   \   000013   90....       MOV     DPTR,#(t_bt + 2)
+   \   000016   F0           MOVX    @DPTR,A
+    277              dac_dynamic(DYNAMIC_NO);                    //通话时，不需要动态降噪
+   \   000017                ; Setup parameters for call to function dac_dynamic
+   \   000017   7900         MOV     R1,#0x0
+   \   000019   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   00001C   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   00001E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    278              //while(sbc_dec_busy){}   // wait sbc decode complete
+    279          
+    280          
+    281              AUCON0 = 0x06;  //RST
+   \   000021   75E306       MOV     0xe3,#0x6
+    282              //AUCON9 = 0x04;
+    283              //printf("bt_enter_hshf\n");
+    284          
+    285              bool ie_sint_bak = IE_SINT;
+   \   000024   A2A8         MOV     C,0xa8.0
+   \   000026   92..         MOV     ?VB.0,C
+    286              IE_SINT = 0;
+   \   000028   C2A8         CLR     0xa8.0
+    287          
+    288              memset(sco_spk_vad, 0, sizeof(sco_spk_vad));
+   \   00002A                ; Setup parameters for call to function my_memset
+   \   00002A   7C01         MOV     R4,#0x1
+   \   00002C   7D00         MOV     R5,#0x0
+   \   00002E   7900         MOV     R1,#0x0
+   \   000030   7A..         MOV     R2,#(sco_spk_vad & 0xff)
+   \   000032   7B..         MOV     R3,#((sco_spk_vad >> 8) & 0xff)
+   \   000034   12....       LCALL   my_memset & 0xFFFF
+    289              sco_spk_vad_index = 0;
+   \   000037   E4           CLR     A
+   \   000038   90....       MOV     DPTR,#sco_spk_vad_index
+   \   00003B   F0           MOVX    @DPTR,A
+    290              sco_spk_vad_mute = 0;
+   \   00003C   90....       MOV     DPTR,#sco_spk_vad_mute
+   \   00003F   F0           MOVX    @DPTR,A
+    291          
+    292              //sco_mic_vad = 1;
+    293              sco_far_vad = 0;
+   \   000040   90....       MOV     DPTR,#sco_far_vad
+   \   000043   F0           MOVX    @DPTR,A
+    294              sco_far_vad_last = 0;
+   \   000044   90....       MOV     DPTR,#sco_far_vad_last
+   \   000047   F0           MOVX    @DPTR,A
+    295              sco_spk_stable = 0;
+   \   000048   90....       MOV     DPTR,#sco_spk_stable
+   \   00004B   F0           MOVX    @DPTR,A
+    296          
+    297              sco_mic_pow = 1;
+   \   00004C   7401         MOV     A,#0x1
+   \   00004E   90....       MOV     DPTR,#sco_mic_pow
+   \   000051   F0           MOVX    @DPTR,A
+    298              sco_mic_stable = 0;
+   \   000052   E4           CLR     A
+   \   000053   90....       MOV     DPTR,#sco_mic_stable
+   \   000056   F0           MOVX    @DPTR,A
+    299          
+    300              sco_cal_index = 0;
+   \   000057   90....       MOV     DPTR,#sco_cal_index
+   \   00005A   F0           MOVX    @DPTR,A
+    301              sco_cal_max = -128;
+   \   00005B   7480         MOV     A,#-0x80
+   \   00005D   90....       MOV     DPTR,#sco_cal_max
+   \   000060   F0           MOVX    @DPTR,A
+    302              sco_cal_min = 127;
+   \   000061   747F         MOV     A,#0x7f
+   \   000063   90....       MOV     DPTR,#sco_cal_min
+   \   000066   F0           MOVX    @DPTR,A
+    303          
+    304              sco_farpcm_len = 0;
+   \   000067   12....       LCALL   ?Subroutine0
+    305              sco_farpcm_wptr = sco_farpcm;
+    306              sco_farpcm_rptr = sco_farpcm;
+    307              memset(sco_farpcm, 0, sizeof(sco_farpcm));
+   \                     ??CrossCallReturnLabel_0:
+   \   00006A                ; Setup parameters for call to function my_memset
+   \   00006A   7C00         MOV     R4,#0x0
+   \   00006C   7D08         MOV     R5,#0x8
+   \   00006E   7900         MOV     R1,#0x0
+   \   000070   7A..         MOV     R2,#(sco_farpcm & 0xff)
+   \   000072   FB           MOV     R3,A
+   \   000073   12....       LCALL   my_memset & 0xFFFF
+    308          
+    309              far_vol = 255;
+   \   000076   74FF         MOV     A,#-0x1
+   \   000078   90....       MOV     DPTR,#far_vol
+   \   00007B   F0           MOVX    @DPTR,A
+    310              far_noise_pow = 0;
+   \   00007C   E4           CLR     A
+   \   00007D   90....       MOV     DPTR,#far_noise_pow
+   \   000080   F0           MOVX    @DPTR,A
+    311              far_noise_pow_cnt = 0;
+   \   000081   90....       MOV     DPTR,#far_noise_pow_cnt
+   \   000084   F0           MOVX    @DPTR,A
+   \   000085   A3           INC     DPTR
+   \   000086   F0           MOVX    @DPTR,A
+    312          
+    313              uartTxQ3[0]=0x03;//packet type
+   \   000087   7403         MOV     A,#0x3
+   \   000089   90....       MOV     DPTR,#uartTxQ3
+   \   00008C   F0           MOVX    @DPTR,A
+    314              uartTxQ3[1]=0x5C;
+   \   00008D   745C         MOV     A,#0x5c
+   \   00008F   90....       MOV     DPTR,#(uartTxQ3 + 1)
+   \   000092   F0           MOVX    @DPTR,A
+    315              uartTxQ3[2]=0x00;
+   \   000093   E4           CLR     A
+   \   000094   90....       MOV     DPTR,#(uartTxQ3 + 2)
+   \   000097   F0           MOVX    @DPTR,A
+    316              uartTxQ3[3]=0x20;//32 bytes, 16 PCM samples
+   \   000098   7420         MOV     A,#0x20
+   \   00009A   90....       MOV     DPTR,#(uartTxQ3 + 3)
+   \   00009D   F0           MOVX    @DPTR,A
+    317          
+    318          #if 1
+    319              PCON0 &= ~BIT(7);       //DecRAM clk enable
+   \   00009E   53877F       ANL     0x87,#0x7f
+    320              PCON1 &= ~BIT(1);       //FFT clk enable
+   \   0000A1   539CFD       ANL     0x9c,#0xfd
+    321              aec_status = 0;
+   \   0000A4   12....       LCALL   ?Subroutine1
+    322              adc_data_pos = 0;
+    323              aec_proc_kick = 0;
+    324              aec_post_kick = 0;
+    325              aec_init();
+   \                     ??CrossCallReturnLabel_2:
+   \   0000A7                ; Setup parameters for call to function aec_init
+   \   0000A7   12....       LCALL   aec_init & 0xFFFF
+    326          #endif
+    327          
+    328              bt_mic_init();
+   \   0000AA                ; Setup parameters for call to function bt_mic_init
+   \   0000AA   90....       MOV     DPTR,#(bt_mic_init & 0xffff)
+   \   0000AD   74..         MOV     A,#((bt_mic_init >> 16) & 0xff)
+   \   0000AF   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    329              pcm_init(S_SPR_8000);
+   \   0000B2                ; Setup parameters for call to function pcm_init
+   \   0000B2   790D         MOV     R1,#0xd
+   \   0000B4   90....       MOV     DPTR,#(pcm_init & 0xffff)
+   \   0000B7   74..         MOV     A,#((pcm_init >> 16) & 0xff)
+   \   0000B9   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    330              AUCON10 |= BIT(7);
+   \   0000BC   43ED80       ORL     0xed,#0x80
+    331              FIFO_SPEED = 0x00;
+   \   0000BF   E4           CLR     A
+   \   0000C0   90789B       MOV     DPTR,#0x789b
+   \   0000C3   F0           MOVX    @DPTR,A
+    332          
+    333              IE_SINT = ie_sint_bak;
+   \   0000C4   A2..         MOV     C,?VB.0
+   \   0000C6   92A8         MOV     0xa8.0,C
+    334              pcm_play();
+   \   0000C8                ; Setup parameters for call to function pcm_play
+   \   0000C8   90....       MOV     DPTR,#(pcm_play & 0xffff)
+   \   0000CB   74..         MOV     A,#((pcm_play >> 16) & 0xff)
+   \   0000CD   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    335          }
+   \   0000D0   D0..         POP     ?VB
+   \   0000D2   02....       LJMP    ?BRET
+
+   \                                 In segment BT_API_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   E4           CLR     A
+   \   000001   90....       MOV     DPTR,#aec_status
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   90....       MOV     DPTR,#adc_data_pos
+   \   000008   F0           MOVX    @DPTR,A
+   \   000009   90....       MOV     DPTR,#aec_proc_kick
+   \   00000C   F0           MOVX    @DPTR,A
+   \   00000D   90....       MOV     DPTR,#aec_post_kick
+   \   000010   F0           MOVX    @DPTR,A
+   \   000011   22           RET
+
+   \                                 In segment BT_API_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   90....       MOV     DPTR,#sco_farpcm_len
+   \   000003   E4           CLR     A
+   \   000004   F0           MOVX    @DPTR,A
+   \   000005   A3           INC     DPTR
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   90....       MOV     DPTR,#sco_farpcm_wptr
+   \   00000A   74..         MOV     A,#(sco_farpcm & 0xff)
+   \   00000C   F0           MOVX    @DPTR,A
+   \   00000D   A3           INC     DPTR
+   \   00000E   74..         MOV     A,#((sco_farpcm >> 8) & 0xff)
+   \   000010   F0           MOVX    @DPTR,A
+   \   000011   90....       MOV     DPTR,#sco_farpcm_rptr
+   \   000014   74..         MOV     A,#(sco_farpcm & 0xff)
+   \   000016   F0           MOVX    @DPTR,A
+   \   000017   A3           INC     DPTR
+   \   000018   74..         MOV     A,#((sco_farpcm >> 8) & 0xff)
+   \   00001A   F0           MOVX    @DPTR,A
+   \   00001B   22           RET
+    336          
+    337          #pragma location="BT_API_SEG"
+
+   \                                 In segment BT_API_SEG, align 1, keep-with-next
+    338          void bt_dis_sco(void)
+   \                     bt_dis_sco:
+    339          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    340              printf("DIS SCO\n");
+   \   000000                ; Setup parameters for call to function my_printf
+   \   000000   7A..         MOV     R2,#(`?<Constant "DIS SCO\\n">` & 0xff)
+   \   000002   7B..         MOV     R3,#((`?<Constant "DIS SCO\\n">` >> 8) & 0xff)
+   \   000004   12....       LCALL   my_printf & 0xFFFF
+    341              adc_stop();
+   \   000007                ; Setup parameters for call to function adc_stop
+   \   000007   90....       MOV     DPTR,#(adc_stop & 0xffff)
+   \   00000A   74..         MOV     A,#((adc_stop >> 16) & 0xff)
+   \   00000C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    342              pcm_stop();
+   \   00000F                ; Setup parameters for call to function pcm_stop
+   \   00000F   90....       MOV     DPTR,#(pcm_stop & 0xffff)
+   \   000012   74..         MOV     A,#((pcm_stop >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    343          	adc_exit();
+   \   000017                ; Setup parameters for call to function adc_exit
+   \   000017   90....       MOV     DPTR,#(adc_exit & 0xffff)
+   \   00001A   74..         MOV     A,#((adc_exit >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    344              aec_status = 0;
+   \   00001F   12....       LCALL   ?Subroutine1
+    345              adc_data_pos = 0;
+    346              aec_proc_kick = 0;
+    347              aec_post_kick = 0;
+    348          
+    349              FFT1CON = 0;
+   \                     ??CrossCallReturnLabel_3:
+   \   000022   9078A0       MOV     DPTR,#0x78a0
+   \   000025   F0           MOVX    @DPTR,A
+    350              FFT1CON1 = 0;
+   \   000026   9078A1       MOV     DPTR,#0x78a1
+   \   000029   F0           MOVX    @DPTR,A
+    351          
+    352          #if !BT_CALL_PRIVATE
+    353              dac_disable();
+    354          #endif
+    355              //printf("bt_exit_hshf\n");
+    356              sco_farpcm_len = 0;
+   \   00002A   90....       MOV     DPTR,#sco_farpcm_len
+   \   00002D   F0           MOVX    @DPTR,A
+   \   00002E   A3           INC     DPTR
+   \   00002F   F0           MOVX    @DPTR,A
+    357          #if !BT_CALL_PRIVATE
+    358              amux_exit();
+    359          #endif
+    360          
+    361              t_bt.add_sco_flag = 0;
+   \   000030   90....       MOV     DPTR,#(t_bt + 2)
+   \   000033   F0           MOVX    @DPTR,A
+    362              dac_enable();
+   \   000034                ; Setup parameters for call to function dac_enable
+   \   000034   90....       MOV     DPTR,#(dac_enable & 0xffff)
+   \   000037   74..         MOV     A,#((dac_enable >> 16) & 0xff)
+   \   000039   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    363              dac_dynamic(BT_DYNAMIC_NOISE);      //结束通话，开启动态降噪
+   \   00003C                ; Setup parameters for call to function dac_dynamic
+   \   00003C   7902         MOV     R1,#0x2
+   \   00003E   90....       MOV     DPTR,#(dac_dynamic & 0xffff)
+   \   000041   74..         MOV     A,#((dac_dynamic >> 16) & 0xff)
+   \   000043   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    364          
+    365              sco_farpcm_len = 0;
+   \   000046   12....       LCALL   ?Subroutine0
+    366              sco_farpcm_wptr = sco_farpcm;
+    367              sco_farpcm_rptr = sco_farpcm;
+    368              delay_5ms(25);                      //等待DAC数据完成
+   \                     ??CrossCallReturnLabel_1:
+   \   000049                ; Setup parameters for call to function delay_5ms
+   \   000049   7919         MOV     R1,#0x19
+   \   00004B   12....       LCALL   delay_5ms & 0xFFFF
+    369              sbc_init();                         //这里会打开软中断
+   \   00004E                ; Setup parameters for call to function sbc_init
+   \   00004E   90....       MOV     DPTR,#(sbc_init & 0xffff)
+   \   000051   74..         MOV     A,#((sbc_init >> 16) & 0xff)
+   \   000053   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    370          
+    371              task_bt_sta_update();
+   \   000056                ; Setup parameters for call to function task_bt_sta_update
+   \   000056   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   000059   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \   00005B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    372          #if MIC_DIRECT_OUT_EN
+    373              mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    374              btdec_play();
+    375          #endif
+    376          
+    377          #if DAC_MIX_OUT_EN
+    378              dac_left_right_mix_out();
+    379          #endif
+    380          
+    381          }
+   \   00005E   02....       LJMP    ?BRET
+    382          
+    383          #if WARNING_VOL_MAXMIN
+    384          void bt_play_vol_music(void)
+    385          {
+    386              if(!sys_ctl.vol_maxmin_music_play){
+    387                  sys_ctl.vol_maxmin_music_play = 1;
+    388              }
+    389              btmode_exit();
+    390              mp3_res_play_wait(RES_MP3_VOL_MAXMIN);
+    391              flush_dispensable_msg();
+    392          }
+    393          #endif
+    394          
+    395          #pragma location="TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+    396          void bt_play_continue(void)
+   \                     bt_play_continue:
+    397          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    398              btdec_load_code(0x10, 3);
+   \   000000                ; Setup parameters for call to function btdec_load_code
+   \   000000   7903         MOV     R1,#0x3
+   \   000002   7A10         MOV     R2,#0x10
+   \   000004   7B00         MOV     R3,#0x0
+   \   000006   90....       MOV     DPTR,#(btdec_load_code & 0xffff)
+   \   000009   74..         MOV     A,#((btdec_load_code >> 16) & 0xff)
+   \   00000B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    399              btmode_enter();
+   \   00000E                ; Setup parameters for call to function btmode_enter
+   \   00000E   90....       MOV     DPTR,#(btmode_enter & 0xffff)
+   \   000011   74..         MOV     A,#((btmode_enter >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    400              sbc_init();
+   \   000016                ; Setup parameters for call to function sbc_init
+   \   000016   90....       MOV     DPTR,#(sbc_init & 0xffff)
+   \   000019   74..         MOV     A,#((sbc_init >> 16) & 0xff)
+   \   00001B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    401              task_bt_sta_update();
+   \   00001E                ; Setup parameters for call to function task_bt_sta_update
+   \   00001E   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   000021   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \   000023   80..         SJMP    ?Subroutine2
+    402          }
+    403          
+    404          #pragma location="TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+    405          void mp3res_play_btmode(u8 music_name)
+   \                     mp3res_play_btmode:
+    406          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+    407              btmode_exit();
+   \   000005                ; Setup parameters for call to function btmode_exit
+   \   000005   90....       MOV     DPTR,#(btmode_exit & 0xffff)
+   \   000008   74..         MOV     A,#((btmode_exit >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    408              mp3_res_play_wait(music_name);
+   \   00000D                ; Setup parameters for call to function mp3_res_play_wait
+   \   00000D   EE           MOV     A,R6
+   \   00000E   F9           MOV     R1,A
+   \   00000F   90....       MOV     DPTR,#(mp3_res_play_wait & 0xffff)
+   \   000012   74..         MOV     A,#((mp3_res_play_wait >> 16) & 0xff)
+   \   000014   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    409              bt_play_continue();
+   \   000017                ; Setup parameters for call to function bt_play_continue
+   \   000017   90....       MOV     DPTR,#(bt_play_continue & 0xffff)
+   \   00001A   74..         MOV     A,#((bt_play_continue >> 16) & 0xff)
+   \   00001C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    410          }
+   \   00001F   D0E0         POP     A
+   \   000021   FE           MOV     R6,A
+   \   000022   02....       LJMP    ?BRET
+    411          
+    412          //手机端改变媒体音量接口，1为UP, 0为DOWN
+    413          #pragma location="BT_AVCTP_RX"
+
+   \                                 In segment BT_AVCTP_RX, align 1, keep-with-next
+    414          void a2dpvol_change_hook(u8 mode)
+   \                     a2dpvol_change_hook:
+    415          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    416              if (mode == 0) {
+   \   000000   E9           MOV     A,R1
+   \   000001   7004         JNZ     ??a2dpvol_change_hook_0
+    417                  put_msg(Q_VOL_DOWN);
+   \   000003                ; Setup parameters for call to function put_msg
+   \   000003   797B         MOV     R1,#0x7b
+   \   000005   8002         SJMP    ??a2dpvol_change_hook_1
+    418              } else {
+    419                  put_msg(Q_VOL_UP);
+   \                     ??a2dpvol_change_hook_0:
+   \   000007                ; Setup parameters for call to function put_msg
+   \   000007   797A         MOV     R1,#0x7a
+   \                     ??a2dpvol_change_hook_1:
+   \   000009   12....       LCALL   put_msg & 0xFFFF
+    420              }
+    421          }
+   \   00000C   02....       LJMP    ?BRET
+    422          
+    423          //A2DP设置音量接口
+    424          #pragma location="BT_AVCTP_RX"
+
+   \                                 In segment BT_AVCTP_RX, align 1, keep-with-next
+    425          void a2dpvol_set_hook(u8 vol)
+   \                     a2dpvol_set_hook:
+    426          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+    427              //iphone端调设备音量，其中iphone音量范围是0~0x7f，要转换为设备音量，VOLUME_MAX最好能被整除，如16或32
+    428              vol = (vol+2)/8;
+   \   000004   89..         MOV     ?V0 + 0,R1
+   \   000006   7402         MOV     A,#0x2
+   \   000008   25..         ADD     A,?V0 + 0
+   \   00000A   F8           MOV     R0,A
+   \   00000B   E4           CLR     A
+   \   00000C   3400         ADDC    A,#0x0
+   \   00000E   F9           MOV     R1,A
+   \   00000F   7A08         MOV     R2,#0x8
+   \   000011   7B00         MOV     R3,#0x0
+   \   000013   12....       LCALL   ?S_DIV_MOD
+   \   000016   E8           MOV     A,R0
+   \   000017   F9           MOV     R1,A
+    429              if(vol != sys_ctl.volume) {
+   \   000018   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   00001B   E0           MOVX    A,@DPTR
+   \   00001C   69           XRL     A,R1
+   \   00001D   6010         JZ      ??a2dpvol_set_hook_0
+    430                  user_set_volume(vol);
+   \   00001F                ; Setup parameters for call to function user_set_volume
+   \   00001F   90....       MOV     DPTR,#(user_set_volume & 0xffff)
+   \   000022   74..         MOV     A,#((user_set_volume >> 16) & 0xff)
+   \   000024   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    431                  show_volume();
+   \   000027                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   000027   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   00002A   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    432              }
+    433          }
+   \                     ??a2dpvol_set_hook_0:
+   \   00002F   D0..         POP     ?V0 + 1
+   \   000031   D0..         POP     ?V0 + 0
+   \   000033   02....       LJMP    ?BRET
+    434          
+    435          //A2DP获取当音音量接口
+    436          #pragma location="BT_AVCTP_RX"
+
+   \                                 In segment BT_AVCTP_RX, align 1, keep-with-next
+    437          u8 a2dpvol_get_hook(void)
+   \                     a2dpvol_get_hook:
+    438          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    439              u8 vol = sys_ctl.volume*8+2; //iphone获取设备音量，要转换为iphone音量，VOLUME_MAX最好能被整除
+   \   000000   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   33           RLC     A
+   \   000005   33           RLC     A
+   \   000006   33           RLC     A
+   \   000007   54F8         ANL     A,#0xf8
+   \   000009   2402         ADD     A,#0x2
+   \   00000B   F9           MOV     R1,A
+    440              if(vol < 7) {
+   \   00000C   C3           CLR     C
+   \   00000D   9407         SUBB    A,#0x7
+   \   00000F   5004         JNC     ??a2dpvol_get_hook_0
+    441                  return 0;
+   \   000011   7900         MOV     R1,#0x0
+   \   000013   8008         SJMP    ??a2dpvol_get_hook_1
+    442              } else if(vol > 0x77) {
+   \                     ??a2dpvol_get_hook_0:
+   \   000015   E9           MOV     A,R1
+   \   000016   C3           CLR     C
+   \   000017   9478         SUBB    A,#0x78
+   \   000019   4002         JC      ??a2dpvol_get_hook_1
+    443                  return 0x7f;
+   \   00001B   797F         MOV     R1,#0x7f
+    444              } else {
+    445          	    return vol;
+   \                     ??a2dpvol_get_hook_1:
+   \   00001D   02....       LJMP    ?BRET
+    446              }
+    447          }
+    448          
+    449          //处理蓝牙的通知消息
+    450          #pragma location="TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_SEG, align 1, keep-with-next
+    451          void task_bt_deal_notice_msg(u8 msg)
+   \                     task_bt_deal_notice_msg:
+    452          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   FA           MOV     R2,A
+    453              switch (msg) {
+   \   000002   90....       MOV     DPTR,#(sys_ctl + 6)
+   \   000005   E0           MOVX    A,@DPTR
+   \   000006   F9           MOV     R1,A
+   \   000007   EA           MOV     A,R2
+   \   000008   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_bt_deal_notice_msg>_0`:
+   \   00000B   72           DB        114
+   \   00000C   0A           DB        10
+   \   00000D   ....         DW        ??task_bt_deal_notice_msg_0
+   \   00000F   ....         DW        ??task_bt_deal_notice_msg_1
+   \   000011   ....         DW        ??task_bt_deal_notice_msg_2
+   \   000013   ....         DW        ??task_bt_deal_notice_msg_3
+   \   000015   ....         DW        ??task_bt_deal_notice_msg_4
+   \   000017   ....         DW        ??task_bt_deal_notice_msg_5
+   \   000019   ....         DW        ??task_bt_deal_notice_msg_0
+   \   00001B   ....         DW        ??task_bt_deal_notice_msg_0
+   \   00001D   ....         DW        ??task_bt_deal_notice_msg_0
+   \   00001F   ....         DW        ??task_bt_deal_notice_msg_6
+   \   000021   ....         DW        ??task_bt_deal_notice_msg_7
+   \   000023   ....         DW        ??task_bt_deal_notice_msg_8
+    454              case Q_BT_CONN_DONE:
+    455                  //蓝牙已连接
+    456          #if WARNING_BT_CONNECT
+    457                  if (!bt_testmode()) {                           //测试模式下不要连接提示音
+   \                     ??task_bt_deal_notice_msg_5:
+   \   000025                ; Setup parameters for call to function bt_testmode
+   \   000025   12....       LCALL   bt_testmode & 0xFFFF
+   \   000028   E9           MOV     A,R1
+   \   000029   700A         JNZ     ??task_bt_deal_notice_msg_9
+    458                      mp3res_play_btmode(RES_MP3_BT_CONNECT);
+   \   00002B                ; Setup parameters for call to function mp3res_play_btmode
+   \   00002B   7902         MOV     R1,#0x2
+   \   00002D   90....       MOV     DPTR,#(mp3res_play_btmode & 0xffff)
+   \   000030   74..         MOV     A,#((mp3res_play_btmode >> 16) & 0xff)
+   \   000032   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    459                  }
+    460          #endif
+    461          #if 0
+    462          #if NPCP215X
+    463                  AudioCodec_MUTE(UNMUTE);
+    464          #endif
+    465          #endif
+    466                  task_bt_sta_update();
+   \                     ??task_bt_deal_notice_msg_9:
+   \   000035                ; Setup parameters for call to function task_bt_sta_update
+   \   000035   90....       MOV     DPTR,#(task_bt_sta_update & 0xffff)
+   \   000038   74..         MOV     A,#((task_bt_sta_update >> 16) & 0xff)
+   \   00003A   8057         SJMP    ??task_bt_deal_notice_msg_10
+    467                  break;
+    468          
+    469              case Q_BT_DISCONN_DONE:
+    470                  //蓝牙已断开
+    471          #if WARNING_BT_DISCONNECT
+    472                  if (!bt_testmode()) {                           //测试模式下不要断开提示音
+   \                     ??task_bt_deal_notice_msg_8:
+   \   00003C                ; Setup parameters for call to function bt_testmode
+   \   00003C   12....       LCALL   bt_testmode & 0xFFFF
+   \   00003F   E9           MOV     A,R1
+   \   000040   7054         JNZ     ??task_bt_deal_notice_msg_0
+    473                      mp3res_play_btmode(RES_MP3_BT_DISCONNECT);
+   \   000042                ; Setup parameters for call to function mp3res_play_btmode
+   \   000042   7903         MOV     R1,#0x3
+   \   000044   90....       MOV     DPTR,#(mp3res_play_btmode & 0xffff)
+   \   000047   74..         MOV     A,#((mp3res_play_btmode >> 16) & 0xff)
+   \   000049   8048         SJMP    ??task_bt_deal_notice_msg_10
+    474                  }
+    475          #endif
+    476                  break;
+    477          
+    478              case Q_BT_CONN_LOST:
+    479                  //蓝牙连接丢失（远距离断开）
+    480                  //printf("主人不要丢下我啊\n");
+    481          #if BT_ANTI_LOST
+    482                  if (sys_ctl.bt_sta < BT_STA_CONNECTED) {
+    483                      tasksub_bt_lost();
+    484                  }
+    485          #endif
+    486                  break;
+    487          
+    488              case Q_BT_PLAY:
+    489                  //蓝牙开始播放
+    490                  //sys_ctl.bt_playing_flag = 1;
+    491                  //sys_ctl.bt_sta_change_flag = 1;
+    492                  //sys_ctl.bt_play_flag = 1;
+    493                  btdec_play();
+   \                     ??task_bt_deal_notice_msg_4:
+   \   00004B                ; Setup parameters for call to function btdec_play
+   \   00004B   90....       MOV     DPTR,#(btdec_play & 0xffff)
+   \   00004E   74..         MOV     A,#((btdec_play >> 16) & 0xff)
+   \   000050   8041         SJMP    ??task_bt_deal_notice_msg_10
+    494          #if 0        
+    495          #if NPCP215X
+    496                  AudioCodec_MUTE(UNMUTE);
+    497          #endif
+    498          #endif
+    499                  break;
+    500          
+    501              case Q_BT_STOP:
+    502                  //蓝牙停止播放
+    503          #if 1        
+    504          #if NPCP215X
+    505                  AudioCodec_MUTE(MUTE);
+   \                     ??task_bt_deal_notice_msg_3:
+   \   000052                ; Setup parameters for call to function AudioCodec_MUTE
+   \   000052   7901         MOV     R1,#0x1
+   \   000054   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   000057   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   000059   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    506          #endif
+    507          #endif
+    508          #if !MIC_DIRECT_OUT_EN
+    509                  if(!t_bt.add_sco_flag) {                        //已经在add sco时停止音乐播放
+   \   00005C   90....       MOV     DPTR,#(t_bt + 2)
+   \   00005F   E0           MOVX    A,@DPTR
+   \   000060   7034         JNZ     ??task_bt_deal_notice_msg_0
+    510                      btdec_stop();
+   \   000062                ; Setup parameters for call to function btdec_stop
+   \   000062   90....       MOV     DPTR,#(btdec_stop & 0xffff)
+   \   000065   74..         MOV     A,#((btdec_stop >> 16) & 0xff)
+   \   000067   802A         SJMP    ??task_bt_deal_notice_msg_10
+    511                  }
+    512          #endif
+    513          #if 0
+    514          #if NPCP215X
+    515                  AudioCodec_MUTE(UNMUTE);
+    516          #endif
+    517          #endif
+    518                  break;
+    519          
+    520              case Q_BT_INCOMING:
+    521                  //蓝牙来电
+    522                  tasksub_bt_ring();
+   \                     ??task_bt_deal_notice_msg_2:
+   \   000069                ; Setup parameters for call to function tasksub_bt_ring
+   \   000069   90....       MOV     DPTR,#(tasksub_bt_ring & 0xffff)
+   \   00006C   74..         MOV     A,#((tasksub_bt_ring >> 16) & 0xff)
+   \   00006E   8023         SJMP    ??task_bt_deal_notice_msg_10
+    523                  break;
+    524          
+    525              case Q_BT_CALL:
+    526                  //蓝牙开始通话
+    527                  tasksub_bt_call();
+   \                     ??task_bt_deal_notice_msg_1:
+   \   000070                ; Setup parameters for call to function tasksub_bt_call
+   \   000070   90....       MOV     DPTR,#(tasksub_bt_call & 0xffff)
+   \   000073   74..         MOV     A,#((tasksub_bt_call >> 16) & 0xff)
+   \   000075   801C         SJMP    ??task_bt_deal_notice_msg_10
+    528                  break;
+    529          
+    530                  //手机端调系统音量
+    531              case Q_VOL_DOWN:
+    532                  user_set_volume(user_volume_dec(sys_ctl.volume));
+   \                     ??task_bt_deal_notice_msg_7:
+   \   000077                ; Setup parameters for call to function user_set_volume
+   \   000077                ; Setup parameters for call to function user_volume_dec
+   \   000077   90....       MOV     DPTR,#(user_volume_dec & 0xffff)
+   \   00007A   74..         MOV     A,#((user_volume_dec >> 16) & 0xff)
+   \   00007C   8005         SJMP    ??task_bt_deal_notice_msg_11
+    533                  show_volume();
+    534                  break;
+    535              case Q_VOL_UP:
+    536                  user_set_volume(user_volume_inc(sys_ctl.volume));
+   \                     ??task_bt_deal_notice_msg_6:
+   \   00007E                ; Setup parameters for call to function user_set_volume
+   \   00007E                ; Setup parameters for call to function user_volume_inc
+   \   00007E   90....       MOV     DPTR,#(user_volume_inc & 0xffff)
+   \   000081   74..         MOV     A,#((user_volume_inc >> 16) & 0xff)
+   \                     ??task_bt_deal_notice_msg_11:
+   \   000083   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000086   90....       MOV     DPTR,#(user_set_volume & 0xffff)
+   \   000089   74..         MOV     A,#((user_set_volume >> 16) & 0xff)
+   \   00008B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    537                  show_volume();
+   \   00008E                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   00008E   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   000091   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \                     ??task_bt_deal_notice_msg_10:
+   \   000093   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    538                  break;
+    539              }
+    540          }
+   \                     ??task_bt_deal_notice_msg_0:
+   \   000096   02....       LJMP    ?BRET
+    541          
+    542          #pragma location="TASK_BTEVENT_SEG"
+
+   \                                 In segment TASK_BTEVENT_SEG, align 1, keep-with-next
+    543          void task_bt_loop(void)
+   \                     task_bt_loop:
+    544          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   8016         SJMP    ??task_bt_loop_0
+    545              u8 msg;
+    546              while ((task_ctl.work_sta == TASK_BT || sys_ctl.bt_sta >= BT_STA_INCOMING)
+    547                     && (task_ctl.work_sta != TASK_POWEROFF))
+    548              {
+    549                  task_bt_event();
+    550                  while (msg = get_msg()) {
+    551          #if BT_HID_MANU
+    552          			if (t_bt.hid_enable == 1) {
+    553                          task_bt_hid_deal_msg(msg);
+    554          			}else
+    555          #endif
+    556                      {
+    557                          task_bt_deal_msg(msg);
+   \                     ??task_bt_loop_1:
+   \   000002                ; Setup parameters for call to function task_bt_deal_msg
+   \   000002   90....       MOV     DPTR,#(task_bt_deal_msg & 0xffff)
+   \   000005   74..         MOV     A,#((task_bt_deal_msg >> 16) & 0xff)
+   \                     ??task_bt_loop_2:
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    558                      }
+    559          #if WARNING_LOWPOWER    // 低电时跳出手机响铃
+    560                      if(task_ctl.work_sta == TASK_POWEROFF) {
+    561                          break;
+    562                      }
+    563          #endif
+    564          
+    565                  }
+   \   00000A                ; Setup parameters for call to function get_msg
+   \   00000A   12....       LCALL   get_msg & 0xFFFF
+   \   00000D   E9           MOV     A,R1
+   \   00000E   70F2         JNZ     ??task_bt_loop_1
+    566                  task_bt_display();
+   \   000010                ; Setup parameters for call to function task_bt_display
+   \   000010   90....       MOV     DPTR,#(task_bt_display & 0xffff)
+   \   000013   74..         MOV     A,#((task_bt_display >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_bt_loop_0:
+   \   000018   90....       MOV     DPTR,#task_ctl
+   \   00001B   E0           MOVX    A,@DPTR
+   \   00001C   640D         XRL     A,#0xd
+   \   00001E   6009         JZ      ??task_bt_loop_3
+   \   000020   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   C3           CLR     C
+   \   000025   9407         SUBB    A,#0x7
+   \   000027   400F         JC      ??task_bt_loop_4
+   \                     ??task_bt_loop_3:
+   \   000029   90....       MOV     DPTR,#task_ctl
+   \   00002C   E0           MOVX    A,@DPTR
+   \   00002D   641A         XRL     A,#0x1a
+   \   00002F   6007         JZ      ??task_bt_loop_4
+   \   000031                ; Setup parameters for call to function task_bt_event
+   \   000031   90....       MOV     DPTR,#(task_bt_event & 0xffff)
+   \   000034   74..         MOV     A,#((task_bt_event >> 16) & 0xff)
+   \   000036   80CF         SJMP    ??task_bt_loop_2
+    567              }
+    568          }
+   \                     ??task_bt_loop_4:
+   \   000038   02....       LJMP    ?BRET
+    569          
+    570          //蓝牙任务
+    571          #pragma location="TASK_BT_MINI_SEG"//"TASK_BT_SEG"
+
+   \                                 In segment TASK_BT_MINI_SEG, align 1, keep-with-next
+    572          void task_bt(void)
+   \                     task_bt:
+    573          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    574              //printf(str_show_taskbt);
+    575              task_bt_enter();
+   \   000000                ; Setup parameters for call to function task_bt_enter
+   \   000000   90....       MOV     DPTR,#(task_bt_enter & 0xffff)
+   \   000003   74..         MOV     A,#((task_bt_enter >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    576              task_bt_loop();
+   \   000008                ; Setup parameters for call to function task_bt_loop
+   \   000008   90....       MOV     DPTR,#(task_bt_loop & 0xffff)
+   \   00000B   74..         MOV     A,#((task_bt_loop >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    577              task_bt_exit();
+   \   000010                ; Setup parameters for call to function task_bt_exit
+   \   000010   90....       MOV     DPTR,#(task_bt_exit & 0xffff)
+   \   000013   74..         MOV     A,#((task_bt_exit >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    578              //printf(str_show_taskbtexit);
+    579          }
+   \   000018   02....       LJMP    ?BRET
+
+   \                                 In segment CODE_C, align 1
+   \                     `?<Constant "DIS SCO\\n">`:
+   \   000000   44495320     DB "DIS SCO\012"
+   \            53434F0A
+   \            00      
+
+   \                                 In segment CODE_C, align 1
+   \                     `?<Constant "ADD SCO\\n">`:
+   \   000000   41444420     DB "ADD SCO\012"
+   \            53434F0A
+   \            00      
+
+   \                                 In segment SFR_AN, at 0xa8
+   \   union <unnamed> volatile __sfr _A_IE0
+   \                     _A_IE0:
+   \   000000                DS 1
+    580          #else          //由于关闭蓝牙会导致蓝牙库出现编译错误，故暂时定义一下蓝牙库调用的变量和函数，待整理
+    581          u16  sco_farpcm_len;
+    582          s16 *sco_farpcm_wptr;
+    583          s16 *sco_farpcm_rptr;
+    584          #define SCO_FARPCM_SIZE         (0x800/2)      // unit 16bits
+    585          IAR_XDATA_A s16 sco_farpcm[SCO_FARPCM_SIZE] @ "BT_SCOFAR_XDATA";
+    586          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                     EXT_STACK PSTACK XSTACK
+     --------                     --------- ------ ------
+     BT_IncomingCallNumber               0      0      0
+     a2dpvol_change_hook                 0      0      0
+       -> put_msg                        0      0      0
+       -> put_msg                        0      0      0
+     a2dpvol_get_hook                    0      0      0
+     a2dpvol_set_hook                    2      0      0
+       -> user_set_volume                4      0      0
+       -> ledseg_ocx_show_vol            4      0      0
+     bt_add_sco                          1      0      0
+       -> my_printf                      2      0      0
+       -> btdec_stop                     2      0      0
+       -> dac_dynamic                    2      0      0
+       -> my_memset                      2      0      0
+       -> my_memset                      2      0      0
+       -> aec_init                       2      0      0
+       -> bt_mic_init                    2      0      0
+       -> pcm_init                       2      0      0
+       -> pcm_play                       2      0      0
+     bt_close                            0      0      0
+       -> bt_disconnect                  0      0      0
+       -> user_bt_event                  0      0      0
+       -> bt_status_get                  0      0      0
+       -> bt_set_scan                    0      0      0
+       -> btmode_exit                    0      0      0
+       -> user_bt_off                    0      0      0
+     bt_dis_sco                          0      0      0
+       -> my_printf                      0      0      0
+       -> adc_stop                       0      0      0
+       -> pcm_stop                       0      0      0
+       -> adc_exit                       0      0      0
+       -> dac_enable                     0      0      0
+       -> dac_dynamic                    0      0      0
+       -> delay_5ms                      0      0      0
+       -> sbc_init                       0      0      0
+       -> task_bt_sta_update             0      0      0
+     bt_mic_init                         1      0      0
+       -> adc_init                       0      0      0
+       -> adc_start                      0      0      0
+     bt_play_continue                    1      0      0
+       -> btdec_load_code                0      0      0
+       -> btmode_enter                   0      0      0
+       -> sbc_init                       0      0      0
+       -> task_bt_sta_update             0      0      0
+     bt_voice_sco                        2      0      0
+     bt_voice_softisr                    0      0      0
+       -> aec_process                    0      0      0
+     get_num_buf                         0      0      0
+     get_num_len                         0      0      0
+     hshfvol_change_hook                 0      0      0
+     mp3res_play_btmode                  1      0      0
+       -> btmode_exit                    2      0      0
+       -> mp3_res_play_wait              2      0      0
+       -> bt_play_continue               2      0      0
+     send_hshfvol_hook                   0      0      0
+       -> send_at_vgs                    0      0      0
+     set_num_len                         0      0      0
+     task_bt                             0      0      0
+       -> task_bt_enter                  0      0      0
+       -> task_bt_loop                   0      0      0
+       -> task_bt_exit                   0      0      0
+     task_bt_call_deal_msg               0      0      0
+       -> bt_sco_switch                  0      0      0
+       -> bt_get_call_status             0      0      0
+       -> bt_pickup                      0      0      0
+       -> bt_hangup                      0      0      0
+       -> bt_get_call_status             0      0      0
+       -> bt_callswap                    0      0      0
+       -> user_volume_dec                0      0      0
+       -> user_set_hshfvol               0      0      0
+       -> send_hshfvol_hook              0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+       -> user_volume_inc                0      0      0
+       -> user_set_hshfvol               0      0      0
+       -> send_hshfvol_hook              0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+       -> user_volume_dec                0      0      0
+       -> user_set_volume                0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+       -> user_volume_inc                0      0      0
+       -> user_set_volume                0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+     task_bt_deal_msg                    0      0      0
+       -> bt_pause_play                  0      0      0
+       -> bt_disconnect                  0      0      0
+       -> bt_prev                        0      0      0
+       -> bt_next                        0      0      0
+       -> task_bt_deal_notice_msg        0      0      0
+       -> ledseg_disp                    0      0      0
+       -> ledseg_disp                    0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> deal_msg                       0      0      0
+     task_bt_deal_msg_10s                0      0      0
+       -> send_bat_to_iphone_hook        0      0      0
+     task_bt_deal_notice_msg             0      0      0
+       -> bt_testmode                    0      0      0
+       -> mp3res_play_btmode             0      0      0
+       -> task_bt_sta_update             0      0      0
+       -> bt_testmode                    0      0      0
+       -> mp3res_play_btmode             0      0      0
+       -> btdec_play                     0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> btdec_stop                     0      0      0
+       -> tasksub_bt_ring                0      0      0
+       -> tasksub_bt_call                0      0      0
+       -> user_volume_dec                0      0      0
+       -> user_set_volume                0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+       -> user_volume_inc                0      0      0
+       -> user_set_volume                0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+     task_bt_display                     1      0      0
+       -> ledseg_ocx_event               0      0      0
+       -> task_bt_state                  0      0      0
+       -> ledseg_disp                    0      0      0
+       -> ledseg_ocx_display             0      0      0
+     task_bt_enter                       2      0      0
+       -> device_is_online               0      0      0
+       -> usb_host_suspend               0      0      0
+       -> set_sys_clk                    0      0      0
+       -> ledseg_disp                    0      0      0
+       -> user_bt_init                   0      0      0
+       -> bt_connect                     0      0      0
+       -> bt_status_get                  0      0      0
+       -> bt_status_get                  0      0      0
+       -> my_memset                      0      0      0
+       -> led_bt_none                    0      0      0
+       -> dac_enable                     0      0      0
+       -> flush_msg                      0      0      0
+       -> sound_ctl_init                 4      0      0
+       -> sound_set_flag                 0      0      0
+       -> btdec_load_code                0      0      0
+       -> btmode_enter                   0      0      0
+       -> spi_param_addr                 0      0      0
+       -> spi_read16                     0      0      0
+       -> dac_dynamic                    0      0      0
+     task_bt_event                       0      0      0
+       -> comm_event                     0      0      0
+       -> bt_testmode                    0      0      0
+       -> tasksub_bt_test                0      0      0
+     task_bt_exit                        0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> bt_testmode                    0      0      0
+       -> bt_reset                       0      0      0
+       -> user_bt_off                    0      0      0
+       -> bt_close                       0      0      0
+       -> btdec_stop                     0      0      0
+       -> dac_dynamic                    0      0      0
+       -> dac_disable                    0      0      0
+       -> amux_exit                      0      0      0
+       -> device_is_online               0      0      0
+       -> usb_host_resume                0      0      0
+     task_bt_hid_deal_msg                0      0      0
+       -> bt_hid_photo                   0      0      0
+       -> task_bt_deal_notice_msg        0      0      0
+       -> send_bat_to_iphone_hook        0      0      0
+       -> deal_msg                       0      0      0
+     task_bt_loop                        0      0      0
+       -> task_bt_deal_msg               0      0      0
+       -> get_msg                        0      0      0
+       -> task_bt_display                0      0      0
+       -> task_bt_event                  0      0      0
+     task_bt_lost_deal_msg               1      0      0
+       -> mp3res_play_btmode             0      0      0
+     task_bt_ring_deal_msg               0      0      0
+       -> bt_pickup                      0      0      0
+       -> bt_hangup                      0      0      0
+     task_bt_state                       0      0      0
+       -> led_bt_idle                    0      0      0
+       -> led_bt_connect                 0      0      0
+       -> led_bt_play                    0      0      0
+       -> btdec_play                     0      0      0
+       -> led_bt_play                    0      0      0
+     task_bt_test_deal_msg               1      0      0
+       -> adc_stop                       0      0      0
+       -> pcm_stop                       0      0      0
+       -> adc_exit                       0      0      0
+       -> bt_init                        0      0      0
+       -> bt_test_vendor                 0      0      0
+       -> bt_test_vendor                 0      0      0
+       -> bt_test_vendor                 0      0      0
+       -> bt_test_vendor                 0      0      0
+       -> bt_test_vendor                 0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_hsf                  0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_next                 0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_play                 0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_prev                 0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_voldown              0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksb_bt_test_volup                0      0      0
+       -> bt_test_vendor                 0      0      0
+     tasksub_bt_call                     0      0      0
+       -> tasksub_bt_call_enter          0      0      0
+       -> tasksub_bt_call_loop           0      0      0
+       -> bt_exit_call                   0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_call_enter               0      0      0
+       -> bt_enter_call                  0      0      0
+     tasksub_bt_call_event               0      0      0
+       -> comm_event                     0      0      0
+       -> bt_sco_disconnect              0      0      0
+     tasksub_bt_call_exit                0      0      0
+       -> bt_exit_call                   0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_call_loop                0      0      0
+       -> task_bt_call_deal_msg          0      0      0
+       -> get_msg                        0      0      0
+       -> task_bt_display                0      0      0
+       -> tasksub_bt_call_event          0      0      0
+     tasksub_bt_lost                     0      0      0
+       -> tasksub_bt_lost_enter          0      0      0
+       -> tasksub_bt_lost_loop           0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_lost_enter               0      0      0
+       -> led_bt_idle                    0      0      0
+     tasksub_bt_lost_event               1      0      0
+       -> comm_event                     0      0      0
+     tasksub_bt_lost_exit                0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_lost_loop                1      0      0
+       -> task_bt_lost_deal_msg          2      0      0
+       -> get_msg                        2      0      0
+       -> task_bt_display                2      0      0
+       -> tasksub_bt_lost_event          2      0      0
+     tasksub_bt_ring                     0      0      0
+       -> tasksub_bt_ring_enter          0      0      0
+       -> tasksub_bt_ring_loop           0      0      0
+       -> tasksub_bt_ring_exit           0      0      0
+     tasksub_bt_ring_enter               0      0      0
+       -> btdec_stop                     0      0      0
+       -> dac_dynamic                    0      0      0
+       -> btmode_exit                    0      0      0
+       -> user_change_volume             0      0      0
+       -> mp3_res_play                   0      0      0
+     tasksub_bt_ring_event               2      0      0
+       -> comm_event                     4      0      0
+       -> music_event                    4      0      0
+       -> music_get_status               4      0      0
+     tasksub_bt_ring_exit                0      0      0
+       -> music_stop                     0      0      0
+       -> my_memset                      0      0      0
+       -> btdec_load_code                0      0      0
+       -> btmode_enter                   0      0      0
+       -> dac_dynamic                    0      0      0
+       -> user_change_volume             0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_ring_loop                0      0      0
+       -> task_bt_ring_deal_msg          0      0      0
+       -> get_msg                        0      0      0
+       -> task_bt_display                0      0      0
+       -> tasksub_bt_ring_event          0      0      0
+     tasksub_bt_test                     0      0      0
+       -> tasksub_bt_test_enter          0      0      0
+       -> tasksub_bt_test_loop           0      0      0
+       -> tasksub_bt_test_exit           0      0      0
+     tasksub_bt_test_enter               0      0      0
+       -> dac_dynamic                    0      0      0
+       -> btdec_play                     0      0      0
+     tasksub_bt_test_event               1      0      0
+       -> comm_event                     0      0      0
+       -> bt_testmode                    0      0      0
+     tasksub_bt_test_exit                0      0      0
+       -> dac_dynamic                    0      0      0
+       -> task_bt_sta_update             0      0      0
+     tasksub_bt_test_loop                1      0      0
+       -> task_bt_test_deal_msg          2      0      0
+       -> get_msg                        2      0      0
+       -> task_bt_display                2      0      0
+       -> tasksub_bt_test_event          2      0      0
+
+
+   Segment part sizes:
+
+     Function/Label          Bytes
+     --------------          -----
+     PCON0                      1
+     PCON1                      1
+     AUCON0                     1
+     AUCON5                     1
+     AUCON7                     1
+     AUCON10                    1
+     WDTCON                     1
+     bt_test_flag               1
+     t_bt                       4
+     str_show_taskbt            9
+     str_show_taskbtexit       14
+     at_spp0_ptr                5
+     at_spp1_ptr                5
+     task_bt_hid_deal_msg      58
+     task_bt_deal_msg         267
+     task_bt_state            112
+     task_bt_display           64
+     task_bt_ring_deal_msg     32
+     task_bt_call_deal_msg    191
+     task_bt_test_deal_msg    131
+     task_bt_lost_deal_msg     37
+     t_bt_ring                 26
+     tbl_ring_mp3              10
+     BT_IncomingCallNumber      3
+     get_num_len                8
+     set_num_len                8
+     get_num_buf                7
+     tasksub_bt_ring_enter     60
+     ?Subroutine3               6
+     tasksub_bt_ring_exit      88
+     tasksub_bt_ring_event     64
+     tasksub_bt_ring_loop      50
+     tasksub_bt_ring           24
+     sco_farpcm              2048
+     far_vol                    1
+     far_noise_pow_cnt          2
+     far_noise_pow              1
+     sco_farpcm_wptr            2
+     sco_farpcm_rptr            2
+     sco_farpcm_len             2
+     sco_spk_vad                1
+     sco_spk_vad_last           1
+     sco_spk_vad_index          1
+     sco_spk_vad_mute           1
+     sco_far_vad                1
+     sco_far_vad_last           1
+     sco_near_mic_mute          1
+     sco_spk_stable             1
+     sco_mic_pow                1
+     sco_mic_stable             1
+     sco_cal_index              1
+     sco_cal_max                1
+     sco_cal_min                1
+     bt_mic_init               21
+     bt_voice_sco             158
+     bt_voice_softisr          18
+     send_hshfvol_hook         16
+     hshfvol_change_hook        3
+     tasksub_bt_call_enter     13
+     ?Subroutine4              19
+     tasksub_bt_call_exit       0
+     tasksub_bt_call_event     57
+     tasksub_bt_call_loop      50
+     tasksub_bt_call           19
+     tasksub_bt_test_enter     23
+     ?Subroutine6              11
+     tasksub_bt_test_exit      17
+     tasksub_bt_test_event     25
+     tasksub_bt_test_loop      60
+     tasksb_bt_test_play        4
+     tasksb_bt_test_prev        4
+     tasksb_bt_test_next        4
+     tasksb_bt_test_voldown     4
+     tasksb_bt_test_volup       2
+     tasksb_bt_test_hsf         4
+     tasksub_bt_test           23
+     tasksub_bt_lost_enter     13
+     ?Subroutine5              11
+     tasksub_bt_lost_exit       0
+     tasksub_bt_lost_event     28
+     tasksub_bt_lost_loop      60
+     tasksub_bt_lost           18
+     task_bt_enter            248
+     bt_close                  68
+     task_bt_exit              96
+     task_bt_event             61
+     task_bt_deal_msg_10s       5
+     ?Subroutine2               6
+     bt_add_sco               213
+     ?Subroutine1              18
+     ?Subroutine0              28
+     bt_dis_sco                97
+     bt_play_continue          37
+     mp3res_play_btmode        37
+     a2dpvol_change_hook       15
+     a2dpvol_set_hook          54
+     a2dpvol_get_hook          32
+     task_bt_deal_notice_msg  153
+     task_bt_loop              59
+     task_bt                   27
+     ?<Constant "DIS SCO\n">    9
+     ?<Constant "ADD SCO\n">    9
+     _A_IE0                     1
+
+ 
+   204 bytes in segment BANKED_CODE
+   356 bytes in segment BT_API_SEG
+   101 bytes in segment BT_AVCTP_RX
+    16 bytes in segment BT_RFC_TX
+    10 bytes in segment BT_RFC_TX_CONST
+     3 bytes in segment BT_RXAT_CMD
+ 2 048 bytes in segment BT_SCOFAR_XDATA
+   158 bytes in segment BT_SCO_SEG
+     4 bytes in segment BT_XDATA
+    18 bytes in segment CODE_C
+    18 bytes in segment NEAR_CODE
+     1 byte  in segment SCO_VAD_BUF
+     8 bytes in segment SFR_AN
+    59 bytes in segment TASK_BTEVENT_SEG
+   480 bytes in segment TASK_BT_CALL_SEG
+   167 bytes in segment TASK_BT_LOST_SEG
+    88 bytes in segment TASK_BT_MINI_SEG
+    23 bytes in segment TASK_BT_MINI_SEG_CONST
+    10 bytes in segment TASK_BT_RING_CONST
+   347 bytes in segment TASK_BT_RING_SEG
+   875 bytes in segment TASK_BT_SEG
+    96 bytes in segment TASK_BT_SEG_1
+   181 bytes in segment TASK_BT_TEST_SEG
+    49 bytes in segment XDATA_Z
+ 
+ 3 210 bytes of CODE  memory
+     0 bytes of DATA  memory (+ 8 bytes shared)
+ 2 102 bytes of XDATA memory
+
+Errors: none
+Warnings: none

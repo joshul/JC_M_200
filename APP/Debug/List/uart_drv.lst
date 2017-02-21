@@ -1,0 +1,114 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:58 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          art_drv.c                                         #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          art_drv.c                                         #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\uart_drv.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\uart_drv.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\uart_drv.c
+      1          /*****************************************************************************
+      2          * Module    : BTSTACK
+      3          * File      : uart_drv.c
+      4          * Author    : Hanny
+      5          * Function  : Uart发送与接收控制
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #include "uart_drv.h"
+      9          
+     10          __near_func void uart1_puts(void *buf, u8 len);
+     11          __near_func bool bt_uart_route(void);
+     12          
+     13          __near_func void btrx_isr(unsigned char rdata);
+     14          __near_func void bt_uart_rxskip(u8 len);
+     15          __near_func void bt_uart_getbytes(void *buf, u8 len);
+     16          
+     17          extern IAR_BIT_A bool flag_btmode;            //为1时启用完整的蓝牙功能
+     18          
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+     19          __near_func void bt_uart_route_hook(void)
+   \                     bt_uart_route_hook:
+     20          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     21              if (bt_uart_route()) {
+   \   000000                ; Setup parameters for call to function bt_uart_route
+   \   000000   12....       LCALL   bt_uart_route
+   \   000003   5006         JNC     ??bt_uart_route_hook_0
+     22                  bt_sleep_cnt = BT_SLEEP_CNT;
+   \   000005   7408         MOV     A,#0x8
+   \   000007   90....       MOV     DPTR,#bt_sleep_cnt
+   \   00000A   F0           MOVX    @DPTR,A
+     23              }
+     24          }
+   \                     ??bt_uart_route_hook_0:
+   \   00000B   22           RET
+
+   Maximum stack usage in bytes:
+
+     Function           EXT_STACK PSTACK XSTACK
+     --------           --------- ------ ------
+     bt_uart_route_hook        0      0      0
+       -> bt_uart_route        0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     bt_uart_route_hook   12
+
+ 
+ 12 bytes in segment NEAR_CODE
+ 
+ 12 bytes of CODE memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,420 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:52 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led.c                                           #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led.c                                           #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\led.lst                                      #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\led.r51                                       #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\led.c
+      1          /*****************************************************************************
+      2           * Module    : display
+      3           * File      : led.c
+      4           * Author    : luoyunfeng
+      5           * Email     :
+      6           * Function  : LED灯相关的操作函数
+      7           *****************************************************************************/
+      8          #include "include.h"
+      9          #include "led.h"
+     10          #include "display.h"
+     11          
+     12          #include SET_USER_PATH(CFG_IO_LED_DIR, /io/io_led.c)         //UI控制
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \   type_led_ctl __xdata led_blue
+   \                     led_blue:
+   \   000000                DS 5
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+   \   __near_func __ext_stack_reentrant void led_scan(void)
+   \                     led_scan:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   90....       MOV     DPTR,#(led_blue + 4)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   A2E7         MOV     C,0xE0 /* A   */.7
+   \   000006   5020         JNC     ??led_scan_0
+   \   000008   90....       MOV     DPTR,#(led_blue + 1)
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   04           INC     A
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   C0E0         PUSH    A
+   \   000010   90....       MOV     DPTR,#led_blue
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   FA           MOV     R2,A
+   \   000015   D0E0         POP     A
+   \   000017   C3           CLR     C
+   \   000018   9A           SUBB    A,R2
+   \   000019   400D         JC      ??led_scan_0
+   \   00001B   90....       MOV     DPTR,#(led_blue + 2)
+   \   00001E   E0           MOVX    A,@DPTR
+   \   00001F   90....       MOV     DPTR,#led_blue
+   \   000022   F0           MOVX    @DPTR,A
+   \   000023   E4           CLR     A
+   \   000024   90....       MOV     DPTR,#(led_blue + 1)
+   \   000027   F0           MOVX    @DPTR,A
+   \                     ??led_scan_0:
+   \   000028   22           RET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_on(void)
+   \                     led_blue_on:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_off(void)
+   \                     led_blue_off:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_100ms(void)
+   \                     led_blue_100ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_200ms(void)
+   \                     led_blue_200ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_500ms(void)
+   \                     led_blue_500ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_1s(void)
+   \                     led_blue_1s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_2s(void)
+   \                     led_blue_2s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_on500ms_off2s(void)
+   \                     led_blue_on500ms_off2s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_on200ms_off2s(void)
+   \                     led_blue_on200ms_off2s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment DISP_LED_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_on50ms_off100ms(void)
+   \                     led_blue_on50ms_off100ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_on(void)
+   \                     led_green_on:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_off(void)
+   \                     led_green_off:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_100ms(void)
+   \                     led_green_100ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_200ms(void)
+   \                     led_green_200ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_500ms(void)
+   \                     led_green_500ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_1s(void)
+   \                     led_green_1s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_green_2s(void)
+   \                     led_green_2s:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_blue_green_500ms(void)
+   \                     led_blue_green_500ms:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_mode_on(void)
+   \                     led_mode_on:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_mode_off(void)
+   \                     led_mode_off:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_bt_none(void)
+   \                     led_bt_none:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_bt_voice(void)
+   \                     led_bt_voice:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_bt_idle(void)
+   \                     led_bt_idle:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_bt_connect(void)
+   \                     led_bt_connect:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_bt_play(void)
+   \                     led_bt_play:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_idle(void)
+   \                     led_idle:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_busy(void)
+   \                     led_busy:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_music_play(void)
+   \                     led_music_play:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_aux_pause(void)
+   \                     led_aux_pause:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_aux_play(void)
+   \                     led_aux_play:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_fm_play(void)
+   \                     led_fm_play:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void led_fm_scan(void)
+   \                     led_fm_scan:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   02....       LJMP    ?BRET
+     13          
+     14          
+
+   Maximum stack usage in bytes:
+
+     Function                 EXT_STACK PSTACK XSTACK
+     --------                 --------- ------ ------
+     led_aux_pause                   0      0      0
+     led_aux_play                    0      0      0
+     led_blue_100ms                  0      0      0
+     led_blue_1s                     0      0      0
+     led_blue_200ms                  0      0      0
+     led_blue_2s                     0      0      0
+     led_blue_500ms                  0      0      0
+     led_blue_green_500ms            0      0      0
+     led_blue_off                    0      0      0
+     led_blue_on                     0      0      0
+     led_blue_on200ms_off2s          0      0      0
+     led_blue_on500ms_off2s          0      0      0
+     led_blue_on50ms_off100ms        0      0      0
+     led_bt_connect                  0      0      0
+     led_bt_idle                     0      0      0
+     led_bt_none                     0      0      0
+     led_bt_play                     0      0      0
+     led_bt_voice                    0      0      0
+     led_busy                        0      0      0
+     led_fm_play                     0      0      0
+     led_fm_scan                     0      0      0
+     led_green_100ms                 0      0      0
+     led_green_1s                    0      0      0
+     led_green_200ms                 0      0      0
+     led_green_2s                    0      0      0
+     led_green_500ms                 0      0      0
+     led_green_off                   0      0      0
+     led_green_on                    0      0      0
+     led_idle                        0      0      0
+     led_mode_off                    0      0      0
+     led_mode_on                     0      0      0
+     led_music_play                  0      0      0
+     led_scan                        1      0      0
+
+
+   Segment part sizes:
+
+     Function/Label           Bytes
+     --------------           -----
+     led_blue                    5
+     led_scan                   41
+     led_blue_on                 3
+     led_blue_off                3
+     led_blue_100ms              3
+     led_blue_200ms              3
+     led_blue_500ms              3
+     led_blue_1s                 3
+     led_blue_2s                 3
+     led_blue_on500ms_off2s      3
+     led_blue_on200ms_off2s      3
+     led_blue_on50ms_off100ms    3
+     led_green_on                3
+     led_green_off               3
+     led_green_100ms             3
+     led_green_200ms             3
+     led_green_500ms             3
+     led_green_1s                3
+     led_green_2s                3
+     led_blue_green_500ms        3
+     led_mode_on                 3
+     led_mode_off                3
+     led_bt_none                 3
+     led_bt_voice                3
+     led_bt_idle                 3
+     led_bt_connect              3
+     led_bt_play                 3
+     led_idle                    3
+     led_busy                    3
+     led_music_play              3
+     led_aux_pause               3
+     led_aux_play                3
+     led_fm_play                 3
+     led_fm_scan                 3
+
+ 
+ 66 bytes in segment BANKED_CODE
+ 30 bytes in segment DISP_LED_SEG
+ 41 bytes in segment NEAR_CODE
+  5 bytes in segment XDATA_Z
+ 
+ 137 bytes of CODE  memory
+   5 bytes of XDATA memory
+
+Errors: none
+Warnings: none

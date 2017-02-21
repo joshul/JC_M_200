@@ -1,0 +1,377 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_RTC6207.c                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_RTC6207.c                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm_RTC6207.lst                          #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm_RTC6207.r51                           #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm\user_fm_RTC6207.c
+      1          /*--------------------------------------------------------------------------*/
+      2          /**@file RTC6207.C
+      3             @brief FM module
+      4             @date 2014-02-18
+      5             @note none
+      6          */
+      7          /*----------------------------------------------------------------------------*/
+      8          #include "include.h"
+      9          #include "RTC6207.h"
+     10          #include "user_fm.h"
+     11          
+     12          #if (FM_TYPE == FM_RTC6207)
+     13          
+     14          #define INTERNAL_XTAL_6207
+     15          //#define FM_50KHZ_STEP
+     16          /*
+     17          If using stand alone x'tal or shared x'tal from MCU
+     18          the macro "INTERNAL_XTAL_6207" should be defined.
+     19          
+     20          In shared x'tal case, we should add 300pF capacitor on series path in front of RCLK pin
+     21          */
+     22          
+     23          #pragma constseg = "FM_CONST_RTC6207"
+     24          const u8 RTC62XX_CKHoppingOn[] =
+     25          {
+     26              0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x20,0x00,
+     27              0x05,0x0F, 0x40,0x00, 0x10,0x40, 0x00,0x11, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+     28              0xD0,0x09, 0x7F,0x80, 0x3C,0x01, 0x96,0xC0, 0x01,0x00, 0x00,0x00, 0x01,0x40,
+     29              0x47,0x00, 0x00,0x00
+     30          };
+     31          
+     32          const u8 RTC62XX_SWBank2[] =
+     33          {
+     34              0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x80,0x00, 0x80,0x00,
+     35              0x01,0x01, 0xC8,0xC8, 0x07,0x2D, 0x05,0x1C, 0x03,0x0B, 0x03,0x0B, 0x07,0x2D,
+     36              0x00,0x83, 0x7F,0x8A, 0xC8,0x01, 0xC8,0xC8, 0x14,0x00, 0x40,0x00, 0x00,0x01,
+     37              0x32,0x01, 0x00,0x00
+     38          };
+     39          
+     40          
+     41          #ifndef INTERNAL_XTAL_6207
+     42          
+     43          #ifndef FM_50KHZ_STEP
+     44          const u8 RTC6207_power_up[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x1f,0x00,0x48,0x01,0x00,0x00,0x00,0x40,0x50};
+     45          #else
+     46          const u8 RTC6207_power_up[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x2f,0x00,0x48,0x01,0x00,0x00,0x00,0x40,0x50};//space 50
+     47          #endif
+     48          
+     49          #else
+     50          
+     51          #ifndef FM_50KHZ_STEP
+     52          const u8 RTC6207_power_up[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x1f,0x00,0x48,0x81,0x00,0x00,0x00,0x40,0x50};
+     53          #else
+     54          const u8 RTC6207_power_up[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x2f,0x00,0x48,0x81,0x00,0x00,0x00,0x40,0x50};//space 50
+     55          #endif
+     56          
+     57          #endif
+     58          
+     59          const u8 RTC62XX_power_down[] = {0x00,0x41,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+     60          
+     61          #ifndef INTERNAL_XTAL_6207
+     62          const u8 RTC6207_Initial_value[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x1f,0x00,0x48,0x00,0x00,0xe0,0x00};	// RSSI_TH = 0x0c
+     63          #else
+     64          const u8 RTC6207_Initial_value[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x1f,0x00,0x48,0x80,0x00,0xe0,0x00};	// RSSI_TH = 0x0c
+     65          #endif
+     66          
+     67          const u8 RTC6207_Initial_value1[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x00,0x00};
+     68          
+     69          #pragma constseg=default
+     70          
+     71          
+     72          #pragma location="FM_SEG_RTC6207"
+     73          void OperationRTC6207_write(const u8 __code *data, u8 numBytes)
+     74          									
+     75          {
+     76              iic_start();
+     77              iic_sendbyte(0x20);
+     78              iic_getack();
+     79              for(u8 j = 0; j < numBytes; j++)
+     80              {
+     81                  iic_sendbyte(data[j]);
+     82                  iic_getack();
+     83              }
+     84              delay_5ms(1);
+     85              iic_stop();
+     86          }
+     87          
+     88          #pragma location="FM_SEG_RTC6207"
+     89          void OperationRTC6207_write_a(u8 *data, u8 numBytes)
+     90          {
+     91              iic_start();
+     92              iic_sendbyte(0x20);
+     93              iic_getack();
+     94              for(u8 j = 0; j < numBytes; j++)
+     95              {
+     96                  iic_sendbyte(data[j]);
+     97                  iic_getack();
+     98              }
+     99              delay_5ms(1);
+    100              iic_stop();
+    101          }
+    102          
+    103          #pragma location="FM_SEG_RTC6207"
+    104          void OperationRTC6207_read(u8 *data, u8 numBytes)
+    105          {
+    106              iic_start();
+    107              iic_sendbyte(0x21);
+    108              iic_getack();
+    109              for(u8 j = 0; j < numBytes; j++)
+    110              {
+    111                  data[j] = iic_getbyte();
+    112                  if(j== (numBytes-1)){
+    113                      iic_sendnack();
+    114                  }
+    115                  else{
+    116                      iic_sendack();
+    117                  }
+    118              }
+    119              delay_5ms(1);
+    120              iic_stop();
+    121          }
+    122          
+    123          /*************************************************************
+    124          *  Radio get ID
+    125          *
+    126          *************************************************************/
+    127          #pragma location="FM_INIT_RTC6207"
+    128          u8 RTC6207_online(void)
+    129          {
+    130              u8 RTC62XX_reg_data[16];
+    131              for(u8 i=0; i<3; i++){      //IIC与其他引脚复用时 FM ID 改为读三次比较保险
+    132                  OperationRTC6207_read(RTC62XX_reg_data, 16);
+    133                  //printf("ID1: 0x%02x , ID2: 0x%02x\n",RTC62XX_reg_data[12],RTC62XX_reg_data[13]);
+    134                  if (RTC62XX_reg_data[12] == 0x16 && RTC62XX_reg_data[13]== 0x88){
+    135                      RTC6207_init();
+    136                      return 1;
+    137                  }
+    138              }
+    139              return 0;
+    140          }
+    141          
+    142          /*----------------------------------------------------------------------------*/
+    143          /**@brief FM Module RTC6207 Initialize
+    144             @param  none
+    145             @return  none	
+    146             @note
+    147          */
+    148          /*----------------------------------------------------------------------------*/
+    149          #pragma location="FM_INIT_RTC6207"
+    150          void RTC6207_init(void)
+    151          {
+    152          	OperationRTC6207_write(RTC62XX_CKHoppingOn, 46);
+    153              delay_5ms(10);
+    154          	OperationRTC6207_write(RTC62XX_SWBank2, 46);
+    155          	delay_5ms(10);
+    156          	OperationRTC6207_write(RTC6207_power_up, 16);
+    157          	delay_5ms(10);
+    158          }
+    159          
+    160          /*----------------------------------------------------------------------------*/
+    161          /**@brief FM Module set frequency
+    162             @param frequency
+    163             @return none
+    164             @note Range 875~1080
+    165          */
+    166          /*----------------------------------------------------------------------------*/
+    167          #pragma location="FM_SEG_RTC6207"
+    168          void RTC6207_set_freq(u16 channel_freq)
+    169          {
+    170              //channel_freq=channel_freq*10;
+    171              u16 freq_reg_data, loop_counter = 0;
+    172              u8 RTC6207_reg_data[32];
+    173              u8 RTC6207_channel_start_tune[] = {0xC0,0x01,0x80,0xCA};	//107.7MHz
+    174              u8 RTC6207_channel_stop_tune[] = {0xC0,0x01,0x00,0xCA};	
+    175              u16 start_freq = 8750;
+    176          
+    177              //printf("channel_freq = %d\n", channel_freq);
+    178              //set tune bit
+    179          
+    180              for(u8 i = 0; i < 7; i++)
+    181              {
+    182                  RTC6207_reg_data[i] = RTC6207_power_up[i];
+    183              }
+    184              if(channel_freq >= 8750)
+    185              {
+    186                  delay_5ms(10);
+    187                  #ifndef FM_50KHZ_STEP
+    188                  RTC6207_reg_data[7] = 0x1f;
+    189                  #else
+    190                  RTC6207_reg_data[7] = 0x2f;
+    191                  #endif
+    192          	    OperationRTC6207_write_a(RTC6207_reg_data, 8);
+    193                  start_freq = 8750;
+    194              }
+    195              else
+    196              {
+    197                  delay_5ms(10);
+    198                  #ifndef FM_50KHZ_STEP
+    199                  RTC6207_reg_data[7] = 0x9f;
+    200                  #else
+    201                  RTC6207_reg_data[7] = 0xaf;
+    202                  #endif
+    203                  OperationRTC6207_write_a(RTC6207_reg_data, 8);
+    204                  start_freq = 7600;
+    205              }
+    206          
+    207          #ifndef FM_50KHZ_STEP
+    208              freq_reg_data = (channel_freq - start_freq)/10;
+    209          #else
+    210              freq_reg_data = (channel_freq - start_freq)/5;
+    211          #endif
+    212          
+    213              RTC6207_channel_start_tune[3] = freq_reg_data & 0xff;
+    214              RTC6207_channel_start_tune[2] = (RTC6207_channel_start_tune[2] & 0xfc) | (freq_reg_data >> 8);
+    215              RTC6207_channel_stop_tune[3] = RTC6207_channel_start_tune[3] ;
+    216          
+    217              OperationRTC6207_write_a(RTC6207_channel_start_tune, 4);
+    218              do
+    219              {
+    220                  OperationRTC6207_read(RTC6207_reg_data, 2);
+    221                  loop_counter++;
+    222              }while(((RTC6207_reg_data[0]&0x40) == 0) && (loop_counter < 0xffff));		//for loop_counter, when tune, the loop time must > 60ms
+    223          
+    224              loop_counter = 0;
+    225              OperationRTC6207_write_a(RTC6207_channel_stop_tune, 4);
+    226              //wait STC=0
+    227              do
+    228              {
+    229                  OperationRTC6207_read(RTC6207_reg_data, 2);
+    230                  loop_counter++;
+    231              }while(((RTC6207_reg_data[0]&0x40) != 0) && (loop_counter < 0xff));
+    232          }
+    233          
+    234          /*----------------------------------------------------------------------------*/
+    235          /**@brief FM Module RTC6207 set volume
+    236             @param volumn
+    237             @return none
+    238             @note   Range 0~15
+    239          */
+    240          /*----------------------------------------------------------------------------*/
+    241          #pragma location="FM_SEG_RTC6207"
+    242          void RTC6207_set_vol(u8 FM_Volumn)
+    243          {
+    244          	// Some FM IC has 17 level, RTC serise only level 16
+    245              if (FM_Volumn>0){
+    246                  FM_Volumn--;
+    247              }
+    248          
+    249          #ifndef FM_50KHZ_STEP
+    250              u8 RTC62XX_set_property[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x1f};	//RSSI threshold = 0x0C = 12dB
+    251          #else
+    252              u8 RTC62XX_set_property[] = {0xC0,0x01,0x00,0x00,0x90,0x04,0x0c,0x2f};	//step 50K
+    253          #endif
+    254          
+    255              RTC62XX_set_property[7] = (RTC62XX_set_property[7] & 0xf0) | FM_Volumn;
+    256              OperationRTC6207_write_a(RTC62XX_set_property, 8);
+    257          }
+    258          
+    259          /*----------------------------------------------------------------------------*/
+    260          /**@brief FM Module RTC6207 off
+    261             @param none
+    262             @return none
+    263             @note
+    264          */
+    265          /*----------------------------------------------------------------------------*/
+    266          #pragma location="FM_INIT_RTC6207"
+    267          void RTC6207_off(void)
+    268          {
+    269          	OperationRTC6207_write(RTC62XX_power_down, 12);
+    270              delay_5ms(4);
+    271          }
+    272          
+    273          /*----------------------------------------------------------------------------*/
+    274          /**@brief FM Module RTC6207 Auto Search
+    275             @param Frequency which you want to check is valid or not
+    276             @return If there is a station return 1 o.w., return 0.
+    277             @note
+    278          */
+    279          /*----------------------------------------------------------------------------*/
+    280          #pragma location="FM_SEG_RTC6207"
+    281          u8 RTC6207_seek(u16 channel_freq)
+    282          {
+    283              RTC6207_set_freq(channel_freq);
+    284              //u8 RSSIValue;
+    285              u8 RTC6207_reg_data[32];
+    286          	
+    287          	OperationRTC6207_write(RTC6207_Initial_value, 14);
+    288              delay_5ms(1);
+    289              OperationRTC6207_read(RTC6207_reg_data, 24); // Readout (BK7_5[15])
+    290          	OperationRTC6207_write(RTC6207_Initial_value1, 14);
+    291              delay_5ms(1);
+    292          
+    293              if((RTC6207_reg_data[22]&0x80)!= 0){
+    294                  return 0;
+    295              }
+    296          
+    297              OperationRTC6207_read(RTC6207_reg_data, 2);
+    298              //RSSIValue = RTC6207_reg_data[1];
+    299              //if(RSSIValue > RTC6207_Initial_value[6])
+    300              //{
+    301                  //printf("RSSIValue=%d\n",RSSIValue);
+    302                  //printf("channel_freq=%d\n",channel_freq);
+    303                  return 1;
+    304              //}
+    305              //else
+    306                  //return 0;
+    307          }
+    308          
+    309          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

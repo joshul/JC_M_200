@@ -1,0 +1,279 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_bt_call.c      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_bt_call.c      #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_bt_call.lst  #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_bt_call.r51   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_bt_call.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_bt_call.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙任务 - 通话任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          
+      9          #define SCO_FARPCM_SIZE         (0x800/2)      // unit 16bits
+     10          
+     11          //未调通的函数
+     12          #define mp3en_start(...)
+     13          #define mp3en_stop(...)
+     14          #define mp3en_exit(...)
+     15          
+     16          extern u8 uartTxQ3[64];
+     17          
+     18          extern s16 *sco_farpcm_wptr;
+     19          extern s16 *sco_farpcm_rptr;
+     20          extern u16  sco_farpcm_len;
+     21          IAR_XDATA_A s16 sco_farpcm[SCO_FARPCM_SIZE] @ "BT_SCOFAR_XDATA";   // sco远端的PCM数据,用于简单抑制回音, BT_SCOFAR_XDATA与BT_AVDTP_XDATA复用
+     22          
+     23          u8 far_vol;
+     24          s16 far_noise_pow_cnt;
+     25          u8 far_noise_pow;
+     26          
+     27          s16 *sco_farpcm_wptr;
+     28          s16 *sco_farpcm_rptr;
+     29          u16  sco_farpcm_len;
+     30          
+     31          #define SCO_DELAY (sizeof(sco_spk_vad))
+     32          IAR_XDATA_A u8 sco_spk_vad[1] @ "SCO_VAD_BUF";
+     33          u8 sco_spk_vad_last, sco_spk_vad_index;
+     34          u8 sco_spk_vad_mute;                    //远端停止后，近端MIC再MUTE一小段时间
+     35          u8 sco_far_vad, sco_far_vad_last;
+     36          u8 sco_near_mic_mute;                       //远端停止后，近端再以低优先级模式MUTE一小段时间
+     37          //u8 sco_mic_vad;
+     38          u8 sco_spk_stable;
+     39          
+     40          u8 sco_mic_pow, sco_mic_stable;
+     41          
+     42          u8 sco_cal_index;
+     43          s8 sco_cal_max, sco_cal_min;
+     44          
+     45          extern u8 aec_status;
+     46          extern u8 adc_data_pos;
+     47          extern volatile u8 aec_proc_kick;
+     48          extern volatile u8 aec_post_kick;
+     49          extern __near_func void aec_init(void);
+     50          extern __near_func void aec_process(void);
+     51          
+     52          void bt_mic_init(void)
+     53          {
+     54              adc_init(SEL_BT_MIC);
+     55              adc_start();
+     56          }
+     57          
+     58          #pragma location="BT_SCO_SEG"
+     59          __near_func u8 bt_voice_sco(void)
+     60          {
+     61              u8 low, high;
+     62              while (sco_farpcm_len && AUCON5 < 0x88) {
+     63                  WATCHDOG_CLR();
+     64                  s16 sample = *sco_farpcm_rptr++;
+     65                  low  = (u8)(sample);
+     66                  high = (u8)(sample>>8);
+     67                  if (sco_farpcm_rptr >= &sco_farpcm[SCO_FARPCM_SIZE]) {
+     68                      sco_farpcm_rptr = sco_farpcm;
+     69                  }
+     70          
+     71                  bool ie_ea_bak = IE_EA;
+     72                  IE_EA = 0;
+     73                  sco_farpcm_len--;
+     74                  IE_EA = ie_ea_bak;
+     75          
+     76                  while(!(AUCON7 & BIT(7)));
+     77                  AUCON5 = low;
+     78                  AUCON5 = high;
+     79                  while(!(AUCON7 & BIT(7)));
+     80                  AUCON5 = low;
+     81                  AUCON5 = high;
+     82              }
+     83              return 0;
+     84          }
+     85          
+     86          __near_func void bt_voice_softisr(void)
+     87          {
+     88              if (flag_btmode && scoflag) {
+     89          #if !BT_CALL_PRIVATE
+     90                  //强制私密接听，不需要这一段
+     91                  bt_voice_sco();
+     92          #endif
+     93                  if (aec_proc_kick) {
+     94                      aec_proc_kick = 0;
+     95                      aec_process();
+     96                  }
+     97              }
+     98          }
+     99          
+    100          //设置通话音量接口
+    101          extern bool send_at_vgs(u8 vol);
+    102          bool send_hshfvol_hook(void) @ "BT_RFC_TX"
+    103          {
+    104              return send_at_vgs(sys_ctl.hshf_vol);
+    105          }
+    106          
+    107          //手机端改变通话音量接口
+    108          void hshfvol_change_hook(u8 vol) @ "BT_RXAT_CMD"
+    109          {
+    110          #if !BT_CALL_PRIVATE
+    111              user_set_hshfvol(vol);
+    112              put_msg(Q_HSHF_VOL_CHANGE);
+    113          #endif
+    114          }
+    115          
+    116          extern u8 resample_loopnum;
+    117          void resample_filter_init(void);
+    118          
+    119          #pragma location="TASK_BT_CALL_SEG"
+    120          void tasksub_bt_call_enter(void)
+    121          {
+    122          #if WARNING_VOL_MAXMIN
+    123              if(sys_ctl.vol_maxmin_music_play == 1) {
+    124                  sys_ctl.vol_maxmin_music_play = 0;
+    125                  bt_play_continue();
+    126              }
+    127          #endif
+    128              task_ctl.work_sub = TASK_BT_CALL;
+    129              bt_enter_call();
+    130          #if !BT_CALL_PRIVATE
+    131              user_change_volume(sys_ctl.hshf_vol);
+    132          #endif
+    133          #if IS_LCD_DISPLAY
+    134              t_bt.updata_flag = 1;
+    135          #endif
+    136          #if THEME_SELECT==THEME_LCD_DEFAULT
+    137              //lcd_buf=lcd_buf2;   // 蓝牙响铃时使用lcd_buf2，否则会花屏
+    138          #endif
+    139          }
+    140          
+    141          extern u16 avdtp_sbc_len;
+    142          #pragma location="TASK_BT_CALL_SEG"
+    143          void tasksub_bt_call_exit(void)
+    144          {
+    145          #if !BT_CALL_PRIVATE
+    146              user_change_volume(sys_ctl.volume);
+    147          #endif
+    148              bt_exit_call();
+    149          
+    150              task_bt_sta_update();
+    151          #if DAC_MIX_OUT_EN
+    152             dac_left_right_mix_out();
+    153          #endif
+    154          #if THEME_SELECT==THEME_LCD_DEFAULT
+    155              lcd_buf=lcd_buf3;   // bt播放音乐使用lcd_buf3，否则会花屏
+    156          #endif
+    157          #if IS_LCD_DISPLAY
+    158              task_bt_call_ended();
+    159              t_bt.updata_flag = 1;
+    160              set_num_len(0);   // 清电话号码的长度
+    161          #endif
+    162          #if WARNING_VOL_MAXMIN
+    163              if(sys_ctl.vol_maxmin_music_flag == 1) {
+    164                  sys_ctl.vol_maxmin_music_flag = 0;
+    165              }
+    166          #endif
+    167          }
+    168          
+    169          #pragma location="TASK_BT_CALL_SEG"
+    170          void tasksub_bt_call_event(void)
+    171          {
+    172              WATCHDOG_CLR();
+    173              comm_event();
+    174          
+    175          #if 0//WARNING_LOWPOWER
+    176              if(sys_ctl.lowpower_warning_flag == 1){
+    177                  sys_ctl.lowpower_warning_flag = 2;
+    178                  mp3res_play_btmode(RES_MP3_PLEASE_CHARGE);
+    179              }
+    180          #endif
+    181          #if BT_CALL_PRIVATE
+    182              //强制私密接听
+    183              if (sys_ctl.bt_sta == BT_STA_OUTGOING || sys_ctl.bt_sta == BT_STA_PHONE) {
+    184                  bt_sco_disconnect();
+    185              }
+    186          #endif
+    187          
+    188              if (!(sys_ctl.bt_sta == BT_STA_OUTGOING || sys_ctl.bt_sta == BT_STA_PHONE)) {
+    189                  task_ctl.work_sub = TASK_BT_NULL;
+    190              }
+    191          }
+    192          
+    193          #pragma location="TASK_BT_CALL_SEG"
+    194          void tasksub_bt_call_loop(void)
+    195          {
+    196              u8 msg;
+    197              while (task_ctl.work_sta == TASK_BT && task_ctl.work_sub == TASK_BT_CALL) {
+    198                  tasksub_bt_call_event();
+    199                  while (msg = get_msg()) {
+    200                      task_bt_call_deal_msg(msg);
+    201                  }
+    202          #if IS_LCD_DISPLAY
+    203                  task_bt_call_display();
+    204          #else
+    205                  task_bt_display();
+    206          #endif
+    207              }
+    208          }
+    209          
+    210          #pragma location="TASK_BT_CALL_SEG"
+    211          void tasksub_bt_call(void)
+    212          {
+    213              //printf("tasksub_bt_call\n");
+    214              tasksub_bt_call_enter();
+    215              tasksub_bt_call_loop();
+    216              tasksub_bt_call_exit();
+    217              //printf("tasksub_bt_call exit\n");
+    218          }
+    219          
+    220          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

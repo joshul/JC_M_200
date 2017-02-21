@@ -1,0 +1,3162 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:59 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_bt.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_bt.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_bt.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_bt.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_bt.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_bt.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙用户API接口
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x88
+   \   unsigned char volatile __sfr SDCON0
+   \                     SDCON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xb0
+   \   unsigned char volatile __sfr P3
+   \                     P3:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbd
+   \   unsigned char volatile __sfr P3DIR
+   \                     P3DIR:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "task_NPCP215X.h"  
+     10          
+     11          #define DBG_BT_PARAM(...)           printf(__VA_ARGS__)
+     12          
+     13          #pragma constseg="BT_API_CONST"
+     14          //RF 参数表
+
+   \                                 In segment BT_API_CONST, align 1
+     15          IAR_CONST u8 tbl_rfparam[64] = {
+   \                     tbl_rfparam:
+   \   000000   0F408F41     DB 15, 64, 143, 65, 4, 6, 4, 4, 0, 128, 0, 0, 128, 1, 32, 214, 147, 0
+   \            04060404
+   \            00800000
+   \            800120D6
+   \            9300    
+   \   000012   F73F0000     DB 247, 63, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0, 6, 112, 255, 30, 44, 31, 6
+   \            00001F00
+   \            00000000
+   \            0670FF1E
+   \            2C1F06  
+   \   000025   42147E00     DB 66, 20, 126, 0, 4, 7, 14, 30, 248, 0, 1, 0, 0, 244, 241, 12, 195, 0
+   \            04070E1E
+   \            F8000100
+   \            00F4F10C
+   \            C300    
+   \   000037   16440029     DB 22, 68, 0, 41, 28, 28, 36, 255, 254
+   \            1C1C24FF
+   \            FE      
+     16              //蓝牙RF信息
+     17              0x0F,0x40,0x8F,0x41,0x04,0x06,0x04,0x04,0x00,0x80,0x00,0x00,0x80,0x01,0x20,0xD6,
+     18              0x93,0x00,0xF7,0x3F,0x00,0x00,0x00,0x00,0x1F,0x00,0x00,0x00,0x00,0x00,0x06,0x70,
+     19              0xFF,0x1E,0x2C,0x1F,0x06,0x42,0x14,0x7E,0x00,0x04,0x07,0x0E,0x1E,0xF8,0x00,0x01,
+     20              0x00,0x00,0xF4,0xF1,0x0C,0xC3,0x00,0x16,0x44,0x00,0x29,0x1C,0x1C,0x24,0xFF,0xFE
+     21          };
+     22          
+     23          //RF 参数表
+
+   \                                 In segment BT_API_CONST, align 1
+     24          IAR_CONST u8 tbl_rfparam_2[64] = {
+   \                     tbl_rfparam_2:
+   \   000000   0F40B241     DB 15, 64, 178, 65, 4, 6, 160, 64, 0, 129, 0, 0, 128, 1, 32, 214, 147
+   \            0406A040
+   \            00810000
+   \            800120D6
+   \            93      
+   \   000011   00F73F00     DB 0, 247, 63, 0, 0, 189, 128, 31, 0, 0, 0, 0, 0, 128, 163, 1, 17, 172
+   \            00BD801F
+   \            00000000
+   \            0080A301
+   \            11AC    
+   \   000023   18930364     DB 24, 147, 3, 100, 124, 0, 4, 7, 216, 20, 40, 0, 1, 0, 128, 4, 122, 12
+   \            7C000407
+   \            D8142800
+   \            01008004
+   \            7A0C    
+   \   000035   C3007601     DB 195, 0, 118, 1, 0, 41, 28, 28, 36, 1, 1
+   \            00291C1C
+   \            240101  
+     25              //蓝牙RF信息 //优化GFSK及IQ波形
+     26              0x0F,0x40,0xB2,0x41,0x04,0x06,0xA0,0x40,0x00,0x81,0x00,0x00,0x80,0x01,0x20,0xD6,
+     27              0x93,0x00,0xF7,0x3F,0x00,0x00,0xBD,0x80,0x1F,0x00,0x00,0x00,0x00,0x00,0x80,0xA3,
+     28              0x01,0x11,0xAC,0x18,0x93,0x03,0x64,0x7C,0x00,0x04,0x07,0xD8,0x14,0x28,0x00,0x01,
+     29              0x00,0x80,0x04,0x7A,0x0C,0xC3,0x00,0x76,0x01,0x00,0x29,0x1C,0x1C,0x24,0x01,0x01
+     30          };
+     31          
+     32          //蓝牙默认名字
+
+   \                                 In segment BT_API_CONST, align 1
+     33          IAR_CONST char tbl_bt_name[] = "BW-BTBOX";
+   \                     tbl_bt_name:
+   \   000000   42572D42     DB "BW-BTBOX"
+   \            54424F58
+   \            00      
+
+   \                                 In segment BT_API_CONST, align 1
+     34          IAR_CONST char tbl_bt_hid_name[] = "BT-Shutter";
+   \                     tbl_bt_hid_name:
+   \   000000   42542D53     DB "BT-Shutter"
+   \            68757474
+   \            657200  
+     35          
+     36          #pragma constseg="BT_INIT_CONST"
+
+   \                                 In segment BT_INIT_CONST, align 1
+     37          IAR_CONST char str_bt_init_addr[] = "BD:<%02x:%02x:%02x:%02x:%02x:%02x> - ";
+   \                     str_bt_init_addr:
+   \   000000   42443A3C     DB "BD:<%02x:%02x:%02x:%02x:%02x:%02x> - "
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            783E202D
+   \            2000    
+
+   \                                 In segment BT_INIT_CONST, align 1
+     38          IAR_CONST char str_debug_rfinfo[] = "BTDev<%02x:%02x:%02x:%02x:%02x:%02x>: %s\n";
+   \                     str_debug_rfinfo:
+   \   000000   42544465     DB "BTDev<%02x:%02x:%02x:%02x:%02x:%02x>: %s\012"
+   \            763C2530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32783A25
+   \            3032783E
+   \            3A202573
+   \            0A00    
+     39          
+     40          #pragma constseg="BT_LINK_KEY_CONST"
+
+   \                                 In segment BT_LINK_KEY_CONST, align 1
+     41          IAR_CONST char str_get_addr[] = "get addr\n";
+   \                     str_get_addr:
+   \   000000   67657420     DB "get addr\012"
+   \            61646472
+   \            0A00    
+
+   \                                 In segment BT_LINK_KEY_CONST, align 1
+     42          IAR_CONST char str_get_linkaddr[] = "latest: %02x:%02x:%02x:%02x:%02x:%02x\n";
+   \                     str_get_linkaddr:
+   \   000000   6C617465     DB "latest: %02x:%02x:%02x:%02x:%02x:%02x\012"
+   \            73743A20
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            780A00  
+
+   \                                 In segment BT_LINK_KEY_CONST, align 1
+     43          IAR_CONST char str_delete_link[] = "delete: %02x:%02x:%02x:%02x:%02x:%02x\n";
+   \                     str_delete_link:
+   \   000000   64656C65     DB "delete: %02x:%02x:%02x:%02x:%02x:%02x\012"
+   \            74653A20
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            780A00  
+
+   \                                 In segment BT_LINK_KEY_CONST, align 1
+     44          IAR_CONST char str_get_link_key[] = "get: %02x:%02x:%02x:%02x:%02x:%02x\n";
+   \                     str_get_link_key:
+   \   000000   6765743A     DB "get: %02x:%02x:%02x:%02x:%02x:%02x\012"
+   \            20253032
+   \            783A2530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32780A00
+
+   \                                 In segment BT_LINK_KEY_CONST, align 1
+     45          IAR_CONST char str_save_link_key[] = "save: %02x:%02x:%02x:%02x:%02x:%02x\n";
+   \                     str_save_link_key:
+   \   000000   73617665     DB "save: %02x:%02x:%02x:%02x:%02x:%02x\012"
+   \            3A202530
+   \            32783A25
+   \            3032783A
+   \            25303278
+   \            3A253032
+   \            783A2530
+   \            32783A25
+   \            3032780A
+   \            00      
+     46          
+     47          #pragma constseg=default
+     48          #pragma constseg="BT_RFC_TX_CONST"
+
+   \                                 In segment BT_RFC_TX_CONST, align 1
+     49          IAR_CONST char at_cmd0_ptr[] = "AT+IPHONEACCEV=1,1,4\r";
+   \                     at_cmd0_ptr:
+   \   000000   41542B49     DB "AT+IPHONEACCEV=1,1,4\015"
+   \            50484F4E
+   \            45414343
+   \            45563D31
+   \            2C312C34
+   \            0D00    
+     50          #pragma constseg=default
+     51          
+     52          #define BT_FT_APPLE_DEVICE          0x01
+     53          #define BT_FT_APPLE_VOL_CTRL        0x02
+     54          #define BT_FT_HSF_3WCALL            0x04
+     55          #define BT_FT_APPLE_DEVICE_EN       0x00    //是否支持苹果电量显示：0x80=支持，0x00=不支持
+     56          #define BT_FT_APPLE_VOL_CTRL_EN     0x00    //是否支持苹果音量控制：0x40=支持，0x00=不支持
+     57          #define BT_FT_HSF_3WCALL_EN         0x20    //是否支持3方通话控制：0x20=支持，0x00=不支持
+     58          #define IS_APPLE_BT_DEVICE          (BT_FT_APPLE_DEVICE_EN && (bt_user_feature & BT_FT_APPLE_DEVICE))
+     59          #define IS_APPLE_VOL_CTRL           (BT_FT_APPLE_VOL_CTRL_EN && (bt_user_feature & BT_FT_APPLE_VOL_CTRL))
+     60          
+     61          //使用bt_param写参数时，只支持writepage
+
+   \                                 In segment BT_PAIR_PARAM, align 1, root
+     62          IAR_XDATA_A TYPE_BT_PARAM_PAIR bt_param @ "BT_PAIR_PARAM";
+   \                     bt_param:
+   \   000000                DS 228
+
+   \                                 In segment BT_PAIR_PARAM, align 1, root
+     63          IAR_XDATA_A u8 bt_param_sum[4] @ "BT_PAIR_PARAM";
+   \                     bt_param_sum:
+   \   000000                DS 4
+
+   \                                 In segment BIT_N, align 1, root
+     64          IAR_BIT_A bool task_hid_flag;
+   \                     task_hid_flag:
+   \   000000                DS 1
+     65          
+     66          extern u8 bt_power_up();
+     67          bool btdec_load_code(u16 addr, u8 segnum);
+     68          extern u8 bt_user_feature;
+     69          bool hcmd_write_xdata(u16 addr, u8 val);   // for RF optimization
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     70          IAR_XDATA_A u8  bt_mic_param[10] @ "BT_MIC_PARAM";
+   \                     bt_mic_param:
+   \   000000                DS 10
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     71          IAR_XDATA_A u16 noise_value      @ "BT_MIC_PARAM";
+   \                     noise_value:
+   \   000000                DS 2
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     72          IAR_XDATA_A u16 far_delay        @ "BT_MIC_PARAM";
+   \                     far_delay:
+   \   000000                DS 2
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     73          IAR_XDATA_A u16 echo_atten       @ "BT_MIC_PARAM";
+   \                     echo_atten:
+   \   000000                DS 2
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     74          IAR_XDATA_A u8  bt_digital_gain  @ "BT_MIC_PARAM";
+   \                     bt_digital_gain:
+   \   000000                DS 1
+
+   \                                 In segment BT_MIC_PARAM, align 1, root
+     75          IAR_XDATA_A u8  bt_analog_gain   @ "BT_MIC_PARAM";
+   \                     bt_analog_gain:
+   \   000000                DS 1
+     76          
+     77          // 简易配对配置
+
+   \                                 In segment XDATA_I, align 1, keep-with-next
+     78          u8 EnableSimplePairMode = 1;   //0x00:disable, 0x01:enable simple pairing
+   \                     EnableSimplePairMode:
+   \   000000                DS 1
+   \   000001                REQUIRE `?<Initializer for EnableSimplePairMode>`
+   \   000001                REQUIRE __INIT_XDATA_I
+
+   \                                 In segment XDATA_I, align 1, keep-with-next
+     79          u8 btpincode[4]={'0','0','0','0'};  // PinCode: "0000"
+   \                     btpincode:
+   \   000000                DS 4
+   \   000004                REQUIRE `?<Initializer for btpincode>`
+   \   000004                REQUIRE __INIT_XDATA_I
+     80          
+     81          #if 1   // for two rf power
+     82          void hcmd_write_rfreg(u8 addr, u16 value);
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     83          void switch_rf_power(u8 mode)
+   \                     switch_rf_power:
+     84          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+   \   000003   E9           MOV     A,R1
+   \   000004   FE           MOV     R6,A
+     85              if(get_chip_type() == 2) {
+   \   000005                ; Setup parameters for call to function get_chip_type
+   \   000005   90....       MOV     DPTR,#(get_chip_type & 0xffff)
+   \   000008   74..         MOV     A,#((get_chip_type >> 16) & 0xff)
+   \   00000A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00000D   E9           MOV     A,R1
+   \   00000E   6402         XRL     A,#0x2
+   \   000010   7015         JNZ     ??switch_rf_power_0
+     86                  if(mode){
+   \   000012   EE           MOV     A,R6
+   \   000013   7A80         MOV     R2,#-0x80
+   \   000015   6004         JZ      ??switch_rf_power_1
+     87                      hcmd_write_rfreg(16, 0xA380);   // 播音乐的时候
+   \   000017                ; Setup parameters for call to function hcmd_write_rfreg
+   \   000017   7BA3         MOV     R3,#-0x5d
+   \   000019   8002         SJMP    ??switch_rf_power_2
+     88                  } else{
+     89                      hcmd_write_rfreg(16, 0x8380);   // 通话或设备搜索的时候
+   \                     ??switch_rf_power_1:
+   \   00001B                ; Setup parameters for call to function hcmd_write_rfreg
+   \   00001B   7B83         MOV     R3,#-0x7d
+   \                     ??switch_rf_power_2:
+   \   00001D   7910         MOV     R1,#0x10
+   \   00001F   90....       MOV     DPTR,#(hcmd_write_rfreg & 0xffff)
+   \   000022   74..         MOV     A,#((hcmd_write_rfreg >> 16) & 0xff)
+   \   000024   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     90                  }
+     91              }
+     92          }
+   \                     ??switch_rf_power_0:
+   \   000027                REQUIRE ?Subroutine10
+   \   000027                ; // Fall through to label ?Subroutine10
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine10:
+   \   000000   D0E0         POP     A
+   \   000002   FE           MOV     R6,A
+   \   000003   02....       LJMP    ?BRET
+     93          #endif
+     94          
+     95          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+     96          u8 char_to_hex(u8 c)
+   \                     char_to_hex:
+     97          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     98              if(c >= 'A' && c <= 'F') {
+   \   000000   E9           MOV     A,R1
+   \   000001   C3           CLR     C
+   \   000002   9441         SUBB    A,#0x41
+   \   000004   400C         JC      ??char_to_hex_0
+   \   000006   E9           MOV     A,R1
+   \   000007   C3           CLR     C
+   \   000008   9447         SUBB    A,#0x47
+   \   00000A   5006         JNC     ??char_to_hex_0
+     99                  c -= 'A' + 10;
+   \   00000C   74B5         MOV     A,#-0x4b
+   \                     ??char_to_hex_1:
+   \   00000E   29           ADD     A,R1
+   \   00000F   F9           MOV     R1,A
+   \   000010   8021         SJMP    ??char_to_hex_2
+    100              } else if(c >= 'a' && c <= 'f') {
+   \                     ??char_to_hex_0:
+   \   000012   E9           MOV     A,R1
+   \   000013   C3           CLR     C
+   \   000014   9461         SUBB    A,#0x61
+   \   000016   E9           MOV     A,R1
+   \   000017   4009         JC      ??char_to_hex_3
+   \   000019   C3           CLR     C
+   \   00001A   9467         SUBB    A,#0x67
+   \   00001C   5013         JNC     ??char_to_hex_4
+    101                  c -= 'a' + 10;
+   \   00001E   7495         MOV     A,#-0x6b
+   \   000020   80EC         SJMP    ??char_to_hex_1
+    102              } else if(c >= '0' && c <= '9') {
+   \                     ??char_to_hex_3:
+   \   000022   C3           CLR     C
+   \   000023   9430         SUBB    A,#0x30
+   \   000025   400A         JC      ??char_to_hex_4
+   \   000027   E9           MOV     A,R1
+   \   000028   C3           CLR     C
+   \   000029   943A         SUBB    A,#0x3a
+   \   00002B   5004         JNC     ??char_to_hex_4
+    103                  c -= '0';
+   \   00002D   74D0         MOV     A,#-0x30
+   \   00002F   80DD         SJMP    ??char_to_hex_1
+    104              } else {
+    105                  c = 0xff;
+   \                     ??char_to_hex_4:
+   \   000031   79FF         MOV     R1,#-0x1
+    106              }
+    107              return c;
+   \                     ??char_to_hex_2:
+   \   000033   02....       LJMP    ?BRET
+    108          }
+    109          
+    110          //0~15转成字符，必须跟spi_bt_rfinfo_read在同个bank
+    111          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    112          char hex_to_char(u8 num)
+   \                     hex_to_char:
+    113          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    114              if (num >= 10) {
+   \   000000   E9           MOV     A,R1
+   \   000001   C3           CLR     C
+   \   000002   940A         SUBB    A,#0xa
+   \   000004   4004         JC      ??hex_to_char_0
+    115                  return ('A' + num - 10);
+   \   000006   7437         MOV     A,#0x37
+   \   000008   8002         SJMP    ??hex_to_char_1
+    116              } else {
+    117                  return ('0' + num);
+   \                     ??hex_to_char_0:
+   \   00000A   7430         MOV     A,#0x30
+   \                     ??hex_to_char_1:
+   \   00000C   29           ADD     A,R1
+   \   00000D   F9           MOV     R1,A
+   \   00000E   02....       LJMP    ?BRET
+    118              }
+    119          }
+    120          
+    121          //设置本设备的蓝牙地址
+    122          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    123          void btinfo_get_addr(u8 *ptr)
+   \                     btinfo_get_addr:
+    124          {
+   \   000000   7408         MOV     A,#0x8
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 11
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    125              sysinfo_load(ptr, BT_RFINFO_SET, 1);                //获取配置
+   \   000009                ; Setup parameters for call to function sysinfo_load
+   \   000009   7C01         MOV     R4,#0x1
+   \   00000B   7906         MOV     R1,#0x6
+   \   00000D   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000010   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000012   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    126              if (ptr[0] & BIT(BT_RFINFO_SET_ADDR)) {
+   \   000015   EE           MOV     A,R6
+   \   000016   2405         ADD     A,#0x5
+   \   000018   F8           MOV     R0,A
+   \   000019   EF           MOV     A,R7
+   \   00001A   3400         ADDC    A,#0x0
+   \   00001C   F9           MOV     R1,A
+   \   00001D   88..         MOV     ?V0 + 0,R0
+   \   00001F   89..         MOV     ?V0 + 1,R1
+   \   000021   EE           MOV     A,R6
+   \   000022   2404         ADD     A,#0x4
+   \   000024   18           DEC     R0
+   \   000025   EF           MOV     A,R7
+   \   000026   3400         ADDC    A,#0x0
+   \   000028   F9           MOV     R1,A
+   \   000029   88..         MOV     ?V0 + 2,R0
+   \   00002B   89..         MOV     ?V0 + 3,R1
+   \   00002D   8E82         MOV     DPL,R6
+   \   00002F   8F83         MOV     DPH,R7
+   \   000031   E0           MOVX    A,@DPTR
+   \   000032   A2E1         MOV     C,0xE0 /* A   */.1
+   \   000034   5020         JNC     ??btinfo_get_addr_0
+    127                  if (ptr[0] & BIT(BT_RFINFO_SET_DYADDR)) {
+   \   000036   A2E6         MOV     C,0xE0 /* A   */.6
+   \   000038   500A         JNC     ??btinfo_get_addr_1
+    128                      //使用动态地址
+    129                      U32_ACCESS(ptr) = sys_param_read32(PARAM_RANDOM_KEY);
+   \   00003A                ; Setup parameters for call to function spi_read32
+   \   00003A                ; Setup parameters for call to function spi_param_addr
+   \   00003A   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_7:
+   \   00003D   12....       LCALL   ?L_MOV_TO_X
+    130                      ptr[4] = 0x23;
+   \   000040   7423         MOV     A,#0x23
+   \   000042   801A         SJMP    ??btinfo_get_addr_2
+    131                      ptr[5] = 0x30;
+    132                  } else {
+    133                      //使用配置好的地址信息
+    134                      sysinfo_load(ptr, BT_RFINFO_ADDR, 6);       //返回地址
+   \                     ??btinfo_get_addr_1:
+   \   000044                ; Setup parameters for call to function sysinfo_load
+   \   000044   7C06         MOV     R4,#0x6
+   \   000046   792E         MOV     R1,#0x2e
+   \   000048   EE           MOV     A,R6
+   \   000049   FA           MOV     R2,A
+   \   00004A   EF           MOV     A,R7
+   \   00004B   FB           MOV     R3,A
+   \   00004C   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   00004F   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000051   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000054   8018         SJMP    ??btinfo_get_addr_3
+    135                  }
+    136              } else {
+    137                  //使用动态地址
+    138                  U32_ACCESS(ptr) = sys_param_read32(PARAM_RANDOM_KEY);
+   \                     ??btinfo_get_addr_0:
+   \   000056                ; Setup parameters for call to function spi_read32
+   \   000056                ; Setup parameters for call to function spi_param_addr
+   \   000056   12....       LCALL   ?Subroutine3
+   \                     ??CrossCallReturnLabel_8:
+   \   000059   12....       LCALL   ?L_MOV_TO_X
+    139                  ptr[4] = 0x21;
+   \   00005C   7421         MOV     A,#0x21
+   \                     ??btinfo_get_addr_2:
+   \   00005E   85..82       MOV     DPL,?V0 + 2
+   \   000061   85..83       MOV     DPH,?V0 + 3
+   \   000064   F0           MOVX    @DPTR,A
+    140                  ptr[5] = 0x30;
+   \   000065   7430         MOV     A,#0x30
+   \   000067   85..82       MOV     DPL,?V0 + 0
+   \   00006A   85..83       MOV     DPH,?V0 + 1
+   \   00006D   F0           MOVX    @DPTR,A
+    141              }
+    142          #if TASK_BTHID_EN
+    143              if(task_hid_flag) {
+    144                  ptr[5] ^= BIT(0);
+    145              }
+    146          #endif
+    147              //printf("MAC: ");
+    148              //printf_array(ptr, 6);
+    149          }
+   \                     ??btinfo_get_addr_3:
+   \   00006E   7F08         MOV     R7,#0x8
+   \   000070   02....       LJMP    ?BANKED_LEAVE_SP
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+   \                     ?Subroutine3:
+   \   000000   7A00         MOV     R2,#0x0
+   \   000002   7900         MOV     R1,#0x0
+   \   000004   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000007   12....       LCALL   spi_read32 & 0xFFFF
+   \   00000A   8A..         MOV     ?V0 + 4,R2
+   \   00000C   8B..         MOV     ?V0 + 5,R3
+   \   00000E   8C..         MOV     ?V0 + 6,R4
+   \   000010   8D..         MOV     ?V0 + 7,R5
+   \   000012   8E82         MOV     DPL,R6
+   \   000014   8F83         MOV     DPH,R7
+   \   000016   78..         MOV     R0,#?V0 + 4
+   \   000018   22           RET
+    150          
+    151          //设置本设备的蓝牙名称
+    152          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    153          void btinfo_get_name(u8 *ptr)
+   \                     btinfo_get_name:
+    154          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    155          #if TASK_BTHID_EN
+    156              if(task_hid_flag) {
+    157                  memcpy(ptr, (char *)tbl_bt_hid_name, sizeof(tbl_bt_hid_name));
+    158              } else
+    159          #endif
+    160              {
+    161                  sysinfo_load(ptr, BT_RFINFO_SET, 1);                //获取配置
+   \   00000A                ; Setup parameters for call to function sysinfo_load
+   \   00000A   7C01         MOV     R4,#0x1
+   \   00000C   7906         MOV     R1,#0x6
+   \   00000E   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000011   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    162                  if (ptr[0] & BIT(BT_RFINFO_SET_NAME)) {
+   \   000016   8E82         MOV     DPL,R6
+   \   000018   8F83         MOV     DPH,R7
+   \   00001A   E0           MOVX    A,@DPTR
+   \   00001B   A2E0         MOV     C,0xE0 /* A   */.0
+   \   00001D   5012         JNC     ??btinfo_get_name_0
+    163                      sysinfo_load(ptr, BT_RFINFO_NAME, 32);
+   \   00001F                ; Setup parameters for call to function sysinfo_load
+   \   00001F   7C20         MOV     R4,#0x20
+   \   000021   790E         MOV     R1,#0xe
+   \   000023   EE           MOV     A,R6
+   \   000024   FA           MOV     R2,A
+   \   000025   EF           MOV     A,R7
+   \   000026   FB           MOV     R3,A
+   \   000027   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   00002A   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00002F   8016         SJMP    ??btinfo_get_name_1
+    164                  } else {
+    165                      memcpy(ptr, (char *)tbl_bt_name, sizeof(tbl_bt_name));
+   \                     ??btinfo_get_name_0:
+   \   000031                ; Setup parameters for call to function my_memcpy
+   \   000031   7409         MOV     A,#0x9
+   \   000033   C0E0         PUSH    A
+   \   000035   E4           CLR     A
+   \   000036   C0E0         PUSH    A
+   \   000038   7C..         MOV     R4,#(tbl_bt_name & 0xff)
+   \   00003A   7D..         MOV     R5,#((tbl_bt_name >> 8) & 0xff)
+   \   00003C   EE           MOV     A,R6
+   \   00003D   FA           MOV     R2,A
+   \   00003E   EF           MOV     A,R7
+   \   00003F   FB           MOV     R3,A
+   \   000040   12....       LCALL   my_memcpy & 0xFFFF
+   \   000043   D0E0         POP     A
+   \   000045   D0E0         POP     A
+    166                  }
+    167              }
+    168          #if BT_NAME_WITH_ADDR
+    169              u8 i;
+    170              u8 temp_addr[6];
+    171              btinfo_get_addr(temp_addr);
+    172              for(i=0; i<32-5; i++) {
+    173                  if (ptr[i] == 0) {
+    174                      *((u8 *)&ptr[i]) = '-';
+    175                      *((u8 *)&ptr[i+1]) = hex_to_char(temp_addr[1]&0xf);
+    176                      *((u8 *)&ptr[i+2]) = hex_to_char((temp_addr[0]>>4)&0xf);
+    177                      *((u8 *)&ptr[i+3]) = hex_to_char(temp_addr[0]&0xf);
+    178                      *((u8 *)&ptr[i+4]) = 0;
+    179                      break;
+    180                  }
+    181              }
+    182          #endif
+    183          }
+   \                     ??btinfo_get_name_1:
+   \   000047   80..         SJMP    ??Subroutine12_0
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+   \                     ?Subroutine12:
+   \   000000   EE           MOV     A,R6
+   \   000001   FA           MOV     R2,A
+   \   000002   EF           MOV     A,R7
+   \   000003   FB           MOV     R3,A
+   \   000004   12....       LCALL   my_memcpy & 0xFFFF
+   \   000007   D0E0         POP     A
+   \   000009   D0E0         POP     A
+   \                     ??Subroutine12_0:
+   \   00000B   D0E0         POP     A
+   \   00000D   FF           MOV     R7,A
+   \   00000E   D0E0         POP     A
+   \   000010   FE           MOV     R6,A
+   \   000011   02....       LJMP    ?BRET
+    184          
+    185          //设置本设备的蓝牙地址
+    186          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    187          void btinfo_get_rfparam(u8 *ptr)
+   \                     btinfo_get_rfparam:
+    188          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    189              sysinfo_load(ptr, BT_RFINFO_ADDR, 6);
+   \   00000A                ; Setup parameters for call to function sysinfo_load
+   \   00000A   7C06         MOV     R4,#0x6
+   \   00000C   792E         MOV     R1,#0x2e
+   \   00000E   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000011   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    190              memcpy(ptr, (u8 *)tbl_rfparam, 64);
+   \   000016                ; Setup parameters for call to function my_memcpy
+   \   000016   7440         MOV     A,#0x40
+   \   000018   C0E0         PUSH    A
+   \   00001A   E4           CLR     A
+   \   00001B   C0E0         PUSH    A
+   \   00001D   7C..         MOV     R4,#(tbl_rfparam & 0xff)
+   \   00001F   7D..         MOV     R5,#((tbl_rfparam >> 8) & 0xff)
+   \   000021   80..         SJMP    ?Subroutine12
+    191          }
+    192          
+    193          //设置本设备的蓝牙地址2
+    194          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    195          void btinfo_get_rfparam_2(u8 *ptr)
+   \                     btinfo_get_rfparam_2:
+    196          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    197              sysinfo_load(ptr, BT_RFINFO_ADDR, 6);
+   \   00000A                ; Setup parameters for call to function sysinfo_load
+   \   00000A   7C06         MOV     R4,#0x6
+   \   00000C   792E         MOV     R1,#0x2e
+   \   00000E   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000011   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    198              memcpy(ptr, (u8 *)tbl_rfparam_2, 64);
+   \   000016                ; Setup parameters for call to function my_memcpy
+   \   000016   7440         MOV     A,#0x40
+   \   000018   C0E0         PUSH    A
+   \   00001A   E4           CLR     A
+   \   00001B   C0E0         PUSH    A
+   \   00001D   7C..         MOV     R4,#(tbl_rfparam_2 & 0xff)
+   \   00001F   7D..         MOV     R5,#((tbl_rfparam_2 >> 8) & 0xff)
+   \   000021   80..         SJMP    ?Subroutine12
+    199          }
+    200          
+    201          //设置本设备的mic参数
+    202          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    203          void btinfo_get_mic(u8 *ptr)
+   \                     btinfo_get_mic:
+    204          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    205              sysinfo_load(ptr, BT_RFINFO_SET, 1);                //获取配置
+   \   00000A                ; Setup parameters for call to function sysinfo_load
+   \   00000A   7C01         MOV     R4,#0x1
+   \   00000C   7906         MOV     R1,#0x6
+   \   00000E   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000011   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    206              if (ptr[0] & BIT(BT_RFINFO_SET_MIC)) {
+   \   000016   8E82         MOV     DPL,R6
+   \   000018   8F83         MOV     DPH,R7
+   \   00001A   E0           MOVX    A,@DPTR
+   \   00001B   A2E3         MOV     C,0xE0 /* A   */.3
+   \   00001D   5021         JNC     ??btinfo_get_mic_0
+    207                  sysinfo_load(ptr, BT_RFINFO_MIC, 2);
+   \   00001F                ; Setup parameters for call to function sysinfo_load
+   \   00001F   7C02         MOV     R4,#0x2
+   \   000021   790A         MOV     R1,#0xa
+   \   000023   EE           MOV     A,R6
+   \   000024   FA           MOV     R2,A
+   \   000025   EF           MOV     A,R7
+   \   000026   FB           MOV     R3,A
+   \   000027   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   00002A   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    208                  bt_analog_gain = ptr[0];
+   \   00002F   8E82         MOV     DPL,R6
+   \   000031   8F83         MOV     DPH,R7
+   \   000033   E0           MOVX    A,@DPTR
+   \   000034   90....       MOV     DPTR,#bt_analog_gain
+   \   000037   F0           MOVX    @DPTR,A
+    209                  bt_digital_gain = ptr[1];
+   \   000038   8E82         MOV     DPL,R6
+   \   00003A   8F83         MOV     DPH,R7
+   \   00003C   A3           INC     DPTR
+   \   00003D   E0           MOVX    A,@DPTR
+   \   00003E   8008         SJMP    ??btinfo_get_mic_1
+    210              } else {
+    211                  bt_analog_gain = BT_ANA_GAIN;
+   \                     ??btinfo_get_mic_0:
+   \   000040   7406         MOV     A,#0x6
+   \   000042   90....       MOV     DPTR,#bt_analog_gain
+   \   000045   F0           MOVX    @DPTR,A
+    212                  bt_digital_gain = BT_DIGIT_GAIN;
+   \   000046   7460         MOV     A,#0x60
+   \                     ??btinfo_get_mic_1:
+   \   000048   90....       MOV     DPTR,#bt_digital_gain
+   \   00004B   F0           MOVX    @DPTR,A
+    213              }
+    214          }
+   \   00004C   02....       LJMP    ??Subroutine12_0
+    215          
+    216          //设置本设备的通话参数
+    217          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    218          void btinfo_get_voice(u8 *ptr)
+   \                     btinfo_get_voice:
+    219          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+   \   000006   EA           MOV     A,R2
+   \   000007   FE           MOV     R6,A
+   \   000008   EB           MOV     A,R3
+   \   000009   FF           MOV     R7,A
+    220              sysinfo_load(ptr, BT_RFINFO_SET, 1);                //获取配置
+   \   00000A                ; Setup parameters for call to function sysinfo_load
+   \   00000A   7C01         MOV     R4,#0x1
+   \   00000C   7906         MOV     R1,#0x6
+   \   00000E   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   000011   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    221              if (ptr[0] & BIT(BT_RFINFO_SET_VOICE)) {
+   \   000016   8E82         MOV     DPL,R6
+   \   000018   8F83         MOV     DPH,R7
+   \   00001A   E0           MOVX    A,@DPTR
+   \   00001B   A2E2         MOV     C,0xE0 /* A   */.2
+   \   00001D   503C         JNC     ??btinfo_get_voice_0
+    222                  sysinfo_load(ptr, BT_RFINFO_VOICE, 8);
+   \   00001F                ; Setup parameters for call to function sysinfo_load
+   \   00001F   7C08         MOV     R4,#0x8
+   \   000021   7940         MOV     R1,#0x40
+   \   000023   EE           MOV     A,R6
+   \   000024   FA           MOV     R2,A
+   \   000025   EF           MOV     A,R7
+   \   000026   FB           MOV     R3,A
+   \   000027   90....       MOV     DPTR,#(sysinfo_load & 0xffff)
+   \   00002A   74..         MOV     A,#((sysinfo_load >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    223                  noise_value = (ptr[1] << 8) | ptr[0];
+   \   00002F   8E82         MOV     DPL,R6
+   \   000031   8F83         MOV     DPH,R7
+   \   000033   A3           INC     DPTR
+   \   000034   E0           MOVX    A,@DPTR
+   \   000035   F9           MOV     R1,A
+   \   000036   8E82         MOV     DPL,R6
+   \   000038   8F83         MOV     DPH,R7
+   \   00003A   E0           MOVX    A,@DPTR
+   \   00003B   90....       MOV     DPTR,#noise_value
+   \   00003E   12....       LCALL   ?Subroutine4
+    224                  far_delay = (ptr[5] << 8) | ptr[4];
+   \                     ??CrossCallReturnLabel_44:
+   \   000041   12....       LCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_46:
+   \   000044   E0           MOVX    A,@DPTR
+   \   000045   90....       MOV     DPTR,#far_delay
+   \   000048   12....       LCALL   ?Subroutine4
+    225                  echo_atten = ((ptr[7] << 8) | ptr[6]);
+   \                     ??CrossCallReturnLabel_45:
+   \   00004B   A3           INC     DPTR
+   \   00004C   A3           INC     DPTR
+   \   00004D   12....       LCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_47:
+   \   000050   A3           INC     DPTR
+   \   000051   A3           INC     DPTR
+   \   000052   E0           MOVX    A,@DPTR
+   \   000053   90....       MOV     DPTR,#echo_atten
+   \   000056   F0           MOVX    @DPTR,A
+   \   000057   A3           INC     DPTR
+   \   000058   E9           MOV     A,R1
+   \   000059   801A         SJMP    ??btinfo_get_voice_1
+    226              } else {
+    227                  noise_value = BT_NOISE_VALUE;
+   \                     ??btinfo_get_voice_0:
+   \   00005B   90....       MOV     DPTR,#noise_value
+   \   00005E   E4           CLR     A
+   \   00005F   F0           MOVX    @DPTR,A
+   \   000060   A3           INC     DPTR
+   \   000061   7406         MOV     A,#0x6
+   \   000063   F0           MOVX    @DPTR,A
+    228                  far_delay = BT_FAR_DELAY;
+   \   000064   90....       MOV     DPTR,#far_delay
+   \   000067   740C         MOV     A,#0xc
+   \   000069   F0           MOVX    @DPTR,A
+   \   00006A   A3           INC     DPTR
+   \   00006B   E4           CLR     A
+   \   00006C   F0           MOVX    @DPTR,A
+    229                  echo_atten = BT_ECHO_ATTEN;
+   \   00006D   90....       MOV     DPTR,#echo_atten
+   \   000070   7405         MOV     A,#0x5
+   \   000072   F0           MOVX    @DPTR,A
+   \   000073   A3           INC     DPTR
+   \   000074   E4           CLR     A
+   \                     ??btinfo_get_voice_1:
+   \   000075   F0           MOVX    @DPTR,A
+    230              }
+    231          }
+   \   000076   02....       LJMP    ??Subroutine12_0
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+   \                     ?Subroutine5:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F9           MOV     R1,A
+   \   000002   8E82         MOV     DPL,R6
+   \   000004   8F83         MOV     DPH,R7
+   \   000006                REQUIRE ?Subroutine13
+   \   000006                ; // Fall through to label ?Subroutine13
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+   \                     ?Subroutine13:
+   \   000000   A3           INC     DPTR
+   \   000001   A3           INC     DPTR
+   \   000002   A3           INC     DPTR
+   \   000003   A3           INC     DPTR
+   \   000004   22           RET
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+   \                     ?Subroutine4:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   A3           INC     DPTR
+   \   000002   E9           MOV     A,R1
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   8E82         MOV     DPL,R6
+   \   000006   8F83         MOV     DPH,R7
+   \   000008   A3           INC     DPTR
+   \   000009   80..         SJMP    ?Subroutine13
+    232          
+    233          //设置本设备的PINCODE
+    234          #pragma location="BT_API_CMD"
+
+   \                                 In segment BT_API_CMD, align 1, keep-with-next
+    235          void btinfo_get_pincode(u8 *ptr)
+   \                     btinfo_get_pincode:
+    236          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    237              smemcpy(ptr, btpincode, 4);
+   \   000000                ; Setup parameters for call to function smemcpy
+   \   000000   7904         MOV     R1,#0x4
+   \   000002   7C..         MOV     R4,#(btpincode & 0xff)
+   \   000004   7D..         MOV     R5,#((btpincode >> 8) & 0xff)
+   \   000006   12....       LCALL   smemcpy & 0xFFFF
+    238          }
+   \   000009   02....       LJMP    ?BRET
+    239          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    240          void BT_PairingResult(u8 re)
+   \                     BT_PairingResult:
+    241          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    242          	//re=0 pairing success
+    243          	//re=other  pairing fail
+    244          	//printf("pa=%d\n",re);
+    245          }
+   \   000000   02....       LJMP    ?BRET
+    246          
+    247          #pragma location="BT_RFC_TX"
+
+   \                                 In segment BT_RFC_TX, align 1, keep-with-next
+    248          bool send_bat_to_iphone(u8 batval)
+   \                     send_bat_to_iphone:
+    249          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    250              ((u8*)at_cmd0_ptr)[19] = batval+'0';
+   \   000000   7430         MOV     A,#0x30
+   \   000002   29           ADD     A,R1
+   \   000003   7582..       MOV     DPL,#((at_cmd0_ptr + 19) & 0xff)
+   \   000006   7583..       MOV     DPH,#(((at_cmd0_ptr + 19) >> 8) & 0xff)
+   \   000009   F0           MOVX    @DPTR,A
+    251              return bt_send_atcmd((char *)at_cmd0_ptr);
+   \   00000A                ; Setup parameters for call to function bt_send_atcmd
+   \   00000A   7A..         MOV     R2,#(at_cmd0_ptr & 0xff)
+   \   00000C   7B..         MOV     R3,#((at_cmd0_ptr >> 8) & 0xff)
+   \   00000E   90....       MOV     DPTR,#(bt_send_atcmd & 0xffff)
+   \   000011   74..         MOV     A,#((bt_send_atcmd >> 16) & 0xff)
+   \   000013   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000016   02....       LJMP    ?BRET
+    252          }
+    253          
+    254          #pragma location="BT_RFC_TX"
+
+   \                                 In segment BT_RFC_TX, align 1, keep-with-next
+    255          void send_bat_to_iphone_hook(void)
+   \                     send_bat_to_iphone_hook:
+    256          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    257             // printf("%02x ",bt_user_feature);
+    258              if(sys_ctl.connected && IS_APPLE_BT_DEVICE) {                //苹果设备显示电量
+    259                  if(sys_ctl.bat_val != t_bt.disp_dev_bat) {
+    260                    //  printf("bat:%d\n",sys_ctl.bat_val);
+    261                      if(send_bat_to_iphone(sys_ctl.bat_val)) {
+    262                        //  printf("d ");
+    263                          t_bt.disp_dev_bat = sys_ctl.bat_val;
+    264                      }
+    265                  }
+    266              }
+    267          }
+   \   000000   02....       LJMP    ?BRET
+    268          
+    269          #pragma location="BT_INIT_SEG"
+
+   \                                 In segment BT_INIT_SEG, align 1, keep-with-next
+    270          void user_bt_init(void)
+   \                     user_bt_init:
+    271          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    272              //打开的模块
+    273          #if TASK_BTHID_EN
+    274              if(task_hid_flag) {
+    275                  bt_cfg.profile = (0xC0 * BT_HID_EN);
+    276              } else {
+    277                  bt_cfg.profile = (0x20 * BT_SPP_EN) | (0x18 * BT_HSHF_EN) | (0x7 * BT_A2DP_EN);
+    278              }
+    279          #else
+    280              bt_cfg.profile = (0xC0 * BT_HID_EN) | (0x20 * BT_SPP_EN) | (0x18 * BT_HSHF_EN) | (0x7 * BT_A2DP_EN);
+   \   000000   7407         MOV     A,#0x7
+   \   000002   90....       MOV     DPTR,#bt_cfg
+   \   000005   F0           MOVX    @DPTR,A
+    281          #endif
+    282          
+    283              //回连次数
+    284              bt_cfg.connect_times = BT_POWER_ON_CONN_TIMES;
+   \   000006   7403         MOV     A,#0x3
+   \   000008   90....       MOV     DPTR,#(bt_cfg + 1)
+   \   00000B   F0           MOVX    @DPTR,A
+    285          
+    286              //远距离断开回连次数
+    287              bt_cfg.timeout_connect_times = BT_TIME_OUT_CONN_TIMES;
+   \   00000C   7418         MOV     A,#0x18
+   \   00000E   90....       MOV     DPTR,#(bt_cfg + 2)
+   \   000011   F0           MOVX    @DPTR,A
+    288          #if BT_3WCALL_EN
+    289              bt_user_feature = BT_FT_APPLE_DEVICE_EN | BT_FT_HSF_3WCALL_EN;
+    290          #else
+    291              bt_user_feature = BT_FT_APPLE_DEVICE_EN;
+    292          #endif
+    293              bt_user_feature |= BT_FT_APPLE_VOL_CTRL_EN;
+   \   000012   E4           CLR     A
+   \   000013   90....       MOV     DPTR,#bt_user_feature
+   \   000016   F0           MOVX    @DPTR,A
+    294          
+    295              //初始化蓝牙模块用到的变量
+    296              Test_Mode_Flag =0;
+   \   000017   90....       MOV     DPTR,#Test_Mode_Flag
+   \   00001A   F0           MOVX    @DPTR,A
+    297              bt_init();
+   \   00001B                ; Setup parameters for call to function bt_init
+   \   00001B   90....       MOV     DPTR,#(bt_init & 0xffff)
+   \   00001E   74..         MOV     A,#((bt_init >> 16) & 0xff)
+   \   000020   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    298              bt_set_scan(1, 1);                      //可被发现，可被连接
+   \   000023                ; Setup parameters for call to function bt_set_scan
+   \   000023   D2F1         SETB    B.1
+   \   000025   D2F0         SETB    B.0
+   \   000027   90....       MOV     DPTR,#(bt_set_scan & 0xffff)
+   \   00002A   74..         MOV     A,#((bt_set_scan >> 16) & 0xff)
+   \   00002C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    299          
+    300              //以下开始复位蓝牙模块
+    301              BTLDO_EN();
+    302          
+    303              btdec_load_code(0x10, 3);
+   \   00002F                ; Setup parameters for call to function btdec_load_code
+   \   00002F   7903         MOV     R1,#0x3
+   \   000031   7A10         MOV     R2,#0x10
+   \   000033   7B00         MOV     R3,#0x0
+   \   000035   90....       MOV     DPTR,#(btdec_load_code & 0xffff)
+   \   000038   74..         MOV     A,#((btdec_load_code >> 16) & 0xff)
+   \   00003A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    304              bt_uart_init();
+   \   00003D                ; Setup parameters for call to function bt_uart_init
+   \   00003D   90....       MOV     DPTR,#(bt_uart_init & 0xffff)
+   \   000040   74..         MOV     A,#((bt_uart_init >> 16) & 0xff)
+   \   000042   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    305              //P3DIR |= BIT(3);  // CTS
+    306              memset((u8 *)0x8900, 0, 0x1600);        //清空BT数据区
+   \   000045                ; Setup parameters for call to function my_memset
+   \   000045   7C00         MOV     R4,#0x0
+   \   000047   7D16         MOV     R5,#0x16
+   \   000049   7900         MOV     R1,#0x0
+   \   00004B   7A00         MOV     R2,#0x0
+   \   00004D   7B89         MOV     R3,#-0x77
+   \   00004F   12....       LCALL   my_memset & 0xFFFF
+    307              btmode_enter();
+   \   000052                ; Setup parameters for call to function btmode_enter
+   \   000052   90....       MOV     DPTR,#(btmode_enter & 0xffff)
+   \   000055   74..         MOV     A,#((btmode_enter >> 16) & 0xff)
+   \   000057   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    308              bt_reset();
+   \   00005A                ; Setup parameters for call to function bt_reset
+   \   00005A   90....       MOV     DPTR,#(bt_reset & 0xffff)
+   \   00005D   74..         MOV     A,#((bt_reset >> 16) & 0xff)
+   \   00005F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    309          
+    310              hcmd_write_xdata(0x0207, 0x00);
+   \   000062                ; Setup parameters for call to function hcmd_write_xdata
+   \   000062   7900         MOV     R1,#0x0
+   \   000064   7A07         MOV     R2,#0x7
+   \   000066   7B02         MOV     R3,#0x2
+   \   000068   90....       MOV     DPTR,#(hcmd_write_xdata & 0xffff)
+   \   00006B   74..         MOV     A,#((hcmd_write_xdata >> 16) & 0xff)
+   \   00006D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    311              hcmd_write_xdata(0x0208, 0xFB);
+   \   000070                ; Setup parameters for call to function hcmd_write_xdata
+   \   000070   79FB         MOV     R1,#-0x5
+   \   000072   7A08         MOV     R2,#0x8
+   \   000074   7B02         MOV     R3,#0x2
+   \   000076   90....       MOV     DPTR,#(hcmd_write_xdata & 0xffff)
+   \   000079   74..         MOV     A,#((hcmd_write_xdata >> 16) & 0xff)
+   \   00007B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    312              hcmd_write_xdata(0x0209, 0x00);
+   \   00007E                ; Setup parameters for call to function hcmd_write_xdata
+   \   00007E   7900         MOV     R1,#0x0
+   \   000080   7A09         MOV     R2,#0x9
+   \   000082   7B02         MOV     R3,#0x2
+   \   000084   90....       MOV     DPTR,#(hcmd_write_xdata & 0xffff)
+   \   000087   74..         MOV     A,#((hcmd_write_xdata >> 16) & 0xff)
+   \   000089   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    313              hcmd_write_xdata(0x020A, 0x40);
+   \   00008C                ; Setup parameters for call to function hcmd_write_xdata
+   \   00008C   7940         MOV     R1,#0x40
+   \   00008E   7A0A         MOV     R2,#0xa
+   \   000090   7B02         MOV     R3,#0x2
+   \   000092   90....       MOV     DPTR,#(hcmd_write_xdata & 0xffff)
+   \   000095   74..         MOV     A,#((hcmd_write_xdata >> 16) & 0xff)
+   \   000097   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    314          
+    315              bt_play_status = 0;
+   \   00009A   E4           CLR     A
+   \   00009B   90....       MOV     DPTR,#bt_play_status
+   \   00009E   F0           MOVX    @DPTR,A
+    316              btinfo_get_mic(bt_mic_param);
+   \   00009F                ; Setup parameters for call to function btinfo_get_mic
+   \   00009F   7A..         MOV     R2,#(bt_mic_param & 0xff)
+   \   0000A1   7B..         MOV     R3,#((bt_mic_param >> 8) & 0xff)
+   \   0000A3   90....       MOV     DPTR,#(btinfo_get_mic & 0xffff)
+   \   0000A6   74..         MOV     A,#((btinfo_get_mic >> 16) & 0xff)
+   \   0000A8   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    317              btinfo_get_voice(bt_mic_param+2);
+   \   0000AB                ; Setup parameters for call to function btinfo_get_voice
+   \   0000AB   7A..         MOV     R2,#((bt_mic_param + 2) & 0xff)
+   \   0000AD   7B..         MOV     R3,#(((bt_mic_param + 2) >> 8) & 0xff)
+   \   0000AF   90....       MOV     DPTR,#(btinfo_get_voice & 0xffff)
+   \   0000B2   74..         MOV     A,#((btinfo_get_voice >> 16) & 0xff)
+   \   0000B4   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    318          
+    319          #if 1
+    320              extern u8 bt_temp_buf[0x100];
+    321              btinfo_get_addr(bt_temp_buf);
+   \   0000B7                ; Setup parameters for call to function btinfo_get_addr
+   \   0000B7   7A..         MOV     R2,#(bt_temp_buf & 0xff)
+   \   0000B9   7B..         MOV     R3,#((bt_temp_buf >> 8) & 0xff)
+   \   0000BB   90....       MOV     DPTR,#(btinfo_get_addr & 0xffff)
+   \   0000BE   74..         MOV     A,#((btinfo_get_addr >> 16) & 0xff)
+   \   0000C0   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    322              btinfo_get_name(bt_temp_buf+6);
+   \   0000C3                ; Setup parameters for call to function btinfo_get_name
+   \   0000C3   7A..         MOV     R2,#((bt_temp_buf + 6) & 0xff)
+   \   0000C5   7B..         MOV     R3,#(((bt_temp_buf + 6) >> 8) & 0xff)
+   \   0000C7   90....       MOV     DPTR,#(btinfo_get_name & 0xffff)
+   \   0000CA   74..         MOV     A,#((btinfo_get_name >> 16) & 0xff)
+   \   0000CC   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    323              printf(str_debug_rfinfo, bt_temp_buf[5],bt_temp_buf[4],bt_temp_buf[3],bt_temp_buf[2],bt_temp_buf[1],bt_temp_buf[0], bt_temp_buf+6);
+   \   0000CF                ; Setup parameters for call to function my_printf
+   \   0000CF   74..         MOV     A,#((bt_temp_buf + 6) & 0xff)
+   \   0000D1   C0E0         PUSH    A
+   \   0000D3   74..         MOV     A,#(((bt_temp_buf + 6) >> 8) & 0xff)
+   \   0000D5   C0E0         PUSH    A
+   \   0000D7   90....       MOV     DPTR,#bt_temp_buf
+   \   0000DA   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_9:
+   \   0000DD   C082         PUSH    DPL
+   \   0000DF   C083         PUSH    DPH
+   \   0000E1   90....       MOV     DPTR,#(bt_temp_buf + 1)
+   \   0000E4   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_10:
+   \   0000E7   C082         PUSH    DPL
+   \   0000E9   C083         PUSH    DPH
+   \   0000EB   90....       MOV     DPTR,#(bt_temp_buf + 2)
+   \   0000EE   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_11:
+   \   0000F1   C082         PUSH    DPL
+   \   0000F3   C083         PUSH    DPH
+   \   0000F5   90....       MOV     DPTR,#(bt_temp_buf + 3)
+   \   0000F8   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_12:
+   \   0000FB   C082         PUSH    DPL
+   \   0000FD   C083         PUSH    DPH
+   \   0000FF   90....       MOV     DPTR,#(bt_temp_buf + 4)
+   \   000102   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_13:
+   \   000105   C082         PUSH    DPL
+   \   000107   C083         PUSH    DPH
+   \   000109   90....       MOV     DPTR,#(bt_temp_buf + 5)
+   \   00010C   12....       LCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_14:
+   \   00010F   C082         PUSH    DPL
+   \   000111   C083         PUSH    DPH
+   \   000113   7A..         MOV     R2,#(str_debug_rfinfo & 0xff)
+   \   000115   7B..         MOV     R3,#((str_debug_rfinfo >> 8) & 0xff)
+   \   000117   12....       LCALL   my_printf & 0xFFFF
+   \   00011A   74F2         MOV     A,#-0xe
+   \   00011C   12....       LCALL   ?DEALLOC_EXT_STACK8
+    324          #endif
+    325              btmode_exit();
+   \   00011F                ; Setup parameters for call to function btmode_exit
+   \   00011F   90....       MOV     DPTR,#(btmode_exit & 0xffff)
+   \   000122   74..         MOV     A,#((btmode_exit >> 16) & 0xff)
+   \   000124   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    326          
+    327          #if BT_AUTO_PLAY
+    328              sys_ctl.bt_auto_play_flag = 0;
+    329              sys_param_write8(PARAM_BT_AUTO_PLAY, sys_ctl.bt_auto_play_flag);
+    330          #endif
+    331          }
+   \   000127   02....       LJMP    ?BRET
+
+   \                                 In segment BT_INIT_SEG, align 1, keep-with-next
+   \                     ?Subroutine6:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F582         MOV     DPL,A
+   \   000003   758300       MOV     DPH,#0x0
+   \   000006   22           RET
+    332          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    333          void user_bt_off(void)
+   \                     user_bt_off:
+    334          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    335              bt_off();
+   \   000000                ; Setup parameters for call to function bt_off
+   \   000000   90....       MOV     DPTR,#(bt_off & 0xffff)
+   \   000003   74..         MOV     A,#((bt_off >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    336              sys_ctl.connected = 0;
+   \   000008   E4           CLR     A
+   \   000009   90....       MOV     DPTR,#(sys_ctl + 25)
+   \   00000C   F0           MOVX    @DPTR,A
+    337          }
+   \   00000D   02....       LJMP    ?BRET
+    338          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    339          void user_bt_event(void)
+   \                     user_bt_event:
+    340          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    341              bt_event();
+   \   000000                ; Setup parameters for call to function bt_event
+   \   000000   90....       MOV     DPTR,#(bt_event & 0xffff)
+   \   000003   74..         MOV     A,#((bt_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    342              sys_ctl.bt_sta = bt_status_get();
+   \   000008                ; Setup parameters for call to function bt_status_get
+   \   000008   90....       MOV     DPTR,#(bt_status_get & 0xffff)
+   \   00000B   74..         MOV     A,#((bt_status_get >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000010   E9           MOV     A,R1
+   \   000011   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000014   F0           MOVX    @DPTR,A
+    343              if (sys_ctl.connected) {
+   \   000015   90....       MOV     DPTR,#(sys_ctl + 25)
+   \   000018   E0           MOVX    A,@DPTR
+   \   000019   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00001C   600F         JZ      ??user_bt_event_0
+    344                  if (sys_ctl.bt_sta <= BT_STA_IDLE) {
+   \   00001E   E0           MOVX    A,@DPTR
+   \   00001F   C3           CLR     C
+   \   000020   9402         SUBB    A,#0x2
+   \   000022   501A         JNC     ??user_bt_event_1
+    345                      sys_ctl.connected = 0;
+   \   000024   E4           CLR     A
+   \   000025   90....       MOV     DPTR,#(sys_ctl + 25)
+   \   000028   F0           MOVX    @DPTR,A
+    346                      put_msg(Q_BT_DISCONN_DONE);
+   \   000029                ; Setup parameters for call to function put_msg
+   \   000029   797C         MOV     R1,#0x7c
+   \   00002B   800E         SJMP    ??user_bt_event_2
+    347                  }
+    348              } else {
+    349                  if (sys_ctl.bt_sta >= BT_STA_CONNECTED) {
+   \                     ??user_bt_event_0:
+   \   00002D   E0           MOVX    A,@DPTR
+   \   00002E   C3           CLR     C
+   \   00002F   9405         SUBB    A,#0x5
+   \   000031   400B         JC      ??user_bt_event_1
+    350                      sys_ctl.connected = 1;
+   \   000033   7401         MOV     A,#0x1
+   \   000035   90....       MOV     DPTR,#(sys_ctl + 25)
+   \   000038   F0           MOVX    @DPTR,A
+    351                      put_msg(Q_BT_CONN_DONE);
+   \   000039                ; Setup parameters for call to function put_msg
+   \   000039   7976         MOV     R1,#0x76
+   \                     ??user_bt_event_2:
+   \   00003B   12....       LCALL   put_msg & 0xFFFF
+    352                  }
+    353              }
+    354          }
+   \                     ??user_bt_event_1:
+   \   00003E   02....       LJMP    ?BRET
+    355          
+    356          #pragma constseg="PHONE_CALL_NUM"
+
+   \                                 In segment PHONE_CALL_NUM, align 1
+    357          IAR_CONST u8 phone_call_number[32] = {0};
+   \                     phone_call_number:
+   \   000000   00000000     DB 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            00000000
+   \            00000000
+   \            00000000
+   \            00      
+   \   000011   00000000     DB 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            00000000
+   \            00000000
+   \            000000  
+    358          #pragma constseg=default
+    359          // u8 call[]="AT+CLCC";
+    360          // hsf_send_atcmd(call, sizeof(call));
+    361          /*----------------------------------------------------------------------------*/
+    362          /*@brief: 蓝牙端获取手机端拨出的号码接口
+    363          //@param: cmd为指向手机端所拨出的号码数组指针变量
+    364          //@return:无
+    365          //@note:  在手机端拨出号码后调用hsf_send_atcmd(u8 *str, u16 len)这个函数，
+    366                    参数str字符串为"AT+CLCC"，len为str字符串的长度，如定义
+    367                    u8 call_phone[]="AT+CLCC";则调用hsf_send_atcmd(call_phone, sizeof(call_phone));后，
+    368                    在库里面会自动调用hshf_rx_atcmd(u8 *cmd)，在此函数里面会把所获得的手机
+    369                    端拨出的号码保存到phone_call_number[32]这个数组里面.
+    370          */
+    371          /*----------------------------------------------------------------------------*/
+    372          #pragma location="BT_API_1"
+
+   \                                 In segment BT_API_1, align 1, keep-with-next
+    373          void hshf_rx_atcmd(u8 *cmd)
+   \                     hshf_rx_atcmd:
+    374          {
+   \   000000   7403         MOV     A,#0x3
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 6
+   \   000005                ; Auto size: 0
+   \   000005   8A..         MOV     ?V0 + 0,R2
+   \   000007   8B..         MOV     ?V0 + 1,R3
+    375              if(cmd[1] == 'C' && cmd[2] == 'L' && cmd[3] == 'C' && cmd[4] == 'C')
+   \   000009   8A82         MOV     DPL,R2
+   \   00000B   8B83         MOV     DPH,R3
+   \   00000D   A3           INC     DPTR
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   6443         XRL     A,#0x43
+   \   000011   706F         JNZ     ??hshf_rx_atcmd_0
+   \   000013   8A82         MOV     DPL,R2
+   \   000015   8B83         MOV     DPH,R3
+   \   000017   A3           INC     DPTR
+   \   000018   A3           INC     DPTR
+   \   000019   E0           MOVX    A,@DPTR
+   \   00001A   644C         XRL     A,#0x4c
+   \   00001C   7064         JNZ     ??hshf_rx_atcmd_0
+   \   00001E   8A82         MOV     DPL,R2
+   \   000020   8B83         MOV     DPH,R3
+   \   000022   A3           INC     DPTR
+   \   000023   A3           INC     DPTR
+   \   000024   A3           INC     DPTR
+   \   000025   E0           MOVX    A,@DPTR
+   \   000026   6443         XRL     A,#0x43
+   \   000028   7058         JNZ     ??hshf_rx_atcmd_0
+   \   00002A   8A82         MOV     DPL,R2
+   \   00002C   8B83         MOV     DPH,R3
+   \   00002E   A3           INC     DPTR
+   \   00002F   A3           INC     DPTR
+   \   000030   A3           INC     DPTR
+   \   000031   A3           INC     DPTR
+   \   000032   E0           MOVX    A,@DPTR
+   \   000033   6443         XRL     A,#0x43
+   \   000035   704B         JNZ     ??hshf_rx_atcmd_0
+    376              {   // +CLCC: 1,0,0,0,0,"10086"
+    377                  u8 *ptr = &cmd[17];
+   \   000037   EA           MOV     A,R2
+   \   000038   2411         ADD     A,#0x11
+   \   00003A   F582         MOV     DPL,A
+   \   00003C   EB           MOV     A,R3
+   \   00003D   3400         ADDC    A,#0x0
+   \   00003F   F583         MOV     DPH,A
+    378                  u8 size_of_call_number = 0;
+   \   000041   8E..         MOV     ?V0 + 2,R6
+    379                  if(*ptr == '\"')
+   \   000043   E0           MOVX    A,@DPTR
+   \   000044   6422         XRL     A,#0x22
+   \   000046   703A         JNZ     ??hshf_rx_atcmd_0
+    380                  {
+    381                      do{
+    382                          ptr++;
+   \                     ??hshf_rx_atcmd_1:
+   \   000048   A3           INC     DPTR
+    383                          size_of_call_number ++;
+   \   000049   05..         INC     ?V0 + 2
+    384                      }while(*ptr && *ptr != '\"');
+   \   00004B   E0           MOVX    A,@DPTR
+   \   00004C   FA           MOV     R2,A
+   \   00004D   6005         JZ      ??hshf_rx_atcmd_2
+   \   00004F   7422         MOV     A,#0x22
+   \   000051   6A           XRL     A,R2
+   \   000052   70F4         JNZ     ??hshf_rx_atcmd_1
+    385                      *ptr = '\0';
+   \                     ??hshf_rx_atcmd_2:
+   \   000054   E4           CLR     A
+   \   000055   F0           MOVX    @DPTR,A
+    386                      //printf("NUM:%s\n", &cmd[18]);   // get number
+    387          
+    388                      size_of_call_number --;
+    389                      //printf("size_of_call_number: %d\n",size_of_call_number);
+    390                      memset((u8 *)&phone_call_number, 0, sizeof(phone_call_number));
+   \   000056                ; Setup parameters for call to function my_memset
+   \   000056   7C20         MOV     R4,#0x20
+   \   000058   FD           MOV     R5,A
+   \   000059   F9           MOV     R1,A
+   \   00005A   7A..         MOV     R2,#(phone_call_number & 0xff)
+   \   00005C   7B..         MOV     R3,#((phone_call_number >> 8) & 0xff)
+   \   00005E   12....       LCALL   my_memset & 0xFFFF
+    391                      memcpy((u8 *)&phone_call_number, (u8 *)&cmd[18], size_of_call_number);
+   \   000061                ; Setup parameters for call to function my_memcpy
+   \   000061   74FF         MOV     A,#-0x1
+   \   000063   25..         ADD     A,?V0 + 2
+   \   000065   F582         MOV     DPL,A
+   \   000067   8E83         MOV     DPH,R6
+   \   000069   C082         PUSH    DPL
+   \   00006B   C083         PUSH    DPH
+   \   00006D   E5..         MOV     A,?V0 + 0
+   \   00006F   2412         ADD     A,#0x12
+   \   000071   FC           MOV     R4,A
+   \   000072   E5..         MOV     A,?V0 + 1
+   \   000074   3400         ADDC    A,#0x0
+   \   000076   FD           MOV     R5,A
+   \   000077   7A..         MOV     R2,#(phone_call_number & 0xff)
+   \   000079   7B..         MOV     R3,#((phone_call_number >> 8) & 0xff)
+   \   00007B   12....       LCALL   my_memcpy & 0xFFFF
+   \   00007E   D0E0         POP     A
+   \   000080   D0E0         POP     A
+    392                      //printf("NUM:%s\n", phone_call_number);
+    393                  }
+    394              }
+    395          }
+   \                     ??hshf_rx_atcmd_0:
+   \   000082   7F03         MOV     R7,#0x3
+   \   000084   02....       LJMP    ?BANKED_LEAVE_SP
+    396          
+    397          #if BT_ID3_EN
+    398          void bt_rx_id3_hook(u8 *ptr)
+    399          {
+    400              u16 idx;
+    401              u16 total = ((u16)ptr[0]<<8) + ptr[1];     //ptr[0:1]=total_len
+    402          
+    403              if(total > 1+4) {
+    404                  u8 num = ptr[2];    //ptr[2]=num_of_attr
+    405                  total -= 1;
+    406                  ptr += 2+1;
+    407                  idx = 3;
+    408                  while(num && idx<total) {
+    409                      //u16 char_set = ((u16)ptr[idx+1]<<8) + ptr[idx+2];  //0x6a = UTF-8
+    410                      u16 attr_len = ((u16)ptr[idx+3]<<8) + ptr[idx+4];
+    411          
+    412                      switch(ptr[idx]) {
+    413                      case 0x01://title
+    414                          //printf("title:%s\n", ptr+idx+5);
+    415                          //printf_array(ptr+idx+5, attr_len);
+    416                          break;
+    417                      case 0x02://artist
+    418                          //printf("artist:%s\n", ptr+idx+5);
+    419                          //printf_array(ptr+idx+5, attr_len);
+    420                          break;
+    421                      case 0x03://album
+    422                          //printf("album:%s\n", ptr+idx+5);
+    423                          //printf_array(ptr+idx+5, attr_len);
+    424                          break;
+    425                      }
+    426                      idx += 4+2+2+attr_len;
+    427                      num--;
+    428                  }
+    429              }
+    430          }
+    431          #endif
+    432          
+    433          #if BT_PLAY_TIME_EN
+    434          #pragma location="BT_AVCTP_RX"
+    435          void bt_play_time_hook(u8 *ptr)
+    436          {
+    437              u8 tmp = *ptr;
+    438              *ptr = *(ptr+3);
+    439              *(ptr+3) = tmp;
+    440          
+    441              tmp = *(ptr+1);
+    442              *(ptr+1) = *(ptr+2);
+    443              *(ptr+2) = tmp;
+    444          
+    445              //printf("%d:%d\n", (u8)(*(u32 *)ptr/1000/60), (u8)(*(u32 *)ptr/1000%60));
+    446          }
+    447          #endif
+    448          
+    449          //设置最新的一个地址编号
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    450          u8 bt_set_latest_num(u8 latest)
+   \                     bt_set_latest_num:
+    451          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    452              return latest;
+   \   000000   02....       LJMP    ?BRET
+    453          }
+    454          
+    455          //获取最新的一个地址编号
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    456          u8 bt_get_latest_num(void)
+   \                     bt_get_latest_num:
+    457          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    458              u8 num = bt_param_read8(BT_PARAM_LATEST);
+   \   000000                ; Setup parameters for call to function spi_read8
+   \   000000                ; Setup parameters for call to function spi_param_addr
+   \   000000   7A00         MOV     R2,#0x0
+   \   000002   7901         MOV     R1,#0x1
+   \   000004   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000007   12....       LCALL   spi_read8 & 0xFFFF
+   \   00000A   E9           MOV     A,R1
+    459              if (num > 4) {
+   \   00000B   C3           CLR     C
+   \   00000C   9405         SUBB    A,#0x5
+   \   00000E   4002         JC      ??bt_get_latest_num_0
+    460                  num = 0;
+   \   000010   7900         MOV     R1,#0x0
+    461              }
+    462              return num;
+   \                     ??bt_get_latest_num_0:
+   \   000012   02....       LJMP    ?BRET
+    463          }
+    464          
+    465          //设置最新的排序
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    466          void bt_set_order(u8 order[], u8 latest)
+   \                     bt_set_order:
+    467          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   C0..         PUSH    ?V0 + 0
+   \   000005                ; Saved register size: 3
+   \   000005                ; Auto size: 0
+    468              u8 i;
+    469              u8 n = latest - 1;
+   \   000005   74FF         MOV     A,#-0x1
+   \   000007   29           ADD     A,R1
+   \   000008   F5..         MOV     ?V0 + 0,A
+    470              u8 old = order[n];
+   \   00000A   EA           MOV     A,R2
+   \   00000B   25..         ADD     A,?V0 + 0
+   \   00000D   F8           MOV     R0,A
+   \   00000E   EB           MOV     A,R3
+   \   00000F   3400         ADDC    A,#0x0
+   \   000011   F9           MOV     R1,A
+   \   000012   8882         MOV     DPL,R0
+   \   000014   8983         MOV     DPH,R1
+   \   000016   E0           MOVX    A,@DPTR
+   \   000017   FE           MOV     R6,A
+    471              if (old > 4) {
+   \   000018   C3           CLR     C
+   \   000019   9405         SUBB    A,#0x5
+   \   00001B   4002         JC      ??bt_set_order_0
+    472                  old = 0;
+   \   00001D   7E00         MOV     R6,#0x0
+    473              }
+    474              for (i=0; i!=4; i++) {
+   \                     ??bt_set_order_0:
+   \   00001F   7D00         MOV     R5,#0x0
+    475                  if (order[i] && order[i] <= old) {
+   \                     ??bt_set_order_1:
+   \   000021   12....       LCALL   ?Subroutine0 & 0xFFFF
+   \                     ??CrossCallReturnLabel_0:
+   \   000024   6009         JZ      ??bt_set_order_2
+   \   000026   FC           MOV     R4,A
+   \   000027   EE           MOV     A,R6
+   \   000028   C3           CLR     C
+   \   000029   9C           SUBB    A,R4
+   \   00002A   4003         JC      ??bt_set_order_2
+    476                      order[i]++;
+   \   00002C   E0           MOVX    A,@DPTR
+   \   00002D   04           INC     A
+   \   00002E   F0           MOVX    @DPTR,A
+    477                  }
+    478              }
+   \                     ??bt_set_order_2:
+   \   00002F   0D           INC     R5
+   \   000030   7404         MOV     A,#0x4
+   \   000032   6D           XRL     A,R5
+   \   000033   70EC         JNZ     ??bt_set_order_1
+    479              order[n] = 1;
+   \   000035   7401         MOV     A,#0x1
+   \   000037   8882         MOV     DPL,R0
+   \   000039   8983         MOV     DPH,R1
+   \   00003B   F0           MOVX    @DPTR,A
+    480          }
+   \   00003C   D0..         POP     ?V0 + 0
+   \   00003E   02....       LJMP    ?Subroutine10 & 0xFFFF
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   8D..         MOV     ?V0 + 0,R5
+   \   000002   EA           MOV     A,R2
+   \   000003   25..         ADD     A,?V0 + 0
+   \   000005   F582         MOV     DPL,A
+   \   000007   EB           MOV     A,R3
+   \   000008   3400         ADDC    A,#0x0
+   \   00000A   F583         MOV     DPH,A
+   \   00000C   E0           MOVX    A,@DPTR
+   \   00000D   22           RET
+    481          
+    482          //根据地址，获取编号。找不到相应地址时，返回0
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    483          u8 bt_get_addr_num(u8 *addr)
+   \                     bt_get_addr_num:
+    484          {
+   \   000000   7406         MOV     A,#0x6
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 9
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    485              u8 i;
+    486              TYPE_BT_PAIR *pair;
+    487              bt_param_read(&bt_param, 0, sizeof(bt_param));      //读出整Page数据，复用SPI_PARAM_DATA空间
+   \   000009                ; Setup parameters for call to function spi_read
+   \   000009                ; Setup parameters for call to function spi_param_addr
+   \   000009   7A00         MOV     R2,#0x0
+   \   00000B   7901         MOV     R1,#0x1
+   \   00000D   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000010   8A..         MOV     ?V0 + 0,R2
+   \   000012   8B..         MOV     ?V0 + 1,R3
+   \   000014   8C..         MOV     ?V0 + 2,R4
+   \   000016   8D..         MOV     ?V0 + 3,R5
+   \   000018   78..         MOV     R0,#?V0 + 0
+   \   00001A   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   00001D   7CE4         MOV     R4,#-0x1c
+   \   00001F   FD           MOV     R5,A
+   \   000020   7A..         MOV     R2,#(bt_param & 0xff)
+   \   000022   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   000024   12....       LCALL   spi_read & 0xFFFF
+   \   000027   74FC         MOV     A,#-0x4
+   \   000029   12....       LCALL   ?DEALLOC_EXT_STACK8
+    488              pair = &bt_param.pair[0];
+   \   00002C   75....       MOV     ?V0 + 0,#((bt_param + 8) & 0xff)
+   \   00002F   75....       MOV     ?V0 + 1,#(((bt_param + 8) >> 8) & 0xff)
+    489              for (i=1; i!=5; i++,pair++) {
+   \   000032   75..01       MOV     ?V0 + 2,#0x1
+    490                  if (pair->valid && (0 == memcmp(pair->addr, addr, 6))) {
+   \                     ??bt_get_addr_num_0:
+   \   000035   85..82       MOV     DPL,?V0 + 0
+   \   000038   85..83       MOV     DPH,?V0 + 1
+   \   00003B   E0           MOVX    A,@DPTR
+   \   00003C   6018         JZ      ??bt_get_addr_num_1
+   \   00003E                ; Setup parameters for call to function mem_cmp
+   \   00003E   7906         MOV     R1,#0x6
+   \   000040   EE           MOV     A,R6
+   \   000041   FC           MOV     R4,A
+   \   000042   EF           MOV     A,R7
+   \   000043   FD           MOV     R5,A
+   \   000044   A3           INC     DPTR
+   \   000045   AA82         MOV     R2,DPL
+   \   000047   AB83         MOV     R3,DPH
+   \   000049   12....       LCALL   mem_cmp & 0xFFFF
+   \   00004C   EA           MOV     A,R2
+   \   00004D   7001         JNZ     ??bt_get_addr_num_2
+   \   00004F   EB           MOV     A,R3
+   \                     ??bt_get_addr_num_2:
+   \   000050   7004         JNZ     ??bt_get_addr_num_1
+    491                      return i;
+   \   000052   A9..         MOV     R1,?V0 + 2
+   \   000054   8018         SJMP    ??bt_get_addr_num_3
+    492                  }
+    493              }
+   \                     ??bt_get_addr_num_1:
+   \   000056   05..         INC     ?V0 + 2
+   \   000058   E5..         MOV     A,?V0 + 0
+   \   00005A   2437         ADD     A,#0x37
+   \   00005C   F8           MOV     R0,A
+   \   00005D   E5..         MOV     A,?V0 + 1
+   \   00005F   3400         ADDC    A,#0x0
+   \   000061   F9           MOV     R1,A
+   \   000062   88..         MOV     ?V0 + 0,R0
+   \   000064   89..         MOV     ?V0 + 1,R1
+   \   000066   7405         MOV     A,#0x5
+   \   000068   65..         XRL     A,?V0 + 2
+   \   00006A   70C9         JNZ     ??bt_get_addr_num_0
+    494              return 0;
+   \   00006C   7900         MOV     R1,#0x0
+   \                     ??bt_get_addr_num_3:
+   \   00006E   7F06         MOV     R7,#0x6
+   \   000070   02....       LJMP    ?BANKED_LEAVE_SP
+    495          }
+    496          
+    497          //申请一个新地址
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    498          u8 bt_alloc_num(u8 order[])
+   \                     bt_alloc_num:
+    499          {
+   \   000000   7402         MOV     A,#0x2
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 5
+   \   000005                ; Auto size: 0
+    500              u8 m = 0;
+    501              u8 j = 0;
+   \   000005   FF           MOV     R7,A
+    502              u8 i;
+    503              for (i=0; i!=4; i++) {
+   \   000006   FD           MOV     R5,A
+    504                  if (order[i] == 0) {
+   \                     ??bt_alloc_num_0:
+   \   000007   12....       LCALL   ?Subroutine0 & 0xFFFF
+   \                     ??CrossCallReturnLabel_1:
+   \   00000A   7005         JNZ     ??bt_alloc_num_1
+    505                      return i+1;
+   \   00000C   7401         MOV     A,#0x1
+   \   00000E   2D           ADD     A,R5
+   \   00000F   8013         SJMP    ??bt_alloc_num_2
+    506                  }
+    507                  if (order[i] > m) {
+   \                     ??bt_alloc_num_1:
+   \   000011   FC           MOV     R4,A
+   \   000012   EE           MOV     A,R6
+   \   000013   C3           CLR     C
+   \   000014   9C           SUBB    A,R4
+   \   000015   5004         JNC     ??bt_alloc_num_3
+    508                      m = order[i];
+   \   000017   E0           MOVX    A,@DPTR
+   \   000018   FE           MOV     R6,A
+    509                      j = i;
+   \   000019   ED           MOV     A,R5
+   \   00001A   FF           MOV     R7,A
+    510                  }
+    511              }
+   \                     ??bt_alloc_num_3:
+   \   00001B   0D           INC     R5
+   \   00001C   7404         MOV     A,#0x4
+   \   00001E   6D           XRL     A,R5
+   \   00001F   70E6         JNZ     ??bt_alloc_num_0
+    512              return j+1;
+   \   000021   7401         MOV     A,#0x1
+   \   000023   2F           ADD     A,R7
+   \                     ??bt_alloc_num_2:
+   \   000024   F9           MOV     R1,A
+   \   000025   7F02         MOV     R7,#0x2
+   \   000027   02....       LJMP    ?BANKED_LEAVE_SP
+    513          }
+    514          
+    515          //获取最新的回连地址
+    516          #pragma location="BT_LINK_KEY_SEG"
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+    517          bool bt_get_linkaddr(u8 *addr)
+   \                     bt_get_linkaddr:
+    518          {
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    519              DBG_BT_PARAM(str_get_addr);
+   \   000009                ; Setup parameters for call to function my_printf
+   \   000009   7A..         MOV     R2,#(str_get_addr & 0xff)
+   \   00000B   7B..         MOV     R3,#((str_get_addr >> 8) & 0xff)
+   \   00000D   12....       LCALL   my_printf & 0xFFFF
+    520              bt_param_read(&bt_param, 0, sizeof(bt_param));
+   \   000010                ; Setup parameters for call to function spi_read
+   \   000010                ; Setup parameters for call to function spi_param_addr
+   \   000010   12....       LCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_39:
+   \   000013   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   000016   7CE4         MOV     R4,#-0x1c
+   \   000018   FD           MOV     R5,A
+   \   000019   7A..         MOV     R2,#(bt_param & 0xff)
+   \   00001B   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   00001D   12....       LCALL   spi_read & 0xFFFF
+   \   000020   74FC         MOV     A,#-0x4
+   \   000022   12....       LCALL   ?DEALLOC_EXT_STACK8
+    521              //printf_array(&bt_param, sizeof(bt_param));
+    522          #if TASK_BTHID_EN
+    523              if(task_hid_flag) {
+    524                  TYPE_BT_PAIR2 *pair2;
+    525                  bt_param_read(&bt_param, 0, sizeof(bt_param));      //读出整Page数据，复用SPI_PARAM_DATA空间
+    526                  pair2 = &bt_param.pair2[0];
+    527                  if (!pair2->valid) {
+    528                      return false;
+    529                  }
+    530                  memcpy(addr, pair2->addr, 6);
+    531              } else
+    532          #endif
+    533              {
+    534                  u8 l_num = bt_get_latest_num();
+   \   000025                ; Setup parameters for call to function bt_get_latest_num
+   \   000025   90....       MOV     DPTR,#(bt_get_latest_num & 0xffff)
+   \   000028   74..         MOV     A,#((bt_get_latest_num >> 16) & 0xff)
+   \   00002A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00002D   E9           MOV     A,R1
+   \   00002E   FA           MOV     R2,A
+    535                  u8 n;
+    536                  if (0 == l_num) {                               //回连地址编号有效
+   \   00002F   7003         JNZ     ??bt_get_linkaddr_0
+    537                      return false;
+   \                     ??bt_get_linkaddr_1:
+   \   000031   C3           CLR     C
+   \   000032   807E         SJMP    ??bt_get_linkaddr_2
+    538                  }
+    539                  n = l_num - 1;
+   \                     ??bt_get_linkaddr_0:
+   \   000034   74FF         MOV     A,#-0x1
+   \   000036   2A           ADD     A,R2
+    540                  if (0 == bt_param_read8(BT_PAIR_VALID(n))) {    //回连信息有效
+   \   000037   75F037       MOV     B,#0x37
+   \   00003A   A4           MUL     AB
+   \   00003B   F5..         MOV     ?V0 + 0,A
+   \   00003D                ; Setup parameters for call to function spi_read8
+   \   00003D                ; Setup parameters for call to function spi_param_addr
+   \   00003D   7408         MOV     A,#0x8
+   \   00003F   25..         ADD     A,?V0 + 0
+   \   000041   FA           MOV     R2,A
+   \   000042   7901         MOV     R1,#0x1
+   \   000044   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000047   12....       LCALL   spi_read8 & 0xFFFF
+   \   00004A   E9           MOV     A,R1
+   \   00004B   60E4         JZ      ??bt_get_linkaddr_1
+    541                      return false;
+    542                  }
+    543                  bt_param_read(addr, BT_PAIR_ADDR(n), 6);
+   \   00004D                ; Setup parameters for call to function spi_read
+   \   00004D                ; Setup parameters for call to function spi_param_addr
+   \   00004D   7409         MOV     A,#0x9
+   \   00004F   25..         ADD     A,?V0 + 0
+   \   000051   FA           MOV     R2,A
+   \   000052   12....       LCALL   ??Subroutine8_0
+   \                     ??CrossCallReturnLabel_41:
+   \   000055   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   000058   7C06         MOV     R4,#0x6
+   \   00005A   FD           MOV     R5,A
+   \   00005B   EE           MOV     A,R6
+   \   00005C   FA           MOV     R2,A
+   \   00005D   EF           MOV     A,R7
+   \   00005E   FB           MOV     R3,A
+   \   00005F   12....       LCALL   spi_read & 0xFFFF
+   \   000062   74FC         MOV     A,#-0x4
+   \   000064   12....       LCALL   ?DEALLOC_EXT_STACK8
+    544              }
+    545              DBG_BT_PARAM(str_get_linkaddr, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+   \   000067                ; Setup parameters for call to function my_printf
+   \   000067   12....       LCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_15:
+   \   00006A   C082         PUSH    DPL
+   \   00006C   C083         PUSH    DPH
+   \   00006E   8E82         MOV     DPL,R6
+   \   000070   8F83         MOV     DPH,R7
+   \   000072   12....       LCALL   ??Subroutine7_1
+   \                     ??CrossCallReturnLabel_16:
+   \   000075   C082         PUSH    DPL
+   \   000077   C083         PUSH    DPH
+   \   000079   8E82         MOV     DPL,R6
+   \   00007B   8F83         MOV     DPH,R7
+   \   00007D   12....       LCALL   ??Subroutine7_2
+   \                     ??CrossCallReturnLabel_17:
+   \   000080   C082         PUSH    DPL
+   \   000082   C083         PUSH    DPH
+   \   000084   8E82         MOV     DPL,R6
+   \   000086   8F83         MOV     DPH,R7
+   \   000088   12....       LCALL   ??Subroutine7_3
+   \                     ??CrossCallReturnLabel_18:
+   \   00008B   C082         PUSH    DPL
+   \   00008D   C083         PUSH    DPH
+   \   00008F   8E82         MOV     DPL,R6
+   \   000091   8F83         MOV     DPH,R7
+   \   000093   12....       LCALL   ??Subroutine7_4
+   \                     ??CrossCallReturnLabel_19:
+   \   000096   C082         PUSH    DPL
+   \   000098   C083         PUSH    DPH
+   \   00009A   8E82         MOV     DPL,R6
+   \   00009C   8F83         MOV     DPH,R7
+   \   00009E   12....       LCALL   ??Subroutine7_5
+   \                     ??CrossCallReturnLabel_20:
+   \   0000A1   C082         PUSH    DPL
+   \   0000A3   C083         PUSH    DPH
+   \   0000A5   7A..         MOV     R2,#(str_get_linkaddr & 0xff)
+   \   0000A7   7B..         MOV     R3,#((str_get_linkaddr >> 8) & 0xff)
+   \   0000A9   12....       LCALL   my_printf & 0xFFFF
+   \   0000AC   74F4         MOV     A,#-0xc
+   \   0000AE   12....       LCALL   ?DEALLOC_EXT_STACK8
+    546              return true;
+   \   0000B1   D3           SETB    C
+   \                     ??bt_get_linkaddr_2:
+   \   0000B2                REQUIRE ?Subroutine14
+   \   0000B2                ; // Fall through to label ?Subroutine14
+    547          }
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+   \                     ?Subroutine14:
+   \   000000   7F04         MOV     R7,#0x4
+   \   000002   02....       LJMP    ?BANKED_LEAVE_SP
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+   \                     ?Subroutine8:
+   \   000000   7A00         MOV     R2,#0x0
+   \                     ??Subroutine8_0:
+   \   000002   7901         MOV     R1,#0x1
+   \   000004   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000007   8A..         MOV     ?V0 + 0,R2
+   \   000009   8B..         MOV     ?V0 + 1,R3
+   \   00000B   8C..         MOV     ?V0 + 2,R4
+   \   00000D   8D..         MOV     ?V0 + 3,R5
+   \   00000F   78..         MOV     R0,#?V0 + 0
+   \   000011   22           RET
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+   \                     ?Subroutine7:
+   \   000000   8E82         MOV     DPL,R6
+   \   000002   8F83         MOV     DPH,R7
+   \                     ??Subroutine7_0:
+   \   000004   A3           INC     DPTR
+   \                     ??Subroutine7_1:
+   \   000005   A3           INC     DPTR
+   \                     ??Subroutine7_2:
+   \   000006   A3           INC     DPTR
+   \                     ??Subroutine7_3:
+   \   000007   A3           INC     DPTR
+   \                     ??Subroutine7_4:
+   \   000008   A3           INC     DPTR
+   \                     ??Subroutine7_5:
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   F582         MOV     DPL,A
+   \   00000C   758300       MOV     DPH,#0x0
+   \   00000F   22           RET
+    548          
+    549          //删除回连信息
+    550          #pragma location="BT_LINK_KEY_SEG"
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+    551          void bt_delete_link(u8 *addr)
+   \                     bt_delete_link:
+    552          {
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+    553              DBG_BT_PARAM(str_delete_link, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+   \   000009                ; Setup parameters for call to function my_printf
+   \   000009   12....       LCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_21:
+   \   00000C   C082         PUSH    DPL
+   \   00000E   C083         PUSH    DPH
+   \   000010   8E82         MOV     DPL,R6
+   \   000012   8F83         MOV     DPH,R7
+   \   000014   12....       LCALL   ??Subroutine7_1
+   \                     ??CrossCallReturnLabel_22:
+   \   000017   C082         PUSH    DPL
+   \   000019   C083         PUSH    DPH
+   \   00001B   8E82         MOV     DPL,R6
+   \   00001D   8F83         MOV     DPH,R7
+   \   00001F   12....       LCALL   ??Subroutine7_2
+   \                     ??CrossCallReturnLabel_23:
+   \   000022   C082         PUSH    DPL
+   \   000024   C083         PUSH    DPH
+   \   000026   8E82         MOV     DPL,R6
+   \   000028   8F83         MOV     DPH,R7
+   \   00002A   12....       LCALL   ??Subroutine7_3
+   \                     ??CrossCallReturnLabel_24:
+   \   00002D   C082         PUSH    DPL
+   \   00002F   C083         PUSH    DPH
+   \   000031   8E82         MOV     DPL,R6
+   \   000033   8F83         MOV     DPH,R7
+   \   000035   12....       LCALL   ??Subroutine7_4
+   \                     ??CrossCallReturnLabel_25:
+   \   000038   C082         PUSH    DPL
+   \   00003A   C083         PUSH    DPH
+   \   00003C   8E82         MOV     DPL,R6
+   \   00003E   8F83         MOV     DPH,R7
+   \   000040   12....       LCALL   ??Subroutine7_5
+   \                     ??CrossCallReturnLabel_26:
+   \   000043   C082         PUSH    DPL
+   \   000045   C083         PUSH    DPH
+   \   000047   7A..         MOV     R2,#(str_delete_link & 0xff)
+   \   000049   7B..         MOV     R3,#((str_delete_link >> 8) & 0xff)
+   \   00004B   12....       LCALL   my_printf & 0xFFFF
+   \   00004E   74F4         MOV     A,#-0xc
+   \   000050   12....       LCALL   ?DEALLOC_EXT_STACK8
+    554          #if TASK_BTHID_EN
+    555              if(task_hid_flag) {
+    556                  TYPE_BT_PAIR2 *pair2;
+    557                  bt_param_read(&bt_param, 0, sizeof(bt_param));      //读出整Page数据，复用SPI_PARAM_DATA空间
+    558                  pair2 = &bt_param.pair2[0];
+    559                  if (!pair2->valid || (0 != memcmp(pair2->addr, addr, 6))) {
+    560                      return;
+    561                  }
+    562                  memset(pair2, 0, sizeof(TYPE_BT_PAIR2));
+    563              } else
+    564          #endif
+    565              {
+    566                  TYPE_BT_PAIR *pair;
+    567                  u8 n = bt_get_addr_num(addr);                   //先查找是否有该地址
+   \   000053                ; Setup parameters for call to function bt_get_addr_num
+   \   000053   EE           MOV     A,R6
+   \   000054   FA           MOV     R2,A
+   \   000055   EF           MOV     A,R7
+   \   000056   FB           MOV     R3,A
+   \   000057   90....       MOV     DPTR,#(bt_get_addr_num & 0xffff)
+   \   00005A   74..         MOV     A,#((bt_get_addr_num >> 16) & 0xff)
+   \   00005C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00005F   E9           MOV     A,R1
+   \   000060   FE           MOV     R6,A
+    568                  if (n == 0) {
+   \   000061   6059         JZ      ??bt_delete_link_0
+    569                      return;
+    570                  }
+    571                  u8 l_num = bt_get_latest_num();
+   \   000063                ; Setup parameters for call to function bt_get_latest_num
+   \   000063   90....       MOV     DPTR,#(bt_get_latest_num & 0xffff)
+   \   000066   74..         MOV     A,#((bt_get_latest_num >> 16) & 0xff)
+   \   000068   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00006B   E9           MOV     A,R1
+   \   00006C   FF           MOV     R7,A
+    572                  bt_param_read(&bt_param, 0, sizeof(bt_param));  //读出整Page数据，复用SPI_PARAM_DATA空间
+   \   00006D                ; Setup parameters for call to function spi_read
+   \   00006D                ; Setup parameters for call to function spi_param_addr
+   \   00006D   12....       LCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_40:
+   \   000070   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   000073   7CE4         MOV     R4,#-0x1c
+   \   000075   FD           MOV     R5,A
+   \   000076   7A..         MOV     R2,#(bt_param & 0xff)
+   \   000078   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   00007A   12....       LCALL   spi_read & 0xFFFF
+   \   00007D   74FC         MOV     A,#-0x4
+   \   00007F   12....       LCALL   ?DEALLOC_EXT_STACK8
+    573                  pair = &bt_param.pair[n-1];
+    574                  if (l_num == n) {
+   \   000082   EE           MOV     A,R6
+   \   000083   6F           XRL     A,R7
+   \   000084   7005         JNZ     ??bt_delete_link_1
+    575                      bt_param.latest = bt_set_latest_num(0);
+   \   000086   E4           CLR     A
+   \   000087   90....       MOV     DPTR,#bt_param
+   \   00008A   F0           MOVX    @DPTR,A
+    576                  }
+    577                  bt_param.order[n-1] = 0;
+   \                     ??bt_delete_link_1:
+   \   00008B   8E82         MOV     DPL,R6
+   \   00008D   AA82         MOV     R2,DPL
+   \   00008F   EA           MOV     A,R2
+   \   000090   24..         ADD     A,#((bt_param + 3) & 0xff)
+   \   000092   F582         MOV     DPL,A
+   \   000094   E4           CLR     A
+   \   000095   34..         ADDC    A,#(((bt_param + 3) >> 8) & 0xff)
+   \   000097   F583         MOV     DPH,A
+   \   000099   E4           CLR     A
+   \   00009A   F0           MOVX    @DPTR,A
+    578                  memset(pair, 0, sizeof(TYPE_BT_PAIR));
+   \   00009B                ; Setup parameters for call to function my_memset
+   \   00009B   7C37         MOV     R4,#0x37
+   \   00009D   FD           MOV     R5,A
+   \   00009E   F9           MOV     R1,A
+   \   00009F   EA           MOV     A,R2
+   \   0000A0   8CF0         MOV     B,R4
+   \   0000A2   A4           MUL     AB
+   \   0000A3   24..         ADD     A,#((bt_param + 209) & 0xff)
+   \   0000A5   FA           MOV     R2,A
+   \   0000A6   E5F0         MOV     A,B
+   \   0000A8   34..         ADDC    A,#(((bt_param - 47) >> 8) & 0xff)
+   \   0000AA   FB           MOV     R3,A
+   \   0000AB   12....       LCALL   my_memset & 0xFFFF
+    579              }
+    580              bt_param_writepage(&bt_param);                  //使用bt_param时，只支持writepage
+   \   0000AE                ; Setup parameters for call to function spi_param_writepage
+   \   0000AE   7A..         MOV     R2,#(bt_param & 0xff)
+   \   0000B0   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   0000B2   7901         MOV     R1,#0x1
+   \   0000B4   90....       MOV     DPTR,#(spi_param_writepage & 0xffff)
+   \   0000B7   74..         MOV     A,#((spi_param_writepage >> 16) & 0xff)
+   \   0000B9   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    581          }
+   \                     ??bt_delete_link_0:
+   \   0000BC   02....       LJMP    ?Subroutine14
+    582          
+    583          //根据地址，获取回连的KEY值
+    584          #pragma location="BT_LINK_KEY_SEG"
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+    585          bool bt_get_link_key(u8 *addr, u8 *link_key)
+   \                     bt_get_link_key:
+    586          {
+   \   000000   7408         MOV     A,#0x8
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 11
+   \   000005                ; Auto size: 0
+   \   000005   8A..         MOV     ?V0 + 0,R2
+   \   000007   8B..         MOV     ?V0 + 1,R3
+   \   000009   EC           MOV     A,R4
+   \   00000A   FE           MOV     R6,A
+   \   00000B   ED           MOV     A,R5
+   \   00000C   FF           MOV     R7,A
+    587              DBG_BT_PARAM(str_get_link_key, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+   \   00000D                ; Setup parameters for call to function my_printf
+   \   00000D   8A82         MOV     DPL,R2
+   \   00000F   8B83         MOV     DPH,R3
+   \   000011   12....       LCALL   ??Subroutine7_0
+   \                     ??CrossCallReturnLabel_27:
+   \   000014   C082         PUSH    DPL
+   \   000016   C083         PUSH    DPH
+   \   000018   8A82         MOV     DPL,R2
+   \   00001A   8B83         MOV     DPH,R3
+   \   00001C   12....       LCALL   ??Subroutine7_1
+   \                     ??CrossCallReturnLabel_28:
+   \   00001F   C082         PUSH    DPL
+   \   000021   C083         PUSH    DPH
+   \   000023   8A82         MOV     DPL,R2
+   \   000025   8B83         MOV     DPH,R3
+   \   000027   12....       LCALL   ??Subroutine7_2
+   \                     ??CrossCallReturnLabel_29:
+   \   00002A   C082         PUSH    DPL
+   \   00002C   C083         PUSH    DPH
+   \   00002E   8A82         MOV     DPL,R2
+   \   000030   8B83         MOV     DPH,R3
+   \   000032   12....       LCALL   ??Subroutine7_3
+   \                     ??CrossCallReturnLabel_30:
+   \   000035   C082         PUSH    DPL
+   \   000037   C083         PUSH    DPH
+   \   000039   8A82         MOV     DPL,R2
+   \   00003B   8B83         MOV     DPH,R3
+   \   00003D   12....       LCALL   ??Subroutine7_4
+   \                     ??CrossCallReturnLabel_31:
+   \   000040   C082         PUSH    DPL
+   \   000042   C083         PUSH    DPH
+   \   000044   8A82         MOV     DPL,R2
+   \   000046   8B83         MOV     DPH,R3
+   \   000048   12....       LCALL   ??Subroutine7_5
+   \                     ??CrossCallReturnLabel_32:
+   \   00004B   C082         PUSH    DPL
+   \   00004D   C083         PUSH    DPH
+   \   00004F   7A..         MOV     R2,#(str_get_link_key & 0xff)
+   \   000051   7B..         MOV     R3,#((str_get_link_key >> 8) & 0xff)
+   \   000053   12....       LCALL   my_printf & 0xFFFF
+   \   000056   74F4         MOV     A,#-0xc
+   \   000058   12....       LCALL   ?DEALLOC_EXT_STACK8
+    588          #if TASK_BTHID_EN
+    589              if(task_hid_flag) {
+    590                  TYPE_BT_PAIR2 *pair2;
+    591                  bt_param_read(&bt_param, 0, sizeof(bt_param));      //读出整Page数据，复用SPI_PARAM_DATA空间
+    592                  pair2 = &bt_param.pair2[0];
+    593                  if (!pair2->valid || (0 != memcmp(pair2->addr, addr, 6))) {
+    594                      return false;
+    595                  }
+    596                  memcpy(link_key, pair2->link_key, 16);
+    597              } else
+    598          #endif
+    599              {
+    600                  u8 n = bt_get_addr_num(addr);                   //先查找是否有该地址
+   \   00005B                ; Setup parameters for call to function bt_get_addr_num
+   \   00005B   AA..         MOV     R2,?V0 + 0
+   \   00005D   AB..         MOV     R3,?V0 + 1
+   \   00005F   90....       MOV     DPTR,#(bt_get_addr_num & 0xffff)
+   \   000062   74..         MOV     A,#((bt_get_addr_num >> 16) & 0xff)
+   \   000064   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000067   E9           MOV     A,R1
+   \   000068   F5..         MOV     ?V0 + 0,A
+    601                  if (n == 0) {
+   \   00006A   7003         JNZ     ??bt_get_link_key_0
+    602                      return false;
+   \   00006C   C3           CLR     C
+   \   00006D   8062         SJMP    ??bt_get_link_key_1
+    603                  }
+    604                  bt_param_read(link_key, BT_PAIR_LINK_KEY(n-1), 16);
+   \                     ??bt_get_link_key_0:
+   \   00006F                ; Setup parameters for call to function spi_read
+   \   00006F                ; Setup parameters for call to function spi_param_addr
+   \   00006F   75F037       MOV     B,#0x37
+   \   000072   A4           MUL     AB
+   \   000073   24D8         ADD     A,#-0x28
+   \   000075   FA           MOV     R2,A
+   \   000076   12....       LCALL   ?Subroutine9
+   \                     ??CrossCallReturnLabel_42:
+   \   000079   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   00007C   7C10         MOV     R4,#0x10
+   \   00007E   FD           MOV     R5,A
+   \   00007F   EE           MOV     A,R6
+   \   000080   FA           MOV     R2,A
+   \   000081   EF           MOV     A,R7
+   \   000082   FB           MOV     R3,A
+   \   000083   12....       LCALL   spi_read & 0xFFFF
+   \   000086   74FC         MOV     A,#-0x4
+   \   000088   12....       LCALL   ?DEALLOC_EXT_STACK8
+    605                  u8 l_num = bt_get_latest_num();
+    606                  if (l_num != n) {
+   \   00008B                ; Setup parameters for call to function bt_get_latest_num
+   \   00008B   90....       MOV     DPTR,#(bt_get_latest_num & 0xffff)
+   \   00008E   74..         MOV     A,#((bt_get_latest_num >> 16) & 0xff)
+   \   000090   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000093   E9           MOV     A,R1
+   \   000094   65..         XRL     A,?V0 + 0
+   \   000096   6038         JZ      ??bt_get_link_key_2
+    607                      bt_param_read(&bt_param, 0, sizeof(bt_param));  //读出整Page数据，复用SPI_PARAM_DATA空间
+   \   000098                ; Setup parameters for call to function spi_read
+   \   000098                ; Setup parameters for call to function spi_param_addr
+   \   000098   7A00         MOV     R2,#0x0
+   \   00009A   12....       LCALL   ?Subroutine9
+   \                     ??CrossCallReturnLabel_43:
+   \   00009D   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   0000A0   7CE4         MOV     R4,#-0x1c
+   \   0000A2   FD           MOV     R5,A
+   \   0000A3   7A..         MOV     R2,#(bt_param & 0xff)
+   \   0000A5   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   0000A7   12....       LCALL   spi_read & 0xFFFF
+   \   0000AA   74FC         MOV     A,#-0x4
+   \   0000AC   12....       LCALL   ?DEALLOC_EXT_STACK8
+    608                      bt_param.latest = bt_set_latest_num(n);
+   \   0000AF   E5..         MOV     A,?V0 + 0
+   \   0000B1   90....       MOV     DPTR,#bt_param
+   \   0000B4   F0           MOVX    @DPTR,A
+    609                      bt_set_order(bt_param.order, n);
+   \   0000B5                ; Setup parameters for call to function bt_set_order
+   \   0000B5   F9           MOV     R1,A
+   \   0000B6   7A..         MOV     R2,#((bt_param + 4) & 0xff)
+   \   0000B8   7B..         MOV     R3,#(((bt_param + 4) >> 8) & 0xff)
+   \   0000BA   90....       MOV     DPTR,#(bt_set_order & 0xffff)
+   \   0000BD   74..         MOV     A,#((bt_set_order >> 16) & 0xff)
+   \   0000BF   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    610                      bt_param_writepage(&bt_param);                  //使用bt_param时，只支持writepage
+   \   0000C2                ; Setup parameters for call to function spi_param_writepage
+   \   0000C2   7A..         MOV     R2,#(bt_param & 0xff)
+   \   0000C4   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   0000C6   7901         MOV     R1,#0x1
+   \   0000C8   90....       MOV     DPTR,#(spi_param_writepage & 0xffff)
+   \   0000CB   74..         MOV     A,#((spi_param_writepage >> 16) & 0xff)
+   \   0000CD   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    611                  }
+    612              }
+    613              //printf_array(link_key, 16);
+    614              return true;
+   \                     ??bt_get_link_key_2:
+   \   0000D0   D3           SETB    C
+   \                     ??bt_get_link_key_1:
+   \   0000D1   7F08         MOV     R7,#0x8
+   \   0000D3   02....       LJMP    ?BANKED_LEAVE_SP
+    615          }
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+   \                     ?Subroutine9:
+   \   000000   7901         MOV     R1,#0x1
+   \   000002   12....       LCALL   spi_param_addr & 0xFFFF
+   \   000005   8A..         MOV     ?V0 + 4,R2
+   \   000007   8B..         MOV     ?V0 + 5,R3
+   \   000009   8C..         MOV     ?V0 + 6,R4
+   \   00000B   8D..         MOV     ?V0 + 7,R5
+   \   00000D   78..         MOV     R0,#?V0 + 4
+   \   00000F   22           RET
+    616          
+    617          //保存地址及LINK KEY
+    618          #pragma location="BT_LINK_KEY_SEG"
+
+   \                                 In segment BT_LINK_KEY_SEG, align 1, keep-with-next
+    619          void bt_save_link_key(u8 *addr, u8 *link_key)
+   \                     bt_save_link_key:
+    620          {
+   \   000000   740C         MOV     A,#0xc
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 15
+   \   000005                ; Auto size: 0
+   \   000005   EA           MOV     A,R2
+   \   000006   FE           MOV     R6,A
+   \   000007   EB           MOV     A,R3
+   \   000008   FF           MOV     R7,A
+   \   000009   8C..         MOV     ?V0 + 0,R4
+   \   00000B   8D..         MOV     ?V0 + 1,R5
+    621              DBG_BT_PARAM(str_save_link_key, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+   \   00000D                ; Setup parameters for call to function my_printf
+   \   00000D   12....       LCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_33:
+   \   000010   C082         PUSH    DPL
+   \   000012   C083         PUSH    DPH
+   \   000014   8E82         MOV     DPL,R6
+   \   000016   8F83         MOV     DPH,R7
+   \   000018   12....       LCALL   ??Subroutine7_1
+   \                     ??CrossCallReturnLabel_34:
+   \   00001B   C082         PUSH    DPL
+   \   00001D   C083         PUSH    DPH
+   \   00001F   8E82         MOV     DPL,R6
+   \   000021   8F83         MOV     DPH,R7
+   \   000023   12....       LCALL   ??Subroutine7_2
+   \                     ??CrossCallReturnLabel_35:
+   \   000026   C082         PUSH    DPL
+   \   000028   C083         PUSH    DPH
+   \   00002A   8E82         MOV     DPL,R6
+   \   00002C   8F83         MOV     DPH,R7
+   \   00002E   12....       LCALL   ??Subroutine7_3
+   \                     ??CrossCallReturnLabel_36:
+   \   000031   C082         PUSH    DPL
+   \   000033   C083         PUSH    DPH
+   \   000035   8E82         MOV     DPL,R6
+   \   000037   8F83         MOV     DPH,R7
+   \   000039   12....       LCALL   ??Subroutine7_4
+   \                     ??CrossCallReturnLabel_37:
+   \   00003C   C082         PUSH    DPL
+   \   00003E   C083         PUSH    DPH
+   \   000040   8E82         MOV     DPL,R6
+   \   000042   8F83         MOV     DPH,R7
+   \   000044   12....       LCALL   ??Subroutine7_5
+   \                     ??CrossCallReturnLabel_38:
+   \   000047   C082         PUSH    DPL
+   \   000049   C083         PUSH    DPH
+   \   00004B   7A..         MOV     R2,#(str_save_link_key & 0xff)
+   \   00004D   7B..         MOV     R3,#((str_save_link_key >> 8) & 0xff)
+   \   00004F   12....       LCALL   my_printf & 0xFFFF
+   \   000052   74F4         MOV     A,#-0xc
+   \   000054   12....       LCALL   ?DEALLOC_EXT_STACK8
+    622              //printf_array(link_key, 16);
+    623          
+    624          #if TASK_BTHID_EN
+    625              if(task_hid_flag) {
+    626                  TYPE_BT_PAIR2 *pair2;
+    627                  bt_param_read(&bt_param, 0, sizeof(bt_param));      //读出整Page数据，复用SPI_PARAM_DATA空间
+    628                  pair2 = &bt_param.pair2[0];
+    629                  pair2->valid = 1;
+    630                  memcpy(pair2->addr, addr, 6);
+    631                  memcpy(pair2->link_key, link_key, 16);
+    632          	} else
+    633          #endif
+    634              {
+    635                  TYPE_BT_PAIR *pair;
+    636                  u8 n = bt_get_addr_num(addr);                   //先查找是否有该地址
+   \   000057                ; Setup parameters for call to function bt_get_addr_num
+   \   000057   EE           MOV     A,R6
+   \   000058   FA           MOV     R2,A
+   \   000059   EF           MOV     A,R7
+   \   00005A   FB           MOV     R3,A
+   \   00005B   90....       MOV     DPTR,#(bt_get_addr_num & 0xffff)
+   \   00005E   74..         MOV     A,#((bt_get_addr_num >> 16) & 0xff)
+   \   000060   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000063   E9           MOV     A,R1
+   \   000064   F5..         MOV     ?V0 + 4,A
+    637                  bt_param_read(&bt_param, 0, sizeof(bt_param));  //读出整Page数据，复用SPI_PARAM_DATA空间
+   \   000066                ; Setup parameters for call to function spi_read
+   \   000066                ; Setup parameters for call to function spi_param_addr
+   \   000066   7A00         MOV     R2,#0x0
+   \   000068   7901         MOV     R1,#0x1
+   \   00006A   12....       LCALL   spi_param_addr & 0xFFFF
+   \   00006D   8A..         MOV     ?V0 + 8,R2
+   \   00006F   8B..         MOV     ?V0 + 9,R3
+   \   000071   8C..         MOV     ?V0 + 10,R4
+   \   000073   8D..         MOV     ?V0 + 11,R5
+   \   000075   78..         MOV     R0,#?V0 + 8
+   \   000077   12....       LCALL   ?PUSH_ISTACK_I_FOUR
+   \   00007A   7CE4         MOV     R4,#-0x1c
+   \   00007C   FD           MOV     R5,A
+   \   00007D   7A..         MOV     R2,#(bt_param & 0xff)
+   \   00007F   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   000081   12....       LCALL   spi_read & 0xFFFF
+   \   000084   74FC         MOV     A,#-0x4
+   \   000086   12....       LCALL   ?DEALLOC_EXT_STACK8
+    638                  if (n == 0) {
+   \   000089   E5..         MOV     A,?V0 + 4
+   \   00008B   700F         JNZ     ??bt_save_link_key_0
+    639                      n = bt_alloc_num(bt_param.order);
+   \   00008D                ; Setup parameters for call to function bt_alloc_num
+   \   00008D   7A..         MOV     R2,#((bt_param + 4) & 0xff)
+   \   00008F   7B..         MOV     R3,#(((bt_param + 4) >> 8) & 0xff)
+   \   000091   90....       MOV     DPTR,#(bt_alloc_num & 0xffff)
+   \   000094   74..         MOV     A,#((bt_alloc_num >> 16) & 0xff)
+   \   000096   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000099   E9           MOV     A,R1
+   \   00009A   F5..         MOV     ?V0 + 4,A
+    640                  }
+    641                  pair = &bt_param.pair[n-1];
+   \                     ??bt_save_link_key_0:
+   \   00009C   E5..         MOV     A,?V0 + 4
+   \   00009E   75F037       MOV     B,#0x37
+   \   0000A1   A4           MUL     AB
+   \   0000A2   24..         ADD     A,#((bt_param + 209) & 0xff)
+   \   0000A4   F8           MOV     R0,A
+   \   0000A5   E5F0         MOV     A,B
+   \   0000A7   34..         ADDC    A,#(((bt_param - 47) >> 8) & 0xff)
+   \   0000A9   F9           MOV     R1,A
+   \   0000AA   88..         MOV     ?V0 + 2,R0
+   \   0000AC   89..         MOV     ?V0 + 3,R1
+    642                  bt_set_order(bt_param.order, n);
+   \   0000AE                ; Setup parameters for call to function bt_set_order
+   \   0000AE   A9..         MOV     R1,?V0 + 4
+   \   0000B0   7A..         MOV     R2,#((bt_param + 4) & 0xff)
+   \   0000B2   7B..         MOV     R3,#(((bt_param + 4) >> 8) & 0xff)
+   \   0000B4   90....       MOV     DPTR,#(bt_set_order & 0xffff)
+   \   0000B7   74..         MOV     A,#((bt_set_order >> 16) & 0xff)
+   \   0000B9   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    643                  bt_param.latest = bt_set_latest_num(n);
+   \   0000BC   E5..         MOV     A,?V0 + 4
+   \   0000BE   90....       MOV     DPTR,#bt_param
+   \   0000C1   F0           MOVX    @DPTR,A
+    644                  pair->valid = 1;
+   \   0000C2   7401         MOV     A,#0x1
+   \   0000C4   85..82       MOV     DPL,?V0 + 2
+   \   0000C7   85..83       MOV     DPH,?V0 + 3
+   \   0000CA   F0           MOVX    @DPTR,A
+    645                  memcpy(pair->addr, addr, 6);
+   \   0000CB                ; Setup parameters for call to function my_memcpy
+   \   0000CB   7406         MOV     A,#0x6
+   \   0000CD   C0E0         PUSH    A
+   \   0000CF   E4           CLR     A
+   \   0000D0   C0E0         PUSH    A
+   \   0000D2   EE           MOV     A,R6
+   \   0000D3   FC           MOV     R4,A
+   \   0000D4   EF           MOV     A,R7
+   \   0000D5   FD           MOV     R5,A
+   \   0000D6   A3           INC     DPTR
+   \   0000D7   AA82         MOV     R2,DPL
+   \   0000D9   AB83         MOV     R3,DPH
+   \   0000DB   12....       LCALL   my_memcpy & 0xFFFF
+   \   0000DE   D0E0         POP     A
+   \   0000E0   D0E0         POP     A
+    646                  memcpy(pair->link_key, link_key, 16);
+   \   0000E2                ; Setup parameters for call to function my_memcpy
+   \   0000E2   7410         MOV     A,#0x10
+   \   0000E4   C0E0         PUSH    A
+   \   0000E6   E4           CLR     A
+   \   0000E7   C0E0         PUSH    A
+   \   0000E9   AC..         MOV     R4,?V0 + 0
+   \   0000EB   AD..         MOV     R5,?V0 + 1
+   \   0000ED   E5..         MOV     A,?V0 + 2
+   \   0000EF   2407         ADD     A,#0x7
+   \   0000F1   FA           MOV     R2,A
+   \   0000F2   E5..         MOV     A,?V0 + 3
+   \   0000F4   3400         ADDC    A,#0x0
+   \   0000F6   FB           MOV     R3,A
+   \   0000F7   12....       LCALL   my_memcpy & 0xFFFF
+   \   0000FA   D0E0         POP     A
+   \   0000FC   D0E0         POP     A
+    647              }
+    648              bt_param_writepage(&bt_param);                  //使用bt_param时，只支持writepage
+   \   0000FE                ; Setup parameters for call to function spi_param_writepage
+   \   0000FE   7A..         MOV     R2,#(bt_param & 0xff)
+   \   000100   7B..         MOV     R3,#((bt_param >> 8) & 0xff)
+   \   000102   7901         MOV     R1,#0x1
+   \   000104   90....       MOV     DPTR,#(spi_param_writepage & 0xffff)
+   \   000107   74..         MOV     A,#((spi_param_writepage >> 16) & 0xff)
+   \   000109   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    649          
+    650          
+    651              //printf_array(&bt_param, sizeof(bt_param));
+    652          }
+   \   00010C   7F0C         MOV     R7,#0xc
+   \   00010E   02....       LJMP    ?BANKED_LEAVE_SP
+    653          
+    654          //重新封装蓝牙状态获取
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    655          u8 bt_status_get(void)
+   \                     bt_status_get:
+    656          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    657              u8 sta = bt_get_status();
+   \   000000                ; Setup parameters for call to function bt_get_status
+   \   000000   90....       MOV     DPTR,#(bt_get_status & 0xffff)
+   \   000003   74..         MOV     A,#((bt_get_status >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    658              if (sta == BT_STA_PLAYING || sta == BT_STA_CONNECTED) {
+   \   000008   7406         MOV     A,#0x6
+   \   00000A   69           XRL     A,R1
+   \   00000B   6005         JZ      ??bt_status_get_0
+   \   00000D   7405         MOV     A,#0x5
+   \   00000F   69           XRL     A,R1
+   \   000010   7014         JNZ     ??bt_status_get_1
+    659                  if(TASK_BT == task_ctl.work_sta){
+   \                     ??bt_status_get_0:
+   \   000012   90....       MOV     DPTR,#task_ctl
+   \   000015   E0           MOVX    A,@DPTR
+   \   000016   640D         XRL     A,#0xd
+   \   000018   700C         JNZ     ??bt_status_get_1
+    660                      if (bt_play_status) {
+   \   00001A   90....       MOV     DPTR,#bt_play_status
+   \   00001D   E0           MOVX    A,@DPTR
+   \   00001E   6004         JZ      ??bt_status_get_2
+    661                          sta = BT_STA_PLAYING;
+   \   000020   7906         MOV     R1,#0x6
+   \   000022   8002         SJMP    ??bt_status_get_1
+    662                      } else {
+    663                          sta = BT_STA_CONNECTED;
+   \                     ??bt_status_get_2:
+   \   000024   7905         MOV     R1,#0x5
+    664                      }
+    665                  }
+    666              }
+    667              return sta;
+   \                     ??bt_status_get_1:
+   \   000026   02....       LJMP    ?BRET
+    668          }
+    669          
+    670          //蓝牙音乐播放/暂停
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    671          void bt_pause_play(void)
+   \                     bt_pause_play:
+    672          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    673              if (bt_play_status != 1) {
+   \   000000   90....       MOV     DPTR,#bt_play_status
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   7007         JNZ     ??bt_pause_play_0
+    674                  bt_play();
+   \   000006                ; Setup parameters for call to function bt_play
+   \   000006   90....       MOV     DPTR,#(bt_play & 0xffff)
+   \   000009   74..         MOV     A,#((bt_play >> 16) & 0xff)
+   \   00000B   8005         SJMP    ??bt_pause_play_1
+    675          #if NPCP215X
+    676                  //AudioCodec_MUTE(UNMUTE);
+    677          #endif         
+    678              } else {
+    679                  bt_pause();
+   \                     ??bt_pause_play_0:
+   \   00000D                ; Setup parameters for call to function bt_pause
+   \   00000D   90....       MOV     DPTR,#(bt_pause & 0xffff)
+   \   000010   74..         MOV     A,#((bt_pause >> 16) & 0xff)
+   \                     ??bt_pause_play_1:
+   \   000012                REQUIRE ?Subroutine11
+   \   000012                ; // Fall through to label ?Subroutine11
+    680              }
+    681          }
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine11:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+    682          
+    683          //蓝牙状态更新
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    684          void task_bt_sta_update(void)
+   \                     task_bt_sta_update:
+    685          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    686              sys_ctl.bt_sta = bt_status_get();
+   \   000000                ; Setup parameters for call to function bt_status_get
+   \   000000   90....       MOV     DPTR,#(bt_status_get & 0xffff)
+   \   000003   74..         MOV     A,#((bt_status_get >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   E9           MOV     A,R1
+   \   000009   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   00000C   F0           MOVX    @DPTR,A
+    687             // printf("updsta: %d\n", sys_ctl.bt_sta );
+    688              if (sys_ctl.bt_sta == BT_STA_PLAYING) {
+   \   00000D   FA           MOV     R2,A
+   \   00000E   7406         MOV     A,#0x6
+   \   000010   6A           XRL     A,R2
+   \   000011   700A         JNZ     ??task_bt_sta_update_0
+    689                  btdec_play();                           //恢复蓝牙音乐播放
+   \   000013                ; Setup parameters for call to function btdec_play
+   \   000013   90....       MOV     DPTR,#(btdec_play & 0xffff)
+   \   000016   74..         MOV     A,#((btdec_play >> 16) & 0xff)
+   \   000018   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00001B   8020         SJMP    ??task_bt_sta_update_1
+    690              } else if (sys_ctl.bt_sta == BT_STA_INCOMING) {
+   \                     ??task_bt_sta_update_0:
+   \   00001D   7407         MOV     A,#0x7
+   \   00001F   6A           XRL     A,R2
+   \   000020   7004         JNZ     ??task_bt_sta_update_2
+    691                  put_msg(Q_BT_INCOMING);
+   \   000022                ; Setup parameters for call to function put_msg
+   \   000022   7973         MOV     R1,#0x73
+   \   000024   8014         SJMP    ??task_bt_sta_update_3
+    692              } else if ((sys_ctl.bt_sta == BT_STA_OUTGOING || sys_ctl.bt_sta == BT_STA_PHONE)
+    693                && (task_ctl.work_sta != TASK_POWEROFF))  //修正通话时不能低电关机
+   \                     ??task_bt_sta_update_2:
+   \   000026   7408         MOV     A,#0x8
+   \   000028   6A           XRL     A,R2
+   \   000029   6005         JZ      ??task_bt_sta_update_4
+   \   00002B   7409         MOV     A,#0x9
+   \   00002D   6A           XRL     A,R2
+   \   00002E   700D         JNZ     ??task_bt_sta_update_1
+   \                     ??task_bt_sta_update_4:
+   \   000030   90....       MOV     DPTR,#task_ctl
+   \   000033   E0           MOVX    A,@DPTR
+   \   000034   641A         XRL     A,#0x1a
+   \   000036   6005         JZ      ??task_bt_sta_update_1
+    694              {
+    695                  put_msg(Q_BT_CALL);
+   \   000038                ; Setup parameters for call to function put_msg
+   \   000038   7972         MOV     R1,#0x72
+   \                     ??task_bt_sta_update_3:
+   \   00003A   12....       LCALL   put_msg & 0xFFFF
+    696              }
+    697          }
+   \                     ??task_bt_sta_update_1:
+   \   00003D   02....       LJMP    ?BRET
+    698          
+    699          //蓝牙事件通知
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    700          void bt_notice(u8 evt)
+   \                     bt_notice:
+    701          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    702              switch (evt) {
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for bt_notice>_0`:
+   \   000004   01           DB        1
+   \   000005   07           DB        7
+   \   000006   ....         DW        ??bt_notice_0
+   \   000008   ....         DW        ??bt_notice_1
+   \   00000A   ....         DW        ??bt_notice_0
+   \   00000C   ....         DW        ??bt_notice_0
+   \   00000E   ....         DW        ??bt_notice_2
+   \   000010   ....         DW        ??bt_notice_3
+   \   000012   ....         DW        ??bt_notice_4
+   \   000014   ....         DW        ??bt_notice_5
+   \   000016   ....         DW        ??bt_notice_5
+    703              case BT_EVT_DISCONNECT:
+    704                  //蓝牙断开事件
+    705                  break;
+    706          
+    707              case BT_EVT_LOSTCONNECT:
+    708                  //蓝牙连接丢失（远距离断开）
+    709                  put_msg(Q_BT_CONN_LOST);
+   \                     ??bt_notice_1:
+   \   000018                ; Setup parameters for call to function put_msg
+   \   000018   7971         MOV     R1,#0x71
+   \   00001A   800E         SJMP    ??bt_notice_6
+    710                  break;
+    711          
+    712              case BT_EVT_CONNECT:
+    713                  //蓝牙连接事件
+    714                  break;
+    715          
+    716              case BT_EVT_CONNECTED:
+    717                  //蓝牙连接成功事件
+    718                  break;
+    719          
+    720              case BT_EVT_PLAY:
+    721                  //蓝牙开始播放事件
+    722                  put_msg(Q_BT_PLAY);
+   \                     ??bt_notice_2:
+   \   00001C                ; Setup parameters for call to function put_msg
+   \   00001C   7975         MOV     R1,#0x75
+   \   00001E   800A         SJMP    ??bt_notice_6
+    723                  break;
+    724          
+    725              case BT_EVT_STOP:
+    726                  //蓝牙停止播放事件
+    727                  put_msg(Q_BT_STOP);
+   \                     ??bt_notice_3:
+   \   000020                ; Setup parameters for call to function put_msg
+   \   000020   7974         MOV     R1,#0x74
+   \   000022   8006         SJMP    ??bt_notice_6
+    728                  break;
+    729          
+    730              case BT_EVT_INCOMING:
+    731                  //来电事件
+    732                 // printf("IN\n");
+    733                  put_msg(Q_BT_INCOMING);
+   \                     ??bt_notice_4:
+   \   000024                ; Setup parameters for call to function put_msg
+   \   000024   7973         MOV     R1,#0x73
+   \   000026   8002         SJMP    ??bt_notice_6
+    734                  break;
+    735          
+    736              case BT_EVT_OUTGOING:
+    737              case BT_EVT_CALL:
+    738                  //去电事件
+    739                  put_msg(Q_BT_CALL);
+   \                     ??bt_notice_5:
+   \   000028                ; Setup parameters for call to function put_msg
+   \   000028   7972         MOV     R1,#0x72
+   \                     ??bt_notice_6:
+   \   00002A   12....       LCALL   put_msg & 0xFFFF
+    740                  break;
+    741          
+    742              default:
+    743                  break;
+    744              }
+    745          }
+   \                     ??bt_notice_0:
+   \   00002D   02....       LJMP    ?BRET
+    746          
+    747          //拍照键，连着发两个键值
+    748          #pragma location="BT_HID"
+
+   \                                 In segment BT_HID, align 1, keep-with-next
+    749          bool bt_hid_photo(void)
+   \                     bt_hid_photo:
+    750          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    751          #if BT_HID_EN
+    752              bt_hid_key(HID_KEY_ENTER);                  //enter, android4.0以上
+    753              for(u8 i=0; i<50; i++) {
+    754                  bt_event();                             //增加点延时，避免有些手机反应不过来
+    755              }
+    756              bt_hid_consumer(HID_KEY_VOL_UP);            //volume up, ios
+    757          #endif
+    758              return 1;
+   \   000000   D3           SETB    C
+   \   000001   02....       LJMP    ?BRET
+    759          }
+    760          
+    761          //设置时间接口
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    762          void hcc_vendor_settime(u8 *buf)
+   \                     hcc_vendor_settime:
+    763          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    764              t_time.year = buf[0];
+   \   000000   8A82         MOV     DPL,R2
+   \   000002   8B83         MOV     DPH,R3
+   \   000004   E0           MOVX    A,@DPTR
+   \   000005   90....       MOV     DPTR,#t_time
+   \   000008   12....       LCALL   ?Subroutine2 & 0xFFFF
+    765              t_time.month = buf[1];
+   \                     ??CrossCallReturnLabel_4:
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   90....       MOV     DPTR,#(t_time + 1)
+   \   00000F   12....       LCALL   ?Subroutine2 & 0xFFFF
+    766              t_time.day = buf[2];
+   \                     ??CrossCallReturnLabel_5:
+   \   000012   A3           INC     DPTR
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   90....       MOV     DPTR,#(t_time + 2)
+   \   000017   12....       LCALL   ?Subroutine2 & 0xFFFF
+    767              t_time.hour = buf[3];
+   \                     ??CrossCallReturnLabel_6:
+   \   00001A   A3           INC     DPTR
+   \   00001B   A3           INC     DPTR
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   90....       MOV     DPTR,#(t_time + 3)
+   \   000020   12....       LCALL   ?Subroutine1 & 0xFFFF
+    768              t_time.minute = buf[4];
+   \                     ??CrossCallReturnLabel_2:
+   \   000023   E0           MOVX    A,@DPTR
+   \   000024   90....       MOV     DPTR,#(t_time + 4)
+   \   000027   12....       LCALL   ?Subroutine1 & 0xFFFF
+    769              t_time.second = buf[5];
+   \                     ??CrossCallReturnLabel_3:
+   \   00002A   A3           INC     DPTR
+   \   00002B   E0           MOVX    A,@DPTR
+   \   00002C   90....       MOV     DPTR,#(t_time + 5)
+   \   00002F   F0           MOVX    @DPTR,A
+    770              set_rtc_time();
+   \   000030                ; Setup parameters for call to function set_rtc_time
+   \   000030   90....       MOV     DPTR,#(set_rtc_time & 0xffff)
+   \   000033   74..         MOV     A,#((set_rtc_time >> 16) & 0xff)
+   \   000035   02....       LJMP    ?Subroutine11 & 0xFFFF
+    771          }
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   8A82         MOV     DPL,R2
+   \   000003   8B83         MOV     DPH,R3
+   \   000005   A3           INC     DPTR
+   \   000006   22           RET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   F0           MOVX    @DPTR,A
+   \   000001   8A82         MOV     DPL,R2
+   \   000003   8B83         MOV     DPH,R3
+   \   000005   A3           INC     DPTR
+   \   000006   A3           INC     DPTR
+   \   000007   A3           INC     DPTR
+   \   000008   A3           INC     DPTR
+   \   000009   22           RET
+    772          
+    773          //频偏测试
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    774          void bt_test_freq(void)
+   \                     bt_test_freq:
+    775          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    776              //选回2M晶振，系统时钟选48MHz
+    777              sys_pll_x26m();
+   \   000000                ; Setup parameters for call to function sys_pll_x26m
+   \   000000   90....       MOV     DPTR,#(sys_pll_x26m & 0xffff)
+   \   000003   74..         MOV     A,#((sys_pll_x26m >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    778          
+    779              P3DIR &= ~BIT(0);           //CLK用于时钟输出
+   \   000008   53BDFE       ANL     0xbd,#0xfe
+    780              P3 |= BIT(0);               //CLK用于时钟输出
+   \   00000B   D2B0         SETB    0xb0.0
+    781              SDCON0 |= BIT(0);           //Enable SDC
+   \   00000D   D288         SETB    0x88.0
+    782              SDBAUD = 11;                //输出2MHz时钟
+   \   00000F   740B         MOV     A,#0xb
+   \   000011   907800       MOV     DPTR,#0x7800
+   \   000014   F0           MOVX    @DPTR,A
+    783              SDCON0 |= BIT(1);           //Keep Clk Outing
+   \   000015   D289         SETB    0x88.1
+    784          }
+   \   000017   02....       LJMP    ?BRET
+    785          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    786          u8 bt_use_ev3(void)
+   \                     bt_use_ev3:
+    787          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    788              return 1;
+   \   000000   7901         MOV     R1,#0x1
+   \   000002   02....       LJMP    ?BRET
+    789          }
+    790          
+    791          #if BT_HID_MANU
+    792          bool bt_hid_enable(void)
+    793          {
+    794              return t_bt.hid_enable;
+    795          }
+    796          #endif
+    797          
+    798          //苹果设备音量控制
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    799          void send_vol_to_iphone_hook(void)
+   \                     send_vol_to_iphone_hook:
+    800          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    801              if(sys_ctl.connected && IS_APPLE_VOL_CTRL) {
+    802                  AVRCPChangeVolume();
+    803              }
+    804          }
+   \   000000   02....       LJMP    ?BRET
+
+   \                                 In segment XDATA_ID, align 1, keep-with-next
+   \                     `?<Initializer for EnableSimplePairMode>`:
+   \   000000   01           DB 1
+
+   \                                 In segment XDATA_ID, align 1, keep-with-next
+   \                     `?<Initializer for btpincode>`:
+   \   000000   30303030     DB 48, 48, 48, 48
+
+   Maximum stack usage in bytes:
+
+     Function                 EXT_STACK PSTACK XSTACK
+     --------                 --------- ------ ------
+     BT_PairingResult                0      0      0
+     bt_alloc_num                   21      0      0
+     bt_delete_link                 19      0      0
+       -> my_printf                 38      0      0
+       -> bt_get_addr_num           14      0      0
+       -> bt_get_latest_num         14      0      0
+       -> spi_param_addr            14      0      0
+       -> spi_read                  22      0      0
+       -> my_memset                 14      0      0
+       -> spi_param_writepage       14      0      0
+     bt_get_addr_num                28      0      0
+       -> spi_param_addr            18      0      0
+       -> spi_read                  26      0      0
+       -> mem_cmp                   18      0      0
+     bt_get_latest_num              11      0      0
+       -> spi_param_addr             0      0      0
+       -> spi_read8                  0      0      0
+     bt_get_link_key                23      0      0
+       -> my_printf                 46      0      0
+       -> bt_get_addr_num           22      0      0
+       -> spi_param_addr            22      0      0
+       -> spi_read                  30      0      0
+       -> bt_get_latest_num         22      0      0
+       -> spi_param_addr            22      0      0
+       -> spi_read                  30      0      0
+       -> bt_set_order              22      0      0
+       -> spi_param_writepage       22      0      0
+     bt_get_linkaddr                19      0      0
+       -> my_printf                 14      0      0
+       -> spi_param_addr            14      0      0
+       -> spi_read                  22      0      0
+       -> bt_get_latest_num         14      0      0
+       -> spi_param_addr            14      0      0
+       -> spi_read8                 14      0      0
+       -> spi_param_addr            14      0      0
+       -> spi_read                  22      0      0
+       -> my_printf                 38      0      0
+     bt_hid_photo                    0      0      0
+     bt_notice                       0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+     bt_pause_play                   0      0      0
+       -> bt_play                    0      0      0
+       -> bt_pause                   0      0      0
+     bt_save_link_key               27      0      0
+       -> my_printf                 54      0      0
+       -> bt_get_addr_num           30      0      0
+       -> spi_param_addr            30      0      0
+       -> spi_read                  38      0      0
+       -> bt_alloc_num              30      0      0
+       -> bt_set_order              30      0      0
+       -> my_memcpy                 34      0      0
+       -> my_memcpy                 34      0      0
+       -> spi_param_writepage       30      0      0
+     bt_set_latest_num               0      0      0
+     bt_set_order                   19      0      0
+     bt_status_get                   0      0      0
+       -> bt_get_status              0      0      0
+     bt_test_freq                    0      0      0
+       -> sys_pll_x26m               0      0      0
+     bt_use_ev3                      0      0      0
+     btinfo_get_addr                12      0      0
+       -> sysinfo_load              22      0      0
+       -> spi_param_addr            22      0      0
+       -> spi_read32                22      0      0
+       -> sysinfo_load              22      0      0
+       -> spi_param_addr            22      0      0
+       -> spi_read32                22      0      0
+     btinfo_get_mic                  2      0      0
+       -> sysinfo_load               4      0      0
+       -> sysinfo_load               4      0      0
+     btinfo_get_name                 4      0      0
+       -> sysinfo_load               4      0      0
+       -> sysinfo_load               4      0      0
+       -> my_memcpy                  8      0      0
+     btinfo_get_pincode              0      0      0
+       -> smemcpy                    0      0      0
+     btinfo_get_rfparam              4      0      0
+       -> sysinfo_load               4      0      0
+       -> my_memcpy                  8      0      0
+     btinfo_get_rfparam_2            4      0      0
+       -> sysinfo_load               4      0      0
+       -> my_memcpy                  8      0      0
+     btinfo_get_voice                2      0      0
+       -> sysinfo_load               4      0      0
+       -> sysinfo_load               4      0      0
+     char_to_hex                     0      0      0
+     hcc_vendor_settime              0      0      0
+       -> set_rtc_time               0      0      0
+     hex_to_char                     0      0      0
+     hshf_rx_atcmd                   8      0      0
+       -> my_memset                 12      0      0
+       -> my_memcpy                 16      0      0
+     send_bat_to_iphone              1      0      0
+       -> bt_send_atcmd              0      0      0
+     send_bat_to_iphone_hook         0      0      0
+     send_vol_to_iphone_hook         0      0      0
+     switch_rf_power                 1      0      0
+       -> get_chip_type              2      0      0
+       -> hcmd_write_rfreg           2      0      0
+       -> hcmd_write_rfreg           2      0      0
+     task_bt_sta_update              0      0      0
+       -> bt_status_get              0      0      0
+       -> btdec_play                 0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+     user_bt_event                   0      0      0
+       -> bt_event                   0      0      0
+       -> bt_status_get              0      0      0
+       -> put_msg                    0      0      0
+       -> put_msg                    0      0      0
+     user_bt_init                   14      0      0
+       -> bt_init                    0      0      0
+       -> bt_set_scan                0      0      0
+       -> btdec_load_code            0      0      0
+       -> bt_uart_init               0      0      0
+       -> my_memset                  0      0      0
+       -> btmode_enter               0      0      0
+       -> bt_reset                   0      0      0
+       -> hcmd_write_xdata           0      0      0
+       -> hcmd_write_xdata           0      0      0
+       -> hcmd_write_xdata           0      0      0
+       -> hcmd_write_xdata           0      0      0
+       -> btinfo_get_mic             0      0      0
+       -> btinfo_get_voice           0      0      0
+       -> btinfo_get_addr            0      0      0
+       -> btinfo_get_name            0      0      0
+       -> my_printf                 28      0      0
+       -> btmode_exit                0      0      0
+     user_bt_off                     0      0      0
+       -> bt_off                     0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label                 Bytes
+     --------------                 -----
+     SDCON0                            1
+     P3                                1
+     P3DIR                             1
+     tbl_rfparam                      64
+     tbl_rfparam_2                    64
+     tbl_bt_name                       9
+     tbl_bt_hid_name                  11
+     str_bt_init_addr                 38
+     str_debug_rfinfo                 42
+     str_get_addr                     10
+     str_get_linkaddr                 39
+     str_delete_link                  39
+     str_get_link_key                 36
+     str_save_link_key                37
+     at_cmd0_ptr                      22
+     bt_param                        228
+     bt_param_sum                      4
+     task_hid_flag                     1
+     bt_mic_param                     10
+     noise_value                       2
+     far_delay                         2
+     echo_atten                        2
+     bt_digital_gain                   1
+     bt_analog_gain                    1
+     EnableSimplePairMode              1
+     btpincode                         4
+     switch_rf_power                  39
+     ?Subroutine10                     6
+     char_to_hex                      54
+     hex_to_char                      17
+     btinfo_get_addr                 115
+     ?Subroutine3                     25
+     btinfo_get_name                  73
+     ?Subroutine12                    20
+     btinfo_get_rfparam               35
+     btinfo_get_rfparam_2             35
+     btinfo_get_mic                   79
+     btinfo_get_voice                121
+     ?Subroutine5                      6
+     ?Subroutine13                     5
+     ?Subroutine4                     11
+     btinfo_get_pincode               12
+     BT_PairingResult                  3
+     send_bat_to_iphone               25
+     send_bat_to_iphone_hook           3
+     user_bt_init                    298
+     ?Subroutine6                      7
+     user_bt_off                      16
+     user_bt_event                    65
+     phone_call_number                32
+     hshf_rx_atcmd                   135
+     bt_set_latest_num                 3
+     bt_get_latest_num                21
+     bt_set_order                     65
+     ?Subroutine0                     14
+     bt_get_addr_num                 115
+     bt_alloc_num                     42
+     bt_get_linkaddr                 178
+     ?Subroutine14                     5
+     ?Subroutine8                     18
+     ?Subroutine7                     16
+     bt_delete_link                  191
+     bt_get_link_key                 214
+     ?Subroutine9                     16
+     bt_save_link_key                273
+     bt_status_get                    41
+     bt_pause_play                    18
+     ?Subroutine11                     6
+     task_bt_sta_update               64
+     bt_notice                        48
+     bt_hid_photo                      4
+     hcc_vendor_settime               56
+     ?Subroutine2                      7
+     ?Subroutine1                     10
+     bt_test_freq                     26
+     bt_use_ev3                        5
+     send_vol_to_iphone_hook           3
+     ?<Initializer for EnableSimplePairMode>
+                                       1
+     ?<Initializer for btpincode>      4
+
+ 
+ 673 bytes in segment BANKED_CODE
+   1 byte  in segment BIT_N
+ 135 bytes in segment BT_API_1
+ 608 bytes in segment BT_API_CMD
+ 148 bytes in segment BT_API_CONST
+   4 bytes in segment BT_HID
+  80 bytes in segment BT_INIT_CONST
+ 305 bytes in segment BT_INIT_SEG
+ 161 bytes in segment BT_LINK_KEY_CONST
+ 911 bytes in segment BT_LINK_KEY_SEG
+  18 bytes in segment BT_MIC_PARAM
+ 232 bytes in segment BT_PAIR_PARAM
+  28 bytes in segment BT_RFC_TX
+  22 bytes in segment BT_RFC_TX_CONST
+  32 bytes in segment PHONE_CALL_NUM
+   3 bytes in segment SFR_AN
+   5 bytes in segment XDATA_I
+   5 bytes in segment XDATA_ID
+ 
+ 3 112 bytes of CODE  memory
+     0 bytes of DATA  memory (+ 3 bytes shared)
+   255 bytes of XDATA memory
+     1 byte  of BIT   memory
+
+Errors: none
+Warnings: none

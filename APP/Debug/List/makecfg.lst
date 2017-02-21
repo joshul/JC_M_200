@@ -1,0 +1,166 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:54 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\makecf #
+#                          g.c                                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\makecf #
+#                          g.c                                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\makecfg.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\makecfg.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\makecfg.c
+      1          /*****************************************************************************
+      2          * Module    : Main
+      3          * File      : makecfg.c
+      4          * Author    : Hanny
+      5          * Function  : COD文件生成配置
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          
+      9          #pragma constseg="MAKECODE_CONST"
+
+   \                                 In segment MAKECODE_CONST, align 1, root
+     10          IAR_ROOT IAR_CONST u8 makecode[32] = {
+   \                     makecode:
+   \   000000   00000000     DB 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            00000101
+   \            00000000
+   \            00000000
+   \            00000000
+   \            000000  
+   \   000017   00000000     DB 0, 0, 0, 0, 0, 0, 2, 0, 0
+   \            00000200
+   \            00      
+     11          //====== makecode_xx.bin ======
+     12          //00: 默认的升级程序
+     13              MAKECODE_ID,
+     14          //====== update_xx.bin ======
+     15              0x00,
+     16          //====== table.bin ======
+     17          //00: 不使用字库转换表
+     18              CHARACTER_CONVERT,
+     19          //====== font_res.bin ======
+     20          //00: 不使用字库
+     21              CHARACTER,
+     22          //====== res.bin ======
+     23          //00: 不使用图片资源
+     24              PICTURE,
+     25          //====== menu.bin ======
+     26          //00: 不使用菜单图片资源
+     27              MENU_PICTURE,
+     28          //====== mp3res.bin ======
+     29          //00: 不使用语音提示功能
+     30              0x01,
+     31          //====== btinfo.bin ======
+     32          //00: 蓝牙相关信息
+     33              0x01,
+     34          //====== 保留 ======
+     35              0x00, 0x00, 0x00, 0x00,
+     36              0x00, 0x00, 0x00, 0x00,
+     37          
+     38              0x00, 0x00, 0x00, 0x00,
+     39              0x00, 0x00, 0x00, 0x00,
+     40          
+     41              0x00, 0x00, 0x00,
+     42          
+     43          //====== LOADER DEBUG ======
+     44          //是否需要屏蔽LOADER的DEBUG信息
+     45              DEBUG_LOADER_DIS,        //27
+     46          
+     47          //====== 预留空间 ======
+     48          //0300: 预留128K+64K(有电话本功能时)用于保存系统和蓝牙参数、电话本信息
+     49              0x00, 0x02+BT_PHONE_BOOK_EN,    //28 - 29
+     50              0x00, 0x00,                     //30 - 31
+     51          };
+     52          
+     53          #pragma constseg="MAKEBAT_CONST"
+
+   \                                 In segment MAKEBAT_CONST, align 1, root
+     54          __root IAR_CONST char tbl_make_bat[] =
+   \                     tbl_make_bat:
+   \   000000   636F7079     DB 63H, 6FH, 70H, 79H, 20H, 2FH, 79H, 20H
+   \            202F7920
+   \   000008   222E2E5C     DB 22H, 2EH, 2EH, 5CH, 2EH, 2EH, 5CH, 63H
+   \            2E2E5C63
+   \   000010   6F6E6669     DB 6FH, 6EH, 66H, 69H, 67H, 5CH, 75H, 73H
+   \            675C7573
+   \   000018   65725F31     DB 65H, 72H, 5FH, 31H, 35H, 5FH, 31H, 32H
+   \            355F3132
+   \   000020   325C6D70     DB 32H, 5CH, 6DH, 70H, 33H, 72H, 65H, 73H
+   \            33726573
+   \   000028   5C6D7033     DB 5CH, 6DH, 70H, 33H, 72H, 65H, 73H, 2EH
+   \            7265732E
+   \   000030   62696E22     DB 62H, 69H, 6EH, 22H, 20H, 22H, 62H, 69H
+   \            20226269
+   \   000038   6E5C6D70     DB 6EH, 5CH, 6DH, 70H, 33H, 72H, 65H, 73H
+   \            33726573
+   \   000040   2E62696E     DB 2EH, 62H, 69H, 6EH, 22H, 0DH, 0AH, 0
+   \            220D0A00
+     55          //复制MP3RES资源文件
+     56           "copy /y \"..\\..\\config\\"
+     57           SET_USER_PATH(CFG_DIR, \\mp3res\\mp3res.bin)
+     58           "\" \"bin\\mp3res.bin\"\r\n"
+     59          
+     60          
+     61           ;
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     makecode         32
+     tbl_make_bat     72
+
+ 
+ 72 bytes in segment MAKEBAT_CONST
+ 32 bytes in segment MAKECODE_CONST
+ 
+ 104 bytes of CODE memory
+
+Errors: none
+Warnings: none

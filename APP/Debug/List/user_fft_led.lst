@@ -1,0 +1,289 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:59 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fft_led.c                                     #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fft_led.c                                     #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fft_led.lst                             #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fft_led.r51                              #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fft_led.c
+      1          #include "include.h"
+      2          #include "task.h"
+      3          #include "user_fft_led.h"
+      4          #if FFT_LED_EN
+      5          #define    FFT_LED_0_DIROUT()   P2DIR &= ~BIT(0)
+      6          #define    FFT_LED_1_DIROUT()   P2DIR &= ~BIT(1)
+      7          #define    FFT_LED_2_DIROUT()   P2DIR &= ~BIT(2)
+      8          #define    FFT_LED_3_DIROUT()   P2DIR &= ~BIT(3)
+      9          
+     10          #define    FFT_LED_0_ON()   P2 |= BIT(0)
+     11          #define    FFT_LED_1_ON()   P2 |= BIT(1)
+     12          #define    FFT_LED_2_ON()   P2 |= BIT(2)
+     13          #define    FFT_LED_3_ON()   P2 |= BIT(3)
+     14          
+     15          #define    FFT_LED_0_OFF()  P2 &= ~BIT(0)
+     16          #define    FFT_LED_1_OFF()  P2 &= ~BIT(1)
+     17          #define    FFT_LED_2_OFF()  P2 &= ~BIT(2)
+     18          #define    FFT_LED_3_OFF()  P2 &= ~BIT(3)
+     19          
+     20          #define FFT_ALL_LED_DIROUT()  \
+     21                  FFT_LED_0_DIROUT();  \
+     22                  FFT_LED_1_DIROUT();  \
+     23                  FFT_LED_2_DIROUT();  \
+     24                  FFT_LED_3_DIROUT();
+     25          
+     26          #define FFT_ALL_LED_ON()  \
+     27                  FFT_LED_0_ON();  \
+     28                  FFT_LED_1_ON();  \
+     29                  FFT_LED_2_ON();  \
+     30                  FFT_LED_3_ON();
+     31          
+     32          
+     33          #define FFT_ALL_LED_OFF()  \
+     34                  FFT_LED_0_OFF();  \
+     35                  FFT_LED_1_OFF();  \
+     36                  FFT_LED_2_OFF();  \
+     37                  FFT_LED_3_OFF();
+     38          
+     39          
+     40          #define FFT_PCM_SETP   4      //4个点中取一个点作能量统计
+     41          #define FFT_LED_NUM    4      //一共5个LED灯
+     42          u8 fft_pwm_buf[FFT_LED_NUM];  //pwm闪灯值
+     43          #define ENERGY_TABLE_ADJ   1   //1：能量表调节  //0: 线性调节
+     44          
+     45          #if ENERGY_TABLE_ADJ
+     46          //此能量表可以调整灯的闪亮状态及亮度.
+     47          u8 const __code FFT_ENERGY_TBL[FFT_LED_NUM * 8] =
+     48          {
+     49              0x10,0x12,0x14,0x16,0x18,0x24,0x2A,0x30,  //led 1
+     50              0x32,0x35,0x38,0x3B,0x3E,0x41,0x43,0x45,  //led 2
+     51              0x4A,0x50,0x58,0x5C,0x60,0x66,0x6A,0x70,  //led 2
+     52              0x74,0x78,0x7C,0x80,0x84,0x88,0x8C,0x90,  //led 3
+     53          };
+     54          #endif
+     55          
+     56          #if 0
+     57          #pragma vector = VECTOR_OFFSET(TIMER0_INT)
+     58          #pragma register_bank=1      //0优先级(最低优先级)必须用bank1 //2优先级必须用bank2 //3优先级必须用bank3
+     59          __near_func __interrupt void timer3_isr(void)
+     60          {
+     61              static u8 timer3_cnt = 0;
+     62              ISR_ENTER();
+     63              TMR3CON &= ~BIT(7);             //clear pending
+     64              timer3_cnt++;
+     65              if(timer3_cnt%2 == 0){  //1ms中断
+     66                  //fft_led_scan();
+     67              }
+     68              if(timer3_cnt%30 == 0){  //15ms中断
+     69                  //fft_energy_get();
+     70              }
+     71              if(200 == timer3_cnt){  //100ms中断
+     72                  //uart_putchar(0x77);
+     73                  timer3_cnt = 0;
+     74              }
+     75              ISR_EXIT();
+     76          }
+     77          void timer3_init(void)
+     78          {
+     79              TMR3CON = 0x17;    //timer3en, 128 div
+     80              TMR3PR = 0xBB;     //0.5/(1/48000*128)-1 = 0xBA.8 = 0xBB.
+     81              IP1 &= ~BIT(4);    //0级，最低优先级。
+     82              IPH1 &= ~BIT(4);
+     83          
+     84              IE1 |= BIT(4);     //timer3 int enable
+     85          }
+     86          #endif
+     87          
+     88          //jump_byte: 需要为偶数
+     89          extern __near_func u32 get_total_energy(u8 *adr, u16 samples, u8 jump_byte);    //库中，使用扩展指令编写
+     90          /*
+     91          unsigned long get_total_energy_vc(unsigned char *adr, int samples, int jump_byte)
+     92          {
+     93              unsigned long fft_total_energy;
+     94              unsigned short *ptr_pcm;
+     95              int i;
+     96              fft_total_energy = 0;
+     97              ptr_pcm = (unsigned short*)adr;
+     98              for (i = 0; i<samples; i++)
+     99              {
+    100                  fft_total_energy +=  (*ptr_pcm & 0x8000)? (0x10000- *ptr_pcm): *ptr_pcm;
+    101                  adr += jump_byte;
+    102                  ptr_pcm = (unsigned short*)adr;
+    103              }
+    104              return fft_total_energy;
+    105          }
+    106          */
+    107          
+    108          //只有DAC输出的模式才会有FFT灯。
+    109          __near_func bool fft_valid_task_check(void)
+    110          {
+    111              if(( (TASK_MUSIC == task_ctl.work_sta)
+    112                   || ((TASK_BT == task_ctl.work_sta)&&(!task_ctl.work_sub)))
+    113                    /*||(other task)*/)
+    114              {
+    115                  return true;
+    116              }else{
+    117                  return false;
+    118              }
+    119          }
+    120          
+    121          __near_func void fft_energy_get(void) //5ms调用一次
+    122          {
+    123              u16 i;
+    124              u8 level;
+    125              u32 fft_total_energy = 0;
+    126              //u16 __xdata *out_buf;
+    127              static u8 cnt = 0;
+    128              static u8 last_level = 0;
+    129              cnt++;
+    130              if((cnt%3 == 0) && fft_valid_task_check())  //15ms调用一次。
+    131              {
+    132                  fft_total_energy = get_total_energy((u8 __xdata * )0x8000,2304/10,10)>>14;
+    133                  //uart_putchar(0xAA);uart_putchar(fft_total_energy);
+    134                  //得到能量表索引
+    135          #if ENERGY_TABLE_ADJ
+    136                  level = 0;
+    137                  for(i = 0; i < FFT_LED_NUM*8; i++)
+    138                  {
+    139                      if((u8)fft_total_energy < FFT_ENERGY_TBL[i]){
+    140                          break;
+    141                      }
+    142                      level++;
+    143                  }
+    144          #else
+    145                  level = 0;
+    146                  for(i = 0; i < FFT_LED_NUM*8; i++)
+    147                  {
+    148                      if((u8)fft_total_energy < i*4){
+    149                          break;
+    150                      }
+    151                      level++;
+    152                  }
+    153          #endif
+    154                  if (level < last_level){
+    155                      level = --last_level;
+    156                  }
+    157                  else{
+    158                      last_level = level;
+    159                  }
+    160                  //uart_putchar(0xBB); uart_putchar(level);
+    161                  //能量表转PWM输出值到fft_led_buf
+    162                  for(i=0; i<FFT_LED_NUM; i++)  //FFT_LED_NUM -- 4  //value[0,24]
+    163                  {
+    164                      if(level >= 8)  //大于8则全亮了.  //eg 23
+    165                      {
+    166                          fft_pwm_buf[i] = 0xFF;
+    167                          level -= 8;              //8--8,表示一个LED有8级亮度
+    168                      }
+    169                      else
+    170                      {
+    171                          fft_pwm_buf[i] = BIT(level) - 1;   //最后BYTE的处理.
+    172                          level = 0;
+    173                      }
+    174                  }
+    175              }
+    176          }
+    177          
+    178          void fft_led_init(void)
+    179          {
+    180              FFT_ALL_LED_DIROUT();
+    181              FFT_ALL_LED_ON();
+    182          }
+    183          
+    184          //fft_led_buf中，为1的位点亮，为0的位熄灭
+    185          //fft_pwm_buf[0]=0x3F=11000000b，则LED0占空比为25%
+    186          //上面得到每个灯的占空比后,放到 fft_pwm_buf[FFT_LED_NUM];
+    187          //此scan函数就根据fft_led_buf[FFT_LED_NUM]来扫描每一个灯了.
+    188          //此函数1ms调用一次,8ms就能把所有状态扫描一扁.
+    189          __near_func void fft_led_scan(void)
+    190          {
+    191              static u8 scan_ofs = 0;
+    192              if(!fft_valid_task_check()){
+    193                  return;
+    194              }
+    195              //FFT_ALL_LED_DIROUT();
+    196              FFT_ALL_LED_OFF();
+    197              if(BIT(scan_ofs) & fft_pwm_buf[3]){
+    198                  FFT_ALL_LED_ON();
+    199              }
+    200              else if((BIT(scan_ofs) & fft_pwm_buf[2]))
+    201              {
+    202                  FFT_LED_0_ON();
+    203                  FFT_LED_1_ON();
+    204                  FFT_LED_2_ON();
+    205              }
+    206              else if((BIT(scan_ofs) & fft_pwm_buf[1]))
+    207              {
+    208                  FFT_LED_0_ON();
+    209                  FFT_LED_1_ON();
+    210              }
+    211              else if((BIT(scan_ofs) & fft_pwm_buf[0]))
+    212              {
+    213                  FFT_LED_0_ON();
+    214              }
+    215              if(++scan_ofs >= 8){  //8= 8
+    216                  scan_ofs = 0;
+    217              }
+    218          }
+    219          
+    220          #endif
+    221          
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

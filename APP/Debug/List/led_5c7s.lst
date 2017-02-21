@@ -1,0 +1,157 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:52 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_5c7s.c                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_5c7s.c                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\led_5c7s.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\led_5c7s.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\ledseg\led_5c7s.c
+      1          /*****************************************************************************
+      2           * Module    : ledseg
+      3           * File      : led_5c7s.c
+      4           * Author    : Hanny
+      5           * Function  : led_5c7s数码管显示屏驱动
+      6          *****************************************************************************/
+      7          #include "include.h"
+      8          #include "led_seg.h"
+      9          
+     10          #if IS_LEDSEG_5C7S_DISPLAY
+     11          #include "led_5c7s.h"
+     12          
+     13          __no_init volatile u8 scan_buf[5];
+     14          
+     15          #include SET_USER_PATH(CFG_IO_KEY_DIR, /io/io_led_seg.c)
+     16          
+     17          #pragma location="INIT_SEG"
+     18          void led_5c7s_init(void)
+     19          {
+     20              LED_COM_INIT();
+     21              COM_ALL_OFF();
+     22          
+     23              SEG_PULL_DOWN();
+     24              SEG_ALL_OFF();
+     25          
+     26              memset((u8*)disp_buf, 0x00, 5);
+     27              memset((u8*)scan_buf, 0x00, 5);
+     28          }
+     29          
+     30          //更新显示buf
+     31          #pragma location="DISP_LED_5C7S_SEG"
+     32          void led_5c7s_value_set(void)
+     33          {
+     34              bool ie_ea = IE_EA;                   //2014-3-5, 修正小米2S及部分手机播歌停顿、无声问题
+     35              IE_EA = 0;                            //2014-3-5, 短时间处理，直接关IE_EA
+     36              smemcpy((u8*)scan_buf, disp_buf,5);
+     37              IE_EA = ie_ea;
+     38          }
+     39          
+     40          //扫描填充函数，填充扫描buf
+     41          #pragma inline=forced
+     42          #pragma location="DISP_LEDSEG_SCAN"
+     43          __near_func  void led_5c7s_set_seg(u8 seg_val)
+     44          {
+     45              if(seg_val & LED_BIT_A)     SEG6_ON();
+     46              if(seg_val & LED_BIT_B)     SEG5_ON();
+     47              if(seg_val & LED_BIT_C)     SEG4_ON();
+     48              if(seg_val & LED_BIT_D)     SEG3_ON();
+     49              if(seg_val & LED_BIT_E)     SEG2_ON();
+     50              if(seg_val & LED_BIT_F)     SEG1_ON();
+     51              if(seg_val & LED_BIT_G)     SEG0_ON();
+     52          }
+     53          
+     54          //段码屏扫描函数,需要每隔一段时间(1~3ms)调用一次, 如在timer中断响应函数中调用
+     55          #pragma location="DISP_LEDSEG_SCAN"
+     56          __near_func void led_5c7s_scan(void)
+     57          {
+     58              static u8 com_idx = 0;
+     59              com_idx++;
+     60              if (com_idx > 5)
+     61              {
+     62                  com_idx = 0;
+     63              }
+     64              COM_ALL_OFF();        //全灭
+     65              SEG_ALL_OFF();
+     66              if (com_idx < 5) {
+     67                  led_5c7s_set_seg(scan_buf[com_idx]); //依次设置每一个com口中要显示的值.
+     68                  if (0 == com_idx) {
+     69                      COM0_ON();
+     70                  } else if (1 == com_idx) {
+     71                      COM1_ON();
+     72                  } else if (2 == com_idx) {
+     73                      COM2_ON();
+     74                  } else if (3 == com_idx) {
+     75                      COM3_ON();
+     76                  } else if (4 == com_idx) {
+     77                      COM4_ON();
+     78                  }
+     79              } else {
+     80          #if (LINEIN_DETECT_EN && LINEIN_SEG_REUSE)
+     81                  LINEIN_SEG_ENTER_DETECT();
+     82                  delay(20);
+     83                  linein_detect();
+     84                  LINEIN_SEG_EXIT_DETECT();
+     85          #endif
+     86              }
+     87          }
+     88          
+     89          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

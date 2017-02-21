@@ -1,0 +1,446 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:53 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\ledseg_numbox.c                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\ledseg_numbox.c                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ledseg_numbox.lst                            #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\ledseg_numbox.r51                             #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\ledseg\ledseg_numbox.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : ledseg_msgbox.c
+      4           * Author    : Hanny
+      5           * Function  : 数选框控件，用于数选功能。最大支持输入4位数字
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          
+      9          #if IS_LEDSEG_DISPLAY
+     10          #include "task.h"
+     11          
+     12          IAR_XDATA_A struct {
+     13              u8 cnt;                             //已输入的数字位数
+     14              u16 value;                          //已输入的数字值
+     15              u16 disp_value;                     //当前显示的数值
+     16              u8 ok_flag;                         //是否按下确定键
+
+   \                                 In segment OCX_XDATA, align 1, root
+     17          } t_num @ "OCX_XDATA";
+   \                     t_num:
+   \   000000                DS 6
+     18          
+     19          #pragma location="NUM_BOX_SEG"
+
+   \                                 In segment NUM_BOX_SEG, align 1, keep-with-next
+     20          void numbox_event(void)
+   \                     numbox_event:
+     21          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     22              if (!comm_event()) {
+   \   000000                ; Setup parameters for call to function comm_event
+   \   000000   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000003   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   4006         JC      ??numbox_event_0
+     23                  t_num.ok_flag = 0xff;
+   \   00000A   74FF         MOV     A,#-0x1
+   \   00000C   90....       MOV     DPTR,#(t_num + 5)
+   \   00000F   F0           MOVX    @DPTR,A
+     24              }
+     25              if (ocx_show_cnt >= 20) {
+   \                     ??numbox_event_0:
+   \   000010   90....       MOV     DPTR,#ocx_show_cnt
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   C3           CLR     C
+   \   000015   9414         SUBB    A,#0x14
+   \   000017   4006         JC      ??numbox_event_1
+     26                  t_num.ok_flag = 1;
+   \   000019   7401         MOV     A,#0x1
+   \   00001B   90....       MOV     DPTR,#(t_num + 5)
+   \   00001E   F0           MOVX    @DPTR,A
+     27              }
+     28          }
+   \                     ??numbox_event_1:
+   \   00001F   02....       LJMP    ?BRET
+     29          
+     30          //数选框处理消息
+     31          #pragma location="NUM_BOX_SEG"
+
+   \                                 In segment NUM_BOX_SEG, align 1, keep-with-next
+     32          void numbox_deal_msg(void)
+   \                     numbox_deal_msg:
+     33          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004                ; Saved register size: 2
+   \   000004                ; Auto size: 0
+     34              u8 msg = get_msg();
+   \   000004                ; Setup parameters for call to function get_msg
+   \   000004   12....       LCALL   get_msg & 0xFFFF
+   \   000007   E9           MOV     A,R1
+     35              switch(msg) {
+   \   000008   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for numbox_deal_msg>_0`:
+   \   00000B   01           DB        1
+   \   00000C   20           DB        32
+   \   00000D   29           DB        41
+   \   00000E   ....         DW        ??numbox_deal_msg_0
+   \   000010   02           DB        2
+   \   000011   82           DB        130
+   \   000012   ....         DW        ??numbox_deal_msg_1
+   \   000014   86           DB        134
+   \   000015   ....         DW        ??numbox_deal_msg_2
+   \   000017   ....         DW        ??numbox_deal_msg_3
+     36                  //确定
+     37              case KU_OK:
+     38                  t_num.ok_flag = 1;
+   \                     ??numbox_deal_msg_1:
+   \   000019   7401         MOV     A,#0x1
+   \                     ??numbox_deal_msg_4:
+   \   00001B   90....       MOV     DPTR,#(t_num + 5)
+   \                     ??numbox_deal_msg_5:
+   \   00001E   F0           MOVX    @DPTR,A
+   \   00001F   8062         SJMP    ??numbox_deal_msg_6
+     39                  break;
+     40          
+     41                  //取消
+     42              case KU_BACK:
+     43                  t_num.ok_flag = 0xff;
+   \                     ??numbox_deal_msg_2:
+   \   000021   74FF         MOV     A,#-0x1
+   \   000023   80F6         SJMP    ??numbox_deal_msg_4
+     44                  break;
+     45          
+     46              case T_KEY_NUM_0:
+     47              case T_KEY_NUM_1:
+     48              case T_KEY_NUM_2:
+     49              case T_KEY_NUM_3:
+     50              case T_KEY_NUM_4:
+     51              case T_KEY_NUM_5:
+     52              case T_KEY_NUM_6:
+     53              case T_KEY_NUM_7:
+     54              case T_KEY_NUM_8:
+     55              case T_KEY_NUM_9:
+     56                  //if(task_ctl.work_sta != TASK_BT){
+     57                      if (t_num.cnt >= 4) {
+   \                     ??numbox_deal_msg_0:
+   \   000025   90....       MOV     DPTR,#t_num
+   \   000028   E0           MOVX    A,@DPTR
+   \   000029   C3           CLR     C
+   \   00002A   9404         SUBB    A,#0x4
+   \   00002C   90....       MOV     DPTR,#(t_num + 1)
+   \   00002F   4006         JC      ??numbox_deal_msg_7
+     58                          t_num.value = 0;
+   \   000031   E4           CLR     A
+   \   000032   F0           MOVX    @DPTR,A
+   \   000033   A3           INC     DPTR
+   \   000034   F0           MOVX    @DPTR,A
+   \   000035   8007         SJMP    ??numbox_deal_msg_8
+     59                      }
+     60                      if (t_num.value == 0) {
+   \                     ??numbox_deal_msg_7:
+   \   000037   E0           MOVX    A,@DPTR
+   \   000038   7002         JNZ     ??numbox_deal_msg_9
+   \   00003A   A3           INC     DPTR
+   \   00003B   E0           MOVX    A,@DPTR
+   \                     ??numbox_deal_msg_9:
+   \   00003C   7005         JNZ     ??numbox_deal_msg_10
+     61                          t_num.cnt = 0;
+   \                     ??numbox_deal_msg_8:
+   \   00003E   E4           CLR     A
+   \   00003F   90....       MOV     DPTR,#t_num
+   \   000042   F0           MOVX    @DPTR,A
+     62                      }
+     63                      t_num.value = t_num.value * 10 + (msg - T_KEY_NUM_0);
+   \                     ??numbox_deal_msg_10:
+   \   000043   90....       MOV     DPTR,#(t_num + 1)
+   \   000046   E0           MOVX    A,@DPTR
+   \   000047   FA           MOV     R2,A
+   \   000048   A3           INC     DPTR
+   \   000049   E0           MOVX    A,@DPTR
+   \   00004A   FB           MOV     R3,A
+   \   00004B   EA           MOV     A,R2
+   \   00004C   75F00A       MOV     B,#0xa
+   \   00004F   A4           MUL     AB
+   \   000050   FA           MOV     R2,A
+   \   000051   ACF0         MOV     R4,B
+   \   000053   75F00A       MOV     B,#0xa
+   \   000056   EB           MOV     A,R3
+   \   000057   A4           MUL     AB
+   \   000058   2C           ADD     A,R4
+   \   000059   FB           MOV     R3,A
+   \   00005A   89..         MOV     ?V0 + 0,R1
+   \   00005C   74E0         MOV     A,#-0x20
+   \   00005E   25..         ADD     A,?V0 + 0
+   \   000060   F8           MOV     R0,A
+   \   000061   74FF         MOV     A,#-0x1
+   \   000063   3400         ADDC    A,#0x0
+   \   000065   F9           MOV     R1,A
+   \   000066   E8           MOV     A,R0
+   \   000067   2A           ADD     A,R2
+   \   000068   F8           MOV     R0,A
+   \   000069   E9           MOV     A,R1
+   \   00006A   3B           ADDC    A,R3
+   \   00006B   F9           MOV     R1,A
+   \   00006C   90....       MOV     DPTR,#(t_num + 1)
+   \   00006F   E8           MOV     A,R0
+   \   000070   F0           MOVX    @DPTR,A
+   \   000071   A3           INC     DPTR
+   \   000072   E9           MOV     A,R1
+   \   000073   F0           MOVX    @DPTR,A
+     64                      t_num.cnt++;
+   \   000074   90....       MOV     DPTR,#t_num
+   \   000077   E0           MOVX    A,@DPTR
+   \   000078   04           INC     A
+   \   000079   F0           MOVX    @DPTR,A
+     65                      ocx_show_cnt = 0;
+   \   00007A   E4           CLR     A
+   \   00007B   90....       MOV     DPTR,#ocx_show_cnt
+   \   00007E   809E         SJMP    ??numbox_deal_msg_5
+     66                  /*}
+     67                  else{
+     68                      if (t_num.cnt >= 32) {
+     69                          t_num.value = 0;
+     70                      }
+     71                      t_num.value = (t_num.value % 1000 * 10 + (msg - T_KEY_NUM_0)) % 10000;
+     72                      *((u8 *)&bt_name[t_num.cnt]) = msg - T_KEY_NUM_0 + '0';
+     73                      t_num.cnt++;
+     74                      ocx_show_cnt = 0;
+     75                      if(t_num.cnt >= 32){
+     76                          t_num.ok_flag = 1;
+     77                      }
+     78                  }*/
+     79                  break;
+     80          
+     81                  //调用公共消息函数
+     82              default:
+     83                  deal_msg(msg);
+   \                     ??numbox_deal_msg_3:
+   \   000080                ; Setup parameters for call to function deal_msg
+   \   000080   12....       LCALL   deal_msg & 0xFFFF
+     84                  break;
+     85              }
+     86          }
+   \                     ??numbox_deal_msg_6:
+   \   000083   D0..         POP     ?V0 + 1
+   \   000085   D0..         POP     ?V0 + 0
+   \   000087   02....       LJMP    ?BRET
+     87          
+     88          //数选框显示接口
+     89          #pragma location="NUM_BOX_SEG"
+
+   \                                 In segment NUM_BOX_SEG, align 1, keep-with-next
+     90          void numbox_display(void)
+   \                     numbox_display:
+     91          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     92             // char *msg_ptr;
+     93              if (t_num.disp_value == t_num.value) {
+   \   000000   90....       MOV     DPTR,#(t_num + 1)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   F8           MOV     R0,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   F9           MOV     R1,A
+   \   000008   90....       MOV     DPTR,#(t_num + 3)
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   68           XRL     A,R0
+   \   00000D   7003         JNZ     ??numbox_display_0
+   \   00000F   A3           INC     DPTR
+   \   000010   E0           MOVX    A,@DPTR
+   \   000011   69           XRL     A,R1
+   \                     ??numbox_display_0:
+   \   000012   601A         JZ      ??numbox_display_1
+     94                  return;
+     95              }
+     96              t_num.disp_value = t_num.value;
+   \   000014   90....       MOV     DPTR,#(t_num + 3)
+   \   000017   E8           MOV     A,R0
+   \   000018   F0           MOVX    @DPTR,A
+   \   000019   A3           INC     DPTR
+   \   00001A   E9           MOV     A,R1
+   \   00001B   F0           MOVX    @DPTR,A
+     97              disp_sel_num = t_num.disp_value;
+   \   00001C   90....       MOV     DPTR,#disp_sel_num
+   \   00001F   E8           MOV     A,R0
+   \   000020   F0           MOVX    @DPTR,A
+   \   000021   A3           INC     DPTR
+   \   000022   E9           MOV     A,R1
+   \   000023   F0           MOVX    @DPTR,A
+     98              ledseg_disp(MENU_NUM_SEL);
+   \   000024                ; Setup parameters for call to function ledseg_disp
+   \   000024   7907         MOV     R1,#0x7
+   \   000026   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   000029   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   00002B   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     99          }
+   \                     ??numbox_display_1:
+   \   00002E   02....       LJMP    ?BRET
+    100          
+    101          //value初始值; mode为模式
+    102          //返回选中值
+    103          #pragma location="NUM_BOX_SEG"
+
+   \                                 In segment NUM_BOX_SEG, align 1, keep-with-next
+    104          u16 numbox(u8 value, u8 mode)
+   \                     numbox:
+    105          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    106              t_num.disp_value = 0xffff;
+   \   000000   90....       MOV     DPTR,#(t_num + 3)
+   \   000003   74FF         MOV     A,#-0x1
+   \   000005   F0           MOVX    @DPTR,A
+   \   000006   A3           INC     DPTR
+   \   000007   F0           MOVX    @DPTR,A
+    107              t_num.ok_flag = 0;
+   \   000008   E4           CLR     A
+   \   000009   90....       MOV     DPTR,#(t_num + 5)
+   \   00000C   F0           MOVX    @DPTR,A
+    108              t_num.value = value;
+   \   00000D   E9           MOV     A,R1
+   \   00000E   90....       MOV     DPTR,#(t_num + 1)
+   \   000011   F0           MOVX    @DPTR,A
+   \   000012   A3           INC     DPTR
+   \   000013   E4           CLR     A
+   \   000014   F0           MOVX    @DPTR,A
+    109              t_num.cnt = 1;
+   \   000015   7401         MOV     A,#0x1
+   \   000017   90....       MOV     DPTR,#t_num
+   \   00001A   F0           MOVX    @DPTR,A
+    110              ocx_show_cnt = 0;
+   \   00001B   E4           CLR     A
+   \   00001C   90....       MOV     DPTR,#ocx_show_cnt
+   \   00001F   F0           MOVX    @DPTR,A
+   \   000020   8018         SJMP    ??numbox_0
+    111          
+    112              while (!t_num.ok_flag) {
+    113                  numbox_event();
+   \                     ??numbox_1:
+   \   000022                ; Setup parameters for call to function numbox_event
+   \   000022   90....       MOV     DPTR,#(numbox_event & 0xffff)
+   \   000025   74..         MOV     A,#((numbox_event >> 16) & 0xff)
+   \   000027   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    114                  numbox_deal_msg();
+   \   00002A                ; Setup parameters for call to function numbox_deal_msg
+   \   00002A   90....       MOV     DPTR,#(numbox_deal_msg & 0xffff)
+   \   00002D   74..         MOV     A,#((numbox_deal_msg >> 16) & 0xff)
+   \   00002F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    115                  numbox_display();
+   \   000032                ; Setup parameters for call to function numbox_display
+   \   000032   90....       MOV     DPTR,#(numbox_display & 0xffff)
+   \   000035   74..         MOV     A,#((numbox_display >> 16) & 0xff)
+   \   000037   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    116              }
+   \                     ??numbox_0:
+   \   00003A   90....       MOV     DPTR,#(t_num + 5)
+   \   00003D   E0           MOVX    A,@DPTR
+   \   00003E   FA           MOV     R2,A
+   \   00003F   60E1         JZ      ??numbox_1
+    117          
+    118              if (t_num.ok_flag == 1) {
+   \   000041   7401         MOV     A,#0x1
+   \   000043   6A           XRL     A,R2
+   \   000044   700A         JNZ     ??numbox_2
+    119                  return t_num.value;                     //按下确定键，返回选择的值
+   \   000046   90....       MOV     DPTR,#(t_num + 1)
+   \   000049   E0           MOVX    A,@DPTR
+   \   00004A   FA           MOV     R2,A
+   \   00004B   A3           INC     DPTR
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   FB           MOV     R3,A
+   \   00004E   8004         SJMP    ??numbox_3
+    120              }
+    121              return 0xffff;                              //返回无效值
+   \                     ??numbox_2:
+   \   000050   7AFF         MOV     R2,#-0x1
+   \   000052   7BFF         MOV     R3,#-0x1
+   \                     ??numbox_3:
+   \   000054   02....       LJMP    ?BRET
+    122          }
+    123          #endif
+
+   Maximum stack usage in bytes:
+
+     Function             EXT_STACK PSTACK XSTACK
+     --------             --------- ------ ------
+     numbox                      0      0      0
+       -> numbox_event           0      0      0
+       -> numbox_deal_msg        0      0      0
+       -> numbox_display         0      0      0
+     numbox_deal_msg             2      0      0
+       -> get_msg                4      0      0
+       -> deal_msg               4      0      0
+     numbox_display              0      0      0
+       -> ledseg_disp            0      0      0
+     numbox_event                0      0      0
+       -> comm_event             0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label  Bytes
+     --------------  -----
+     t_num              6
+     numbox_event      34
+     numbox_deal_msg  138
+     numbox_display    49
+     numbox            87
+
+ 
+ 308 bytes in segment NUM_BOX_SEG
+   6 bytes in segment OCX_XDATA
+ 
+ 308 bytes of CODE  memory
+   6 bytes of XDATA memory
+
+Errors: none
+Warnings: none

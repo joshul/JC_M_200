@@ -1,0 +1,303 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:51 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\checkbox.c                                  #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\lcd\checkbox.c                                  #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\checkbox.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\checkbox.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\lcd\checkbox.c
+      1          /*****************************************************************************
+      2           * Module    : Display
+      3           * File      : checkbox.c
+      4           * Author    : Hanny
+      5           * Function  : 多选框控件
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #if IS_LCD_DISPLAY
+      9          #include "task.h"
+     10          #include "checkbox.h"
+     11          
+     12          //list box controller
+     13          IAR_XDATA_A type_checkbox_ctl t_check @ "OCX_XDATA";
+     14          
+     15          //列表事件
+     16          #pragma location="CHECK_BOX_SEG"
+     17          void checkbox_event(void)
+     18          {
+     19              if (!comm_event()) {
+     20                  t_check.ok_flag = 0xfe;
+     21              }
+     22              ocx_event();
+     23              if (t_check.show_time && ocx_show_cnt >= t_check.show_time) {
+     24                  t_check.ok_flag = 0xff;
+     25              }
+     26          }
+     27          
+     28          //列表上一项
+     29          #pragma location="CHECK_BOX_SEG"
+     30          void checkbox_prev(void)
+     31          {
+     32              if (t_check.index <= t_check.page_index) {
+     33                  if (t_check.m_roll) {
+     34                      t_check.page_index--;
+     35                  } else {
+     36                      t_check.page_index -= t_check.n_page;
+     37                  }
+     38              }
+     39              if (t_check.index == 0) {
+     40                  t_check.index = t_check.total;
+     41                  if (t_check.m_roll) {
+     42                      t_check.page_index = (t_check.total > t_check.n_page) ? t_check.total - t_check.n_page : 0;
+     43                  } else {
+     44                      t_check.page_index = ((t_check.total - 1) / t_check.n_page) * t_check.n_page;
+     45                  }
+     46              }
+     47              t_check.index--;
+     48              ocx_show_cnt = 0;
+     49              if(t_check.m_eq)
+     50              {
+     51                  music_eq(t_check.index);
+     52              }
+     53          }
+     54          
+     55          //列表下一项
+     56          #pragma location="CHECK_BOX_SEG"
+     57          void checkbox_next(void)
+     58          {
+     59              t_check.index++;
+     60              if (t_check.index - t_check.page_index >= t_check.n_page) {
+     61                  if (t_check.m_roll) {
+     62                      t_check.page_index++;
+     63                  } else {
+     64                      t_check.page_index += t_check.n_page;
+     65                  }
+     66              }
+     67              if (t_check.index == t_check.total) {
+     68                  t_check.index = 0;
+     69                  t_check.page_index = 0;
+     70              }
+     71              ocx_show_cnt = 0;
+     72              if(t_check.m_eq)
+     73              {
+     74                  music_eq(t_check.index);
+     75              }
+     76          }
+     77          
+     78          //列表控件处理消息
+     79          #pragma location="CHECK_BOX_SEG"
+     80          void checkbox_deal_msg(void)
+     81          {
+     82              u8 msg = get_msg();
+     83              switch(msg) {
+     84                  //确定
+     85              case KU_OK:
+     86                  if(t_check.menu_value & (1<<t_check.index))
+     87                      t_check.menu_value &= ~(1<<t_check.index);
+     88                  else
+     89                      t_check.menu_value |= (1<<t_check.index);
+     90                  t_check.disp_flag = 1;
+     91                  //t_check.ok_flag = 1;
+     92                  break;
+     93          
+     94                  //取消
+     95              case KU_BACK:
+     96              case KU_PLAY_POWER:
+     97                  t_check.ok_flag = 1;
+     98                  break;
+     99          
+    100                  //长按返回主菜单
+    101              case KL_MENU:
+    102                  task_ctl.work_sta = TASK_EXIT;
+    103                  break;
+    104          
+    105                  //上一项，下一项
+    106              case KU_PREV:
+    107                  checkbox_prev();
+    108                  break;
+    109              case KU_NEXT:
+    110                  checkbox_next();
+    111                  break;
+    112          
+    113                  //调用公共消息函数
+    114              default:
+    115                  ocx_msg(msg);
+    116                  break;
+    117              }
+    118          }
+    119          
+    120          #pragma location="CHECK_BOX_SEG"
+    121          void checkbox_display_line(string menu_str, u8 num)
+    122          {
+    123              if (t_check.m_icon) {
+    124                  if(t_check.menu_value & (1<<num))
+    125                      disp_draw(RES_SELECTED_BMP, 0, 0);
+    126                  else
+    127                      disp_draw(RES_BOX_BMP, 0, 0);
+    128                  disp_menu(menu_str, 18, 0, 0, 0);
+    129              } else {
+    130                  disp_menu(menu_str, 5, 0, 0, 0);
+    131              }
+    132          }
+    133          
+    134          //列表显示接口
+    135          #pragma location="CHECK_BOX_SEG"
+    136          void checkbox_display(void)
+    137          {
+    138              u8 pos, line;
+    139              u8 num, menu_num;
+    140              string *item = t_check.llp_item;
+    141              if (t_check.index == t_check.disp_index && !t_check.disp_flag) {
+    142                  return;
+    143              }
+    144              t_check.disp_index = t_check.index;
+    145          
+    146              num = t_check.total - t_check.page_index;         //显示的数量
+    147              if (t_check.total - t_check.page_index > t_check.n_page) {
+    148                  num = t_check.n_page;
+    149              }
+    150              pos = t_check.index - t_check.page_index;         //反选的位置
+    151              item += t_check.page_index;
+    152              line = 0;
+    153              menu_num = t_check.page_index;
+    154          
+    155              line_clear();
+    156              if (t_check.m_title) {
+    157                  //标题栏模式
+    158                 // disp_llp_text(*t_check.llp_item, TX_CENTER, 0, 0);
+    159                  disp_menu(*t_check.llp_item,0,0, 0,ME_CENTER);
+    160                  line_update_clear(line);
+    161                  item++;
+    162                  line += 2;
+    163              }
+    164              //无标题栏模式
+    165              while (num--) {
+    166                  checkbox_display_line(*item, menu_num);
+    167                  if (pos-- == 0) {
+    168                      disp_invert(0, 0, 128, 2);           //反选菜单
+    169                  }
+    170                  line_update_clear(line);
+    171                  item++;
+    172                  line += 2;
+    173                  menu_num++;
+    174              }
+    175              while (line < 8) {
+    176                  line_update(line);
+    177                  line += 2;
+    178              }
+    179          }
+    180          
+    181          //index: 初始索引;  total: 索引总数;  mode模式选择;  param: 内容参数; show_time: 列表框显示时间
+    182          //返回选中的值
+    183          #pragma location="CHECK_BOX_SEG"
+    184          u32 checkbox(u8 index, u8 total, u8 mode, u16 param, u8 show_time, u32 lparam)
+    185          {
+    186              t_check.disp_index = 0xFFFF;
+    187              t_check.index = index;
+    188              t_check.total = total;
+    189              t_check.m_title = (mode & LB_NO_TITLE) ? 0 : 1;
+    190              t_check.m_res = (mode & LB_RES) ? 1 : 0;
+    191              t_check.m_icon = (mode & LB_NO_ICON) ? 0 : 1;
+    192              t_check.m_roll = (mode & LB_PAGE) ? 0 : 1;
+    193              t_check.m_eq = (mode & LB_EQ) ? 1 : 0;
+    194              t_check.n_page = 4;
+    195              t_check.ok_flag = 0;
+    196              t_check.show_time = show_time;
+    197              t_check.menu_value = lparam;
+    198          
+    199              if (t_check.m_title) {
+    200                  t_check.n_page--;        //标题栏模式下，每页显示减少一个
+    201                  t_check.total--;         //第一项为标题，不是有效的选项
+    202              }
+    203              if (t_check.m_roll) {
+    204                  if (t_check.index == 0) {
+    205                      t_check.page_index = 0;
+    206                  } else if (t_check.index - 1 + t_check.n_page > t_check.total) {
+    207                      t_check.page_index = (t_check.total > t_check.n_page) ? t_check.total - t_check.n_page : 0;
+    208                  } else {
+    209                      t_check.page_index = t_check.index - 1;
+    210                  }
+    211              } else {
+    212                  t_check.page_index = (t_check.index / t_check.n_page) * t_check.n_page;
+    213              }
+    214              t_check.llp_item = (string *)param;
+    215          
+    216              ocx_show_cnt = 0;
+    217              while (!t_check.ok_flag) {
+    218                  checkbox_event();
+    219                  checkbox_deal_msg();
+    220                  checkbox_display();
+    221          #if ALARM_EN
+    222                  if (task_ctl.work_sta == TASK_EXIT || task_ctl.work_sta == TASK_ALARM) {
+    223          #else
+    224                  if (task_ctl.work_sta == TASK_EXIT) {
+    225          #endif
+    226                      t_check.ok_flag = 0xfe;
+    227                  }
+    228              }
+    229          
+    230              if (t_check.ok_flag == 1) {
+    231                  return t_check.menu_value;
+    232              }
+    233              return 0xffffffff;
+    234          }
+    235          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

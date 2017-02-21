@@ -1,0 +1,149 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:01 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_record.c                                      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_record.c                                      #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_record.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_record.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_record.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_record.c
+      4           * Author    : Hanny
+      5           * Function  : 用户录音定义
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "user_spi.h"
+      9          #include "task_speaker.h"
+     10          #include "task_usbdev.h"
+     11          #include "task_record.h"
+     12          #include "task_aux_eq.h"
+     13          #include "task_tomcat.h"
+     14          #include "task_fm.h"
+     15          
+     16          //mic模拟增益的取值范围：（-1 ~ 10）x 6db = -6db ~ 60db
+     17          #pragma constseg="SDADC_SEG_CONST"
+
+   \                                 In segment SDADC_SEG_CONST, align 1
+     18          IAR_CONST type_sdadc_ctl tbl_sdadc_set[] = {
+   \                     tbl_sdadc_set:
+   \   000000   00           DB 0
+   \   000001   2000         DW 32
+   \   000003   0005600E     DB 0, 5, 96, 14
+   \   000007   0000         DW 0H
+   \   000009   06           DB 6
+   \   00000A   0001         DW 256
+   \   00000C   0000000E     DB 0, 0, 0, 14
+   \   000010   ....         DW bt_mic_16k_process
+   \   000012   05           DB 5
+   \   000013   8000         DW 128
+   \   000015   0005600E     DB 0, 5, 96, 14
+   \   000019   ....         DW dummy_void
+   \   00001B   00           DB 0
+   \   00001C   0002         DW 512
+   \   00001E   0005600E     DB 0, 5, 96, 14
+   \   000022   ....         DW dummy_void
+   \   000024   03           DB 3
+   \   000025   8001         DW 384
+   \   000027   8005600E     DB 128, 5, 96, 14
+   \   00002B   ....         DW task_record_process
+   \   00002D   00           DB 0
+   \   00002E   8001         DW 384
+   \   000030   A0006091     DB 160, 0, 96, 145
+   \   000034   ....         DW task_record_process
+   \   000036   00           DB 0
+   \   000037   0001         DW 256
+   \   000039   00006091     DB 0, 0, 96, 145
+   \   00003D   ....         DW task_aux_eq_process
+   \   00003F   03           DB 3
+   \   000040   8000         DW 128
+   \   000042   0005600E     DB 0, 5, 96, 14
+   \   000046   ....         DW dummy_void
+   \   000048   00           DB 0
+   \   000049   8001         DW 384
+   \   00004B   A00060A2     DB 160, 0, 96, 162
+   \   00004F   ....         DW dummy_void
+   \   000051   00           DB 0
+   \   000052   0001         DW 256
+   \   000054   000060A2     DB 0, 0, 96, 162
+   \   000058   ....         DW task_aux_eq_process
+     19              //采样率,        样点数,         mp3压缩码率, mic模拟增益,  数字增益,     adc通道,         处理函数
+     20              {SDADC_SPR_48K,  32,                0,         5,            0x60,        MIC_CHANNEL_SEL,  0},                   //MIC测试用，请勿修改
+     21               //蓝牙mic的模拟增益和数字增益使用MPTool或者config_setting.h中的配置，此处请勿修改
+     22              {SDADC_SPR_BT,   BT_VIOCE_SAMPLES,  0,         0,            0x00,        MIC_CHANNEL_SEL,  bt_mic_process},      //BT MIC
+     23              {SDADC_SPR_8K,   SPEAKER_SAMPLES,   0,         5,            0x60,        MIC_CHANNEL_SEL,  task_speaker_process},//SPEAKER
+     24              {SDADC_SPR_48K,  USBMIC_SAMPLES,    0,         5,            0x60,        MIC_CHANNEL_SEL,  task_usbmic_process}, //USB MIC
+     25              {SDADC_SPR_MREC, MICREC_SAMPLES,  MREC_BITR,   5,            0x60,        MIC_CHANNEL_SEL,  task_record_process}, //RECORD MIC
+     26              {SDADC_SPR_LREC, AUXREC_SAMPLES,  LREC_BITR,   0,            0x60,        AUX_CHANNEL_SEL,  task_record_process}, //RECORD AUX
+     27              {SDADC_SPR_48K,  AUX_EQ_SAMPLES,    0,         0,            0x60,        AUX_CHANNEL_SEL,  task_aux_eq_process}, //AUX EQ
+     28              {SDADC_SPR_16K,  TOMCAT_SAMPLES,    0,         5,            0x60,        MIC_CHANNEL_SEL,  task_tomcat_process}, //TOMCAT
+     29              {SDADC_SPR_FREC, FMREC_SAMPLES,   FREC_BITR,   0,            0x60,        FM_CHANNEL_SEL,   task_fmrec_process},  //RECORD FM
+     30              {SDADC_SPR_48K,  AUX_EQ_SAMPLES,    0,         0,            0x60,        FM_CHANNEL_SEL,   task_aux_eq_process}, //FM IIS
+     31          };
+     32          #pragma constseg=default
+     33          
+     34          
+     35          
+     36          
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     tbl_sdadc_set    90
+
+ 
+ 90 bytes in segment SDADC_SEG_CONST
+ 
+ 90 bytes of CODE memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,253 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_bt_ring.c      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_bt_ring.c      #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_bt_ring.lst  #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_bt_ring.r51   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_bt_ring.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_bt_ring.c
+      4           * Author    : Hanny
+      5           * Function  : 蓝牙任务 - 响铃任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          
+      9          struct {
+     10              u8 num_buf[24]; //响铃BUF //32
+     11              u8 num_len;
+     12              u8 num_cur;
+     13          } t_bt_ring;
+     14          
+     15          #pragma constseg="TASK_BT_RING_CONST"
+     16          IAR_CONST u8 tbl_ring_mp3[] = {
+     17              RES_MP3_NUM0,
+     18              RES_MP3_NUM1,
+     19              RES_MP3_NUM2,
+     20              RES_MP3_NUM3,
+     21              RES_MP3_NUM4,
+     22              RES_MP3_NUM5,
+     23              RES_MP3_NUM6,
+     24              RES_MP3_NUM7,
+     25              RES_MP3_NUM8,
+     26              RES_MP3_NUM9,
+     27          };
+     28          
+     29          #pragma constseg=default
+     30          
+     31          
+     32          //SECTION(".HSF_BANK_TEXT")
+     33          void BT_IncomingCallNumber(u8* pnum, u8 len)
+     34          {
+     35              if (t_bt_ring.num_len == 0) {
+     36          #if (!BT_CALL_PRIVATE && BT_RING_NUMBER)
+     37                  u8 i = 0;
+     38                  for(i = 0; i < len; i++){
+     39                      //IncomingCallNo[i] = pnum[i];
+     40                      t_bt_ring.num_buf[i] = pnum[i]-0x30;
+     41                      //bt_voice_put(BT_VOICE_NUM0 + pnum[i]-0x30);
+     42                  }
+     43                  //IncomingCallNo[i] = 0;
+     44          
+     45                  t_bt_ring.num_cur = 0;
+     46                  t_bt_ring.num_len = len;
+     47          #if IS_LCD_DISPLAY
+     48                  t_bt.updata_flag = 1;
+     49          #endif
+     50          #endif
+     51              }
+     52          }
+     53          
+     54          #pragma location="TASK_BT_RING_SEG"
+     55          u8 get_num_len(void)
+     56          {
+     57              return t_bt_ring.num_len;
+     58          }
+     59          
+     60          #pragma location="TASK_BT_RING_SEG"
+     61          void set_num_len(u8 num)
+     62          {
+     63              t_bt_ring.num_len = num;
+     64          }
+     65          
+     66          #pragma location="TASK_BT_RING_SEG"
+     67          u8 *get_num_buf(void) {
+     68              return t_bt_ring.num_buf;
+     69          }
+     70          
+     71          #pragma location="TASK_BT_RING_SEG"
+     72          void tasksub_bt_ring_enter(void)
+     73          {
+     74          #if WARNING_VOL_MAXMIN
+     75              if(sys_ctl.vol_maxmin_music_play == 1) {
+     76                  sys_ctl.vol_maxmin_music_play = 0;
+     77                  bt_play_continue();
+     78              }
+     79          #endif
+     80              task_ctl.work_sub = TASK_BT_RING;
+     81          
+     82              btdec_stop();                               //停止当前的蓝牙音乐播放
+     83          #if MIC_DIRECT_OUT_EN
+     84              mic_direct_out_exit();
+     85          #endif
+     86              dac_dynamic(DYNAMIC_NO);                    //响铃时，不需要动态降噪
+     87          #if !IS_LCD_DISPLAY
+     88              t_bt_ring.num_len = 0;
+     89          #endif
+     90              btmode_exit();
+     91              user_change_volume(WARNING_VOLUME);
+     92              sys_ctl.voice_play_flag = 1;
+     93              mp3_res_play(RES_MP3_RING);
+     94          #if IS_LCD_DISPLAY
+     95              t_bt.updata_flag = 1;
+     96              t_bt.incoming_call_disp = 1;    // 没接收到电话号码时显示Incoming
+     97          #if THEME_SELECT==THEME_LCD_DEFAULT
+     98              lcd_buf=lcd_buf2;   // lcd使用小buf，否则会花屏
+     99          #endif
+    100          #endif
+    101          }
+    102          
+    103          #pragma location="TASK_BT_RING_SEG"
+    104          void tasksub_bt_ring_exit(void)
+    105          {
+    106              music_stop();
+    107              memset((u8*)0x4000,0,0x800);
+    108              btdec_load_code(0x10, 3);
+    109              btmode_enter();
+    110              if(!t_bt.add_sco_flag) {
+    111                  dac_dynamic(BT_DYNAMIC_NOISE);                  //结束响铃，开启动态降噪
+    112          #if MIC_DIRECT_OUT_EN
+    113                  mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    114                  btdec_play();
+    115          #endif
+    116              }
+    117              t_bt.add_sco_flag = 0;
+    118              sys_ctl.voice_play_flag = 0;
+    119              user_change_volume(sys_ctl.volume);
+    120              task_bt_sta_update();
+    121          #if THEME_SELECT==THEME_LCD_DEFAULT
+    122              lcd_buf=lcd_buf3;   // bt播放音乐使用lcd_buf3，否则会花屏
+    123          #endif
+    124          #if WARNING_VOL_MAXMIN
+    125              if(sys_ctl.vol_maxmin_music_flag == 1) {
+    126                  sys_ctl.vol_maxmin_music_flag = 0;
+    127              }
+    128          #endif
+    129          }
+    130          
+    131          #pragma location="TASK_BT_RING_SEG"
+    132          void tasksub_bt_ring_event(void)
+    133          {
+    134              WATCHDOG_CLR();
+    135              comm_event();
+    136          #if WARNING_LOWPOWER
+    137              if(sys_ctl.lowpower_warning_flag == 1){
+    138                  sys_ctl.lowpower_warning_flag = 2;
+    139                  mp3_res_play(RES_MP3_PLEASE_CHARGE);
+    140              }
+    141          #endif
+    142              if (sys_ctl.bt_sta != BT_STA_INCOMING) {
+    143                  task_ctl.work_sub = TASK_BT_NULL;
+    144          #if IS_LCD_DISPLAY
+    145                  if(sys_ctl.bt_sta != BT_STA_PHONE){ //来电手机端拒接时需要清一下号码长度，否则之后来电都不会获取电话号码进行报号
+    146                      t_bt.updata_flag = 1;
+    147                      t_bt_ring.num_len = 0;          //清电话号码的长度
+    148                  }
+    149          #endif
+    150                  return;
+    151              }
+    152              music_event();
+    153              if (music_get_status() <= STATUS_PLAY_STOPPING && AUCON5 == 0) {
+    154          #if BT_RING_NUMBER
+    155                  if (t_bt_ring.num_cur < t_bt_ring.num_len) {
+    156                      mp3_res_play(tbl_ring_mp3[t_bt_ring.num_buf[t_bt_ring.num_cur]]);
+    157                      t_bt_ring.num_cur++;
+    158                  } else {
+    159                      mp3_res_play(RES_MP3_RING);
+    160                  }
+    161          #endif
+    162              }
+    163          }
+    164          
+    165          #pragma location="TASK_BT_RING_SEG"
+    166          void tasksub_bt_ring_loop(void)
+    167          {
+    168              u8 msg;
+    169              while (task_ctl.work_sta == TASK_BT && task_ctl.work_sub == TASK_BT_RING) {
+    170                  tasksub_bt_ring_event();
+    171                  while (msg = get_msg()) {
+    172                      task_bt_ring_deal_msg(msg);
+    173                  }
+    174          #if IS_LCD_DISPLAY
+    175                  task_bt_call_display();
+    176          #else
+    177                  task_bt_display();
+    178          #endif
+    179              }
+    180          }
+    181          
+    182          #pragma location="TASK_BT_RING_SEG"
+    183          void tasksub_bt_ring(void)
+    184          {
+    185              //printf("tasksub_bt_ring\n");
+    186              tasksub_bt_ring_enter();
+    187              tasksub_bt_ring_loop();
+    188              tasksub_bt_ring_exit();
+    189              //printf("tasksub_bt_ring exit\n");
+    190          }
+    191          
+    192          
+    193          
+    194          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

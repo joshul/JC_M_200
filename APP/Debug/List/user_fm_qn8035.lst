@@ -1,0 +1,570 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_qn8035.c                           #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_qn8035.c                           #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm_qn8035.lst                           #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm_qn8035.r51                            #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm\user_fm_qn8035.c
+      1          /*--------------------------------------------------------------------------*/
+      2          /**@file QN8035.C
+      3             @brief FM模块QN8035驱动
+      4             @details FM模块QN8035的驱动函数
+      5             @author LZZ
+      6             @date 2010-08-17
+      7             @note 通过宏定义来选择驱动方式
+      8          */
+      9          /*----------------------------------------------------------------------------*/
+     10          
+     11          
+     12          #include "include.h"
+     13          #include "user_fm.h"
+     14          #include "qn8035.h"
+     15          
+     16          #if (FM_TYPE == FM_QN8035)
+     17          
+     18          #define _USE_P33_DIGITAL_32KHz_         1   //P33输出32K方波时钟给FM OSC
+     19          #define _SHARE_CRYSTAL_32KHz_           2
+     20          #define _CRYSTAL_12MHz_                 3   //独立12M晶振或共12M晶振
+     21          #define _SHARE_CRYSTAL_24MHz_           4   //KT 没有模块
+     22          #define _CRYSTAL_32KHz_                 5   //独立32K晶振
+     23          
+     24          #if(FM_CLK_SEL == P33_OUT_32K)
+     25              #define FM_CLOCK  _USE_P33_DIGITAL_32KHz_
+     26          #elif (FM_CLK_SEL == P33_OUT_12M)
+     27              #define FM_CLOCK  _CRYSTAL_12MHz_
+     28          #else
+     29              #define FM_CLOCK _SHARE_CRYSTAL_32KHz_
+     30          #endif
+     31          
+     32          
+     33          
+     34          void QND_WriteReg(u8 adr, u8 value);
+     35          u8 QND_ReadReg(u8 adr);
+     36          void QND_RXConfigAudio(u8 option) ;
+     37          void QND_RXSetTH(u8 th);
+     38          bool QND_RXValidCH(u16 freq);
+     39          
+     40          
+     41          #pragma location="FM_SEG_QN8035"
+     42          u16 FREQ2CHREG(u16 freq)
+     43          {
+     44              return 	(freq-6000)/5;
+     45          }
+     46          #pragma location="FM_SEG_QN8035"
+     47          void QNF_SetMute(u8 On)
+     48          {
+     49              QND_WriteReg(REG_DAC, On?0x1B:0x10);
+     50          }
+     51          /*#pragma location="FM_SEG_QN8035"
+     52          void qn8035_mute(void)
+     53          {
+     54            // QNF_SetRegBit(0x14, 0x80, 0x80);  //mute
+     55              QNF_SetMute(1);
+     56          }*/
+     57          #pragma location="FM_SEG_QN8035"
+     58          void qn8035_unmute(void)
+     59          {
+     60              delay_5ms(5);
+     61              //QNF_SetRegBit(0x14, 0x80, 0x00); //unmute
+     62              QNF_SetMute(0);
+     63          }
+     64          /**********************************************************************
+     65          u8 QNF_SetCh(u16 freq)
+     66          **********************************************************************
+     67          Description: set channel frequency
+     68          
+     69          Parameters:
+     70              freq:  channel frequency to be set
+     71          Return Value:
+     72              1: success
+     73          **********************************************************************/	
+     74          #if USING_VALID_CH
+     75          #pragma location="FM_SEG_QN8035"
+     76          void QNF_SetCh(u16 freq)
+     77          {
+     78              u8 temp;
+     79          
+     80          	 freq = FREQ2CHREG(freq);
+     81          	//writing lower 8 bits of CCA channel start index
+     82          	QND_WriteReg(CH_START, (u8)freq);
+     83          	//writing lower 8 bits of CCA channel stop index
+     84          	QND_WriteReg(CH_STOP, (u8)freq);
+     85          	//writing lower 8 bits of channel index
+     86          	QND_WriteReg(CH, (u8)freq);
+     87          	//writing higher bits of CCA channel start,stop and step index
+     88          	temp = (u8) ((freq >> 8) & CH_CH);
+     89          	temp |= ((u8)(freq >> 6) & CH_CH_START);
+     90          	temp |= ((u8) (freq >> 4) & CH_CH_STOP);
+     91          	temp |= QND_STEP_CONSTANT;//(step << 6);
+     92          	QND_WriteReg(CH_STEP, temp);
+     93          }
+     94          #else
+     95          #pragma location="FM_SEG_QN8035"
+     96          void QNF_SetCh(u16 start,u16 stop) @"QN8035_RX"
+     97          {
+     98              u8 temp;
+     99          
+    100          	 start = FREQ2CHREG(start);
+    101          	 stop = FREQ2CHREG(stop);
+    102          	//writing lower 8 bits of CCA channel start index
+    103          	QND_WriteReg(CH_START, (u8)start);
+    104          	//writing lower 8 bits of CCA channel stop index
+    105          	QND_WriteReg(CH_STOP, (u8)stop);
+    106          	//writing lower 8 bits of channel index
+    107          	QND_WriteReg(CH, (u8)start);
+    108          	//writing higher bits of CCA channel start,stop and step index
+    109          	temp = (u8) ((start >> 8) & CH_CH);
+    110          	temp |= ((u8)(start >> 6) & CH_CH_START);
+    111          	temp |= ((u8) (stop >> 4) & CH_CH_STOP);
+    112          	temp |= QND_STEP_CONSTANT;//(step << 6);
+    113          	QND_WriteReg(CH_STEP, temp);
+    114          }
+    115          #endif
+    116          
+    117          /**********************************************************************
+    118          void QND_Init()
+    119          **********************************************************************
+    120          Description: Initialize device to make it ready to have all functionality ready for use.
+    121          
+    122          Parameters:
+    123              None
+    124          Return Value:
+    125              1: Device is ready to use.
+    126              0: Device is not ready to serve function.
+    127          **********************************************************************/
+    128          #pragma location="FM_INIT_QN8035"
+    129          void fm_qn8035chip_init(void)
+    130          {
+    131              QND_WriteReg(0x00, 0x81);
+    132              delay_5ms(1);
+    133          
+    134          // change crystal frequency setting here
+    135          #if (FM_CLOCK == _USE_P33_DIGITAL_32KHz_)
+    136              QND_WriteReg(0x01,QND_DIGITAL_CLOCK);//   方波用这个
+    137          #elif (FM_CLOCK == _SHARE_CRYSTAL_32KHz_)
+    138              QND_WriteReg(0x01,QND_SINE_WAVE_CLOCK);//   正弦波用这个
+    139          #elif (FM_CLOCK == _CRYSTAL_12MHz_) //独立12M晶振或共12M晶振
+    140              QND_WriteReg(0x58, 0x93);   //设为外挂晶体模式
+    141              delay_5ms(25);              //如果不起振延迟 125 ms 或 750ms
+    142          
+    143              //使用独立晶振时，若晶振不起振，则需要在此延时2S后再进行下面的初始化
+    144              //delay_5ms(200);WATCHDOG_CLR();delay_5ms(200);
+    145          
+    146              QND_WriteReg(0x15, 0x6e);   //12M
+    147              QND_WriteReg(0x16, 0x01);   //时钟
+    148              QND_WriteReg(0x17, 0x54);   //时钟
+    149          #elif (FM_CLOCK == _CRYSTAL_32KHz_) //独立32.768K晶振
+    150              QND_WriteReg(0x58, 0x93);//mod PLL setting
+    151              delay_5ms(25);
+    152          
+    153              //使用独立晶振时，若晶振不起振，则需要在此延时2S后再进行下面的初始化
+    154              //delay_5ms(200);WATCHDOG_CLR();delay_5ms(200);WATCHDOG_CLR();delay_5ms(200);
+    155          
+    156              QND_WriteReg(XTAL_DIV0, QND_XTAL_DIV0);//01
+    157              QND_WriteReg(XTAL_DIV1, QND_XTAL_DIV1);//08
+    158              QND_WriteReg(XTAL_DIV2, QND_XTAL_DIV2);//5c
+    159          #elif (FM_CLOCK==_SHARE_CRYSTAL_24MHz_)//24M共晶振
+    160          	QND_WriteReg(0x15, 0xDC);   //24M
+    161          	QND_WriteReg(0x16, 0x02);   //时钟
+    162          	QND_WriteReg(0x17, 0x54);   // 时钟
+    163          #endif
+    164              //QND_WriteReg(XTAL_DIV0, QND_XTAL_DIV0);
+    165              //QND_WriteReg(XTAL_DIV1, QND_XTAL_DIV1);
+    166              //QND_WriteReg(XTAL_DIV2, QND_XTAL_DIV2);
+    167              QND_WriteReg(0x54, 0x47);//mod PLL setting
+    168              //select SNR as filter3,SM step is 2db
+    169              QND_WriteReg(0x19, 0xC6);
+    170              QND_WriteReg(0x2d, 0xD6);//notch filter threshold adjusting
+    171              QND_WriteReg(0x43, 0x10);//notch filter threshold enable
+    172              QND_WriteReg(0x47,0x39); 	
+    173              //enter receiver mode directly
+    174              QND_WriteReg(0x00, 0x11);
+    175              //Enable the channel condition filter3 adaptation,Let ccfilter3 adjust freely
+    176              QND_WriteReg(0x1D,0xA9);
+    177              QNF_SetMute(1);
+    178          }
+    179          
+    180          
+    181          
+    182          
+    183          
+    184          /**********************************************************************
+    185          void qn8035_set_freq(u16 ch)
+    186          **********************************************************************
+    187          Description: Tune to the specific channel. call QND_SetSysMode() before
+    188          call this function
+    189          Parameters:
+    190          ch
+    191          Set the frequency (10kHz) to be tuned,
+    192          eg: 101.30MHz will be set to 10130.
+    193          Return Value:
+    194          None
+    195          **********************************************************************/
+    196          #pragma location="FM_SEG_QN8035"
+    197          void qn8035_set_freq(u16 ch)
+    198          {
+    199              u8 reg;
+    200          
+    201              //ch = ch * 10; caiyue
+    202              //increase reference PLL charge pump current.
+    203              QND_WriteReg(REG_REF,0x7A);
+    204          	
+    205              /********** QNF_RXInit ****************/
+    206              QND_WriteReg(0x1B,0x70);  //Let NFILT adjust freely
+    207              //QNF_SetRegBit(0x2C,0x3F,0x12);  ///When SNR<ccth31, ccfilt3 will work
+    208              //setting the threshold of Filter3 will be worked.
+    209              QND_WriteReg(0x2C,0x52);	
+    210              //QNF_SetRegBit(0x1D,0x40,0x00);  ///Let ccfilter3 adjust freely
+    211              //QNF_SetRegBit(0x41,0x0F,0x0A);  ///Set a hcc index to trig ccfilter3's adjust
+    212              QND_WriteReg(0x45,0x50);        ///Set aud_thrd will affect ccfilter3's tap number
+    213              //QNF_SetRegBit(0x40,0x70,0x70);  ///snc/hcc/sm snr_rssi_sel; snc_start=0x40; hcc_start=0x30; sm_start=0x20
+    214              QND_WriteReg(0x40,0x70);
+    215              //QNF_SetRegBit(0x19,0x80,0x80);  ///Use SNR for ccfilter selection criterion
+    216              //selecting SNR as filter3 filter condition
+    217              //QND_WriteReg(0x19, 0xC2);
+    218              //QNF_SetRegBit(0x3E,0x80,0x80);  ///it is decided by programming this register
+    219              //QNF_SetRegBit(0x41,0xE0,0xC0);  ///DC notching High pass filter bandwidth; remove low freqency dc signals
+    220              QND_WriteReg(0x41,0xCA);
+    221              QND_WriteReg(0x34,SMSTART_VAL); ///set SMSTART
+    222              QND_WriteReg(0x35,SNCSTART_VAL); ///set SNCSTART
+    223              QND_WriteReg(0x36,HCCSTART_VAL); ///set HCCSTART
+    224              /********** End of QNF_RXInit ****************/
+    225          	
+    226              QNF_SetMute(1);
+    227          #if USING_VALID_CH
+    228              QNF_SetCh(ch);
+    229          #else
+    230              QNF_SetCh(ch,ch);
+    231          #endif
+    232              //enable CCA mode with user write into frequency
+    233              QND_WriteReg(0x00, 0x13);
+    234              //Auto tuning
+    235              QND_WriteReg(0x4F, 0x80);
+    236              reg = QND_ReadReg(0x4F);
+    237              reg >>= 1;
+    238              QND_WriteReg(0x4F, reg);
+    239              ///avoid the "POP" noise.
+    240              delay_5ms(CH_SETUP_DELAY_TIME/50);  //300ms
+    241              ///decrease reference PLL charge pump current.
+    242              QND_WriteReg(REG_REF,0x70);
+    243              QNF_SetMute(0);
+    244          }
+    245          
+    246          /***********************************************************************
+    247          void QND_RXSetTH(u8 th)
+    248          ***********************************************************************
+    249          Description: Setting the threshold value of automatic scan channel
+    250          th:
+    251            Setting threshold for quality of channel to be searched,
+    252            the range of th value:CCA_SENSITIVITY_LEVEL_0 ~ CCA_SENSITIVITY_LEVEL_9
+    253          Return Value:
+    254            None
+    255          ***********************************************************************/
+    256          #pragma location="FM_SEG_QN8035"
+    257          void QND_RXSetTH(u8 th)
+    258          {
+    259              ///increase reference PLL charge pump current.
+    260              QND_WriteReg(REG_REF,0x7A);
+    261              //NFILT program is enabled
+    262              QND_WriteReg(0x1B,0x78);
+    263              //using Filter3
+    264              QND_WriteReg(CCA1,0x75);
+    265              //setting CCA IF counter error range value(256).
+    266             // QND_WriteReg(CCA_CNT2,0x01);
+    267               QND_WriteReg(CCA_CNT2,0x03);//7.25更新
+    268          #if PILOT_CCA
+    269              QND_WriteReg(PLT1,0x00);
+    270          #endif
+    271          	//selection the time of CCA FSM wait SNR calculator to settle:20ms
+    272          	//0x00:	    20ms(default)
+    273          	//0x40:	    40ms
+    274          	//0x80:	    60ms
+    275          	//0xC0:	    100m
+    276          	//    QNF_SetRegBit(CCA_SNR_TH_1 , 0xC0, 0x00);
+    277              //selection the time of CCA FSM wait RF front end and AGC to settle:20ms
+    278              //0x00:     10ms
+    279          	//0x40:     20ms(default)
+    280              //0x80:     40ms
+    281          	//0xC0:     60ms
+    282          	//    QNF_SetRegBit(CCA_SNR_TH_2, 0xC0, 0x40);
+    283          	//    QNF_SetRegBit(CCA, 30);
+    284                 //setting CCA RSSI threshold is 30
+    285          	//QND_WriteReg(CCA,QND_ReadReg(CCA)&0xC0|25);  // 20 ~ 30
+    286                  QND_WriteReg(CCA,QND_ReadReg(CCA)&0xC0|20);  // 20 ~ 30
+    287          #if PILOT_CCA	
+    288          	QND_WriteReg(CCA_SNR_TH_1,8+th); //setting SNR threshold for CCA
+    289          #else
+    290          	QND_WriteReg(CCA_SNR_TH_1,9+th); //setting SNR threshold for CCA	 8 ~ 10
+    291          #endif	
+    292          }
+    293          
+    294          /***********************************************************************
+    295          u16 QND_RXValidCH(u16 freq, u8 step);
+    296          ***********************************************************************
+    297          Description: to validate a ch (frequency)(if it's a valid channel)
+    298          Freq: specific channel frequency, unit: 10Khz
+    299            eg: 108.00MHz will be set to 10800.
+    300          Step:
+    301            FM:
+    302            QND_FMSTEP_100KHZ: set leap step to 100kHz
+    303            QND_FMSTEP_200KHZ: set leap step to 200kHz
+    304            QND_FMSTEP_50KHZ:  set leap step to 50kHz
+    305          Return Value:
+    306            0: not a valid channel
+    307            other: a valid channel at this frequency
+    308          ***********************************************************************/
+    309          #pragma location="FM_SEG_QN8035"
+    310          bool QND_RXValidCH(u16 freq)
+    311          {
+    312           	u8 regValue;
+    313            	u8 timeOut;
+    314            	u8 isValidChannelFlag;
+    315          
+    316          #if PILOT_CCA
+    317            	u8 snr,readCnt,stereoCount=0;
+    318          #endif
+    319          #if USING_VALID_CH
+    320            	QNF_SetCh(freq);
+    321          #else
+    322            	QNF_SetCh(freq,freq);
+    323          #endif
+    324            	//QNF_SetRegBit(SYSTEM1,0x03,0x02);//enter channel scan mode,channel frequency is decided by internal CCA
+    325            	//entering into RX mode and CCA mode,channels index decide by CCA.
+    326            	QND_WriteReg(0x00, 0x12);
+    327            	timeOut = 20;
+    328            	do
+    329            	{
+    330              	regValue = QND_ReadReg(SYSTEM1);
+    331              	delay_5ms(1);   //delay 5ms
+    332              	timeOut--;
+    333            	}
+    334            	//if it seeks a potential channel or time out,the loop will be quited
+    335            	while((regValue & CHSC) && timeOut);
+    336            	//TRACE("CHSC:%d,timeOut:%d \n",regValue&CHSC,timeOut);
+    337            	//reading out the rxcca_fail flag of RXCCA status
+    338            	isValidChannelFlag = (QND_ReadReg(STATUS1) & RXCCA_FAIL ? 0:1) && timeOut;	
+    339          
+    340                //  qn8035_unmute();
+    341            	if(isValidChannelFlag)
+    342            	{
+    343          #if PILOT_CCA
+    344              	QND_Delay(20);
+    345              	snr = QND_ReadReg(SNR);
+    346              	if(snr> 25) return 1;		
+    347              	for(readCnt=10;readCnt>0;readCnt--)
+    348              	{
+    349                		QND_Delay(1);
+    350                		stereoCount += ((QND_ReadReg(STATUS1) & ST_MO_RX) ? 0:1); 	
+    351                		if(stereoCount >= 3) return 1;
+    352              	} 	
+    353          #else
+    354                  qn8035_unmute();
+    355              	return 1;
+    356          #endif
+    357            	}
+    358            	return 0;
+    359          }	
+    360          
+    361          
+    362          
+    363          ////////////////////////////////////////////
+    364          #pragma location="FM_SEG_QN8035"
+    365          u8 QND_ReadReg(u8 adr)
+    366          {
+    367          	//u16 QNData;
+    368          	// to be filled by user API
+    369             	u8  I2CReadResult;
+    370          
+    371              iic_start();                    //I2C启动
+    372          
+    373              iic_sendbyte(0x20);             //写命令
+    374              iic_getack();
+    375          
+    376              iic_sendbyte(adr);       //写地址
+    377              iic_getack();
+    378          
+    379              iic_start();                    //写转为读命令，需要再次启动I2C
+    380          
+    381              iic_sendbyte(0x21);             //读命令
+    382              iic_getack();
+    383          
+    384              I2CReadResult = iic_getbyte();
+    385              iic_sendnack();                      //发送ack命令
+    386          
+    387              iic_stop();                     //I2C停止
+    388              delay_5ms(1);
+    389          
+    390              return  I2CReadResult;
+    391          	//return (u8)QNData;
+    392          }
+    393          #pragma location="FM_SEG_QN8035"
+    394          void QND_WriteReg(u8 adr, u8 value)
+    395          {
+    396            // to be filled by user API
+    397              iic_start();                //I2C启动
+    398          
+    399              iic_sendbyte(0x20);         //写命令
+    400              iic_getack();
+    401          
+    402          
+    403              iic_sendbyte(adr);   //写地址
+    404              iic_getack();
+    405          
+    406          
+    407          
+    408              iic_sendbyte(value);      //写数据
+    409              iic_getack();
+    410          
+    411              iic_stop();                 //I2C停止时序
+    412              delay_5ms(1);
+    413          }
+    414          
+    415          #pragma location="FM_SEG_QN8035"
+    416          bool fm_qn8035_set_freq(u16 freq)
+    417          {
+    418              QNF_SetMute(1);
+    419              QND_RXSetTH(0);
+    420              return QND_RXValidCH(freq);// caiyue QND_RXValidCH(freq*10);//qn8035 step frequency unit is 10KHZ
+    421          }
+    422          
+    423          
+    424          
+    425          /*----------------------------------------------------------------------------*/
+    426          /**@brief FM模块QN8035检测
+    427             @param 无
+    428             @return 检测到QN8035模块返回1,并初始化fm芯片，否则返回0
+    429             @note
+    430          */
+    431          /*----------------------------------------------------------------------------*/
+    432          #pragma location="FM_INIT_QN8035"
+    433          bool fm_qn8035_init(void)
+    434          {
+    435              u8 temp;
+    436              //QND_WriteReg(0x00, 0x81);
+    437              for(u8 i=0; i<3; i++){      //IIC与其他引脚复用时 FM ID 改为读三次比较保险
+    438                  temp = QND_ReadReg(0x06) & 0xFC;
+    439                  //printf("id:%02x\n",temp);
+    440                  if (temp == 0x84 ){
+    441                      fm_qn8035chip_init();
+    442                      return 1;
+    443                  }
+    444              }
+    445              return 0;
+    446          }
+    447          
+    448          /*----------------------------------------------------------------------------*/
+    449          /**@brief FM模块QN8035关闭
+    450             @param 无
+    451             @return 无
+    452             @note
+    453          */
+    454          /*----------------------------------------------------------------------------*/
+    455          #pragma location="FM_INIT_QN8035"
+    456          void fm_qn8035_off(void)
+    457          {
+    458              QND_WriteReg(0x00, 0x21);
+    459              delay_5ms(1);
+    460          }
+    461          
+    462          /************************************************************************
+    463          void QND_RXConfigAudio(u8 optiontype, u8 option )
+    464          *************************************************************************
+    465          Description: config audio
+    466          Parameters:
+    467            optiontype: option
+    468              QND_CONFIG_MONO; ‘option’control mono, 0: stereo receive mode ,1: mono receiver mode
+    469              QND_CONFIG_MUTE; ‘option’control mute, 0:mute disable,1:mute enable
+    470              QND_CONFIG_VOLUME: 'option' control the volume gain,range : 0~47(-47db~0db)
+    471          
+    472          Return Value:
+    473              none
+    474          **********************************************************************/
+    475          #pragma location="FM_SEG_QN8035"
+    476          void QND_RXConfigAudio(u8 option )// @"QN8035_RX"
+    477          {
+    478              u8 regVal;
+    479              regVal = QND_ReadReg(VOL_CTL);
+    480          	regVal = (regVal&0xC0)|(option/6)|(5-option%6<<3);
+    481          	QND_WriteReg(VOL_CTL,regVal);
+    482          }
+    483          
+    484          /*----------------------------------------------------------------------------*/
+    485          /**@brief FM模块QN8035设置音量
+    486             @param volume 音量值
+    487             @return 无
+    488             @note 音量范围0~15
+    489          */
+    490          /*----------------------------------------------------------------------------*/
+    491          #pragma location="FM_SEG_QN8035"
+    492          void qn8035_set_vol(u8 volume)//@"QN8035_RX"
+    493          {
+    494          
+    495              volume = volume*3;
+    496              if(volume>47){
+    497                  volume = 47;//qn8035 volume range is from 0~47
+    498              }
+    499              QND_RXConfigAudio(volume);
+    500          }
+    501          
+    502          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

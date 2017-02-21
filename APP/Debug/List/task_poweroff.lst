@@ -1,0 +1,532 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:57 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_poweroff.c                                    #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_poweroff.c                                    #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_poweroff.lst                            #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_poweroff.r51                             #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_poweroff.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_poweroff.c
+      4           * Author    : Hanny
+      5           * Function  : 关机任务
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xb0
+   \   unsigned char volatile __sfr P3
+   \                     P3:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xba
+   \   unsigned char volatile __sfr P0DIR
+   \                     P0DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbc
+   \   unsigned char volatile __sfr P2DIR
+   \                     P2DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbd
+   \   unsigned char volatile __sfr P3DIR
+   \                     P3DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xf7
+   \   unsigned char volatile __sfr WDTCON
+   \                     WDTCON:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "typedef.h"
+     10          #include "user_iis.h"
+     11          
+     12          #pragma constseg="RTC_SEG_CONST"
+
+   \                                 In segment RTC_SEG_CONST, align 1
+     13          IAR_CONST char str_power_down_enter[] = "power_down_enter\n";
+   \                     str_power_down_enter:
+   \   000000   706F7765     DB "power_down_enter\012"
+   \            725F646F
+   \            776E5F65
+   \            6E746572
+   \            0A00    
+     14          #pragma constseg=default
+     15          
+     16          #pragma location="RTC_SEG"
+
+   \                                 In segment RTC_SEG, align 1, keep-with-next
+     17          void power_down_enter(void)
+   \                     power_down_enter:
+     18          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     19              u8 wko_cfg = 0;
+     20          #if WKO_WKUP_POWERDOWN  //使用上升沿唤醒
+     21              wko_cfg = 0x1c;  //wko pin output en, 60k pull down, pin en & input en
+     22          #endif
+     23          #if ALARM_WKUP_POWERDOWN     //BIT(5)|BIT(1) ALARM WAKE UP
+     24               wko_cfg |=  BIT(5)|BIT(1);
+     25          #endif
+     26              irtcc_write_cfg(WRITE_WKO, 0x00);
+   \   000000                ; Setup parameters for call to function irtcc_write_cfg
+   \   000000   7A00         MOV     R2,#0x0
+   \   000002   795B         MOV     R1,#0x5b
+   \   000004   90....       MOV     DPTR,#(irtcc_write_cfg & 0xffff)
+   \   000007   74..         MOV     A,#((irtcc_write_cfg >> 16) & 0xff)
+   \   000009   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     27              asm("nop");asm("nop");asm("nop");
+   \   00000C   00           nop
+   \   00000D   00           nop
+   \   00000E   00           nop
+     28          
+     29              WDTCON = 0;
+   \   00000F   75F700       MOV     0xf7,#0x0
+     30              IE_EA = 0;
+   \   000012   C2AF         CLR     0xa8.7
+     31              P0DIR = 0xFF;
+   \   000014   75BAFF       MOV     0xba,#-0x1
+     32              P1DIR = 0xFF;
+   \   000017   75BBFF       MOV     0xbb,#-0x1
+     33              P2DIR = 0xFF;
+   \   00001A   75BCFF       MOV     0xbc,#-0x1
+     34              P3DIR = 0xFF;
+   \   00001D   75BDFF       MOV     0xbd,#-0x1
+     35              P0PU = 0;
+   \   000020   E4           CLR     A
+   \   000021   907840       MOV     DPTR,#0x7840
+   \   000024   F0           MOVX    @DPTR,A
+     36              P1PU = 0;
+   \   000025   907841       MOV     DPTR,#0x7841
+   \   000028   F0           MOVX    @DPTR,A
+     37              P2PU = 0;
+   \   000029   907842       MOV     DPTR,#0x7842
+   \   00002C   F0           MOVX    @DPTR,A
+     38              P3PU = 0;
+   \   00002D   907843       MOV     DPTR,#0x7843
+   \   000030   F0           MOVX    @DPTR,A
+     39              u8 vcl = irtcc_read_cfg(READ_VCL);
+     40              //接大于4.2v电压(电池电压)测试时要屏蔽BIT(1)，否则关机后仍有电且无法软开机
+     41              irtcc_write_cfg(WRITE_VCL,vcl|BIT(2)/*| BIT(1)*/ | BIT(0));  //加上BIT(0),解决低电关机后,电压上升到3.4V以上都不能开机的问题
+   \   000031                ; Setup parameters for call to function irtcc_write_cfg
+   \   000031                ; Setup parameters for call to function irtcc_read_cfg
+   \   000031   79A3         MOV     R1,#-0x5d
+   \   000033   90....       MOV     DPTR,#(irtcc_read_cfg & 0xffff)
+   \   000036   74..         MOV     A,#((irtcc_read_cfg >> 16) & 0xff)
+   \   000038   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00003B   E9           MOV     A,R1
+   \   00003C   4405         ORL     A,#0x5
+   \   00003E   FA           MOV     R2,A
+   \   00003F   79A2         MOV     R1,#-0x5e
+   \   000041   90....       MOV     DPTR,#(irtcc_write_cfg & 0xffff)
+   \   000044   74..         MOV     A,#((irtcc_write_cfg >> 16) & 0xff)
+   \   000046   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     42              delay_ms(1);
+   \   000049                ; Setup parameters for call to function delay_ms
+   \   000049   7901         MOV     R1,#0x1
+   \   00004B   12....       LCALL   delay_ms & 0xFFFF
+     43          
+     44              irtcc_write_cfg(WRITE_CFG,irtcc_read_cfg(READ_CFG)|BIT(5));
+   \   00004E                ; Setup parameters for call to function irtcc_write_cfg
+   \   00004E                ; Setup parameters for call to function irtcc_read_cfg
+   \   00004E   7954         MOV     R1,#0x54
+   \   000050   90....       MOV     DPTR,#(irtcc_read_cfg & 0xffff)
+   \   000053   74..         MOV     A,#((irtcc_read_cfg >> 16) & 0xff)
+   \   000055   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000058   E9           MOV     A,R1
+   \   000059   4420         ORL     A,#0x20
+   \   00005B   FA           MOV     R2,A
+   \   00005C   7955         MOV     R1,#0x55
+   \   00005E   90....       MOV     DPTR,#(irtcc_write_cfg & 0xffff)
+   \   000061   74..         MOV     A,#((irtcc_write_cfg >> 16) & 0xff)
+   \   000063   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     45              delay_ms(1);
+   \   000066                ; Setup parameters for call to function delay_ms
+   \   000066   7901         MOV     R1,#0x1
+   \   000068   12....       LCALL   delay_ms & 0xFFFF
+     46          
+     47              irtcc_write_cfg(WRITE_WKO, wko_cfg);
+   \   00006B                ; Setup parameters for call to function irtcc_write_cfg
+   \   00006B   7A00         MOV     R2,#0x0
+   \   00006D   795B         MOV     R1,#0x5b
+   \   00006F   90....       MOV     DPTR,#(irtcc_write_cfg & 0xffff)
+   \   000072   74..         MOV     A,#((irtcc_write_cfg >> 16) & 0xff)
+   \   000074   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     48              asm("nop");asm("nop");asm("nop");
+   \   000077   00           nop
+   \   000078   00           nop
+   \   000079   00           nop
+     49          
+     50              PWRCON1 = 0x00;
+   \   00007A   E4           CLR     A
+   \   00007B   907807       MOV     DPTR,#0x7807
+   \   00007E   F0           MOVX    @DPTR,A
+     51              PWRCON2 = 0x00;
+   \   00007F   907808       MOV     DPTR,#0x7808
+   \   000082   F0           MOVX    @DPTR,A
+     52              PWRCON3 = 0x00;
+   \   000083   9078E7       MOV     DPTR,#0x78e7
+   \   000086   F0           MOVX    @DPTR,A
+     53              PWRCON4 = 0x00;
+   \   000087   9078E8       MOV     DPTR,#0x78e8
+   \   00008A   F0           MOVX    @DPTR,A
+     54              PWRCON5 = 0x00;
+   \   00008B   9078E9       MOV     DPTR,#0x78e9
+   \   00008E   F0           MOVX    @DPTR,A
+     55          #if SOFT_POWER_OFF_20UA
+     56              PWRCON3 &= ~BIT(4);
+     57              while(1){
+     58                  irtcc_write_cfg(WRITE_PWR, 0x02);
+     59                  delay_ms(1);
+     60                  WDTCON = 0x13;      //使用看门狗，每128ms唤醒一次
+     61                  irtcc_write_cfg(WRITE_CFG,irtcc_read_cfg(READ_CFG)&(~BIT(5)));
+     62                  irtcc_write_cfg(WRITE_PWR, 0x0F);  //RVDD disable
+     63                  PWRCON3 |= BIT(4);
+     64                  delay_ms(100);
+     65              }
+     66          #elif  SOFT_POWER_OFF_3UA
+     67              irtcc_write_cfg(WRITE_PWR, 0x02);    //VDDIO disable
+     68              delay_ms(200);
+     69              while(1);
+     70          #endif
+     71          }
+   \   00008F   02....       LJMP    ?BRET
+     72          
+     73          //有DCIN则假关机, 无则进入软关机
+     74          #pragma location="RTC_SEG"
+
+   \                                 In segment RTC_SEG, align 1, keep-with-next
+     75          void power_down_dcin_check(void)
+   \                     power_down_dcin_check:
+     76          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     77             // u16 wko_high_cnt = 0;
+     78              u8 msg;
+     79              /*WDTCON = 0;
+     80              IE_EA = 0;
+     81              P0DIR = 0xFF;
+     82              P1DIR = 0xFF;
+     83              P2DIR = 0xFF;
+     84              P3DIR = 0xFF;
+     85              //P0DIR &= ~BIT(1); //开打印
+     86              while(irtcc_read_cfg(READ_STA) & BIT(5)){
+     87                  delay(0xFF);
+     88              }*/
+     89              
+     90              flush_msg();//清空按键消息
+   \   000000                ; Setup parameters for call to function flush_msg
+   \   000000   12....       LCALL   flush_msg & 0xFFFF
+     91              while(1){
+     92                  msg = get_msg();
+   \                     ??power_down_dcin_check_0:
+   \   000003                ; Setup parameters for call to function get_msg
+   \   000003   12....       LCALL   get_msg & 0xFFFF
+   \   000006   E9           MOV     A,R1
+   \   000007   FA           MOV     R2,A
+     93                  WATCHDOG_CLR();
+   \   000008   43F720       ORL     0xf7,#0x20
+     94                  if(msg == QSYSTEM_500MS)
+   \   00000B   746C         MOV     A,#0x6c
+   \   00000D   6A           XRL     A,R2
+   \   00000E   700C         JNZ     ??power_down_dcin_check_1
+     95                  {
+     96                      ledseg_disp(MENU_STANDBY);    
+   \   000010                ; Setup parameters for call to function ledseg_disp
+   \   000010   7920         MOV     R1,#0x20
+   \   000012   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   000015   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   000017   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00001A   8010         SJMP    ??power_down_dcin_check_2
+     97                  }
+     98                  if(msg == KU_POWER||((msg == KL_MODE)&&(!sys_ctl.irkey))||IS_NFC_WAKEUP())
+   \                     ??power_down_dcin_check_1:
+   \   00001C   7489         MOV     A,#-0x77
+   \   00001E   6A           XRL     A,R2
+   \   00001F   600F         JZ      ??power_down_dcin_check_3
+   \   000021   74AE         MOV     A,#-0x52
+   \   000023   6A           XRL     A,R2
+   \   000024   7006         JNZ     ??power_down_dcin_check_2
+   \   000026   90....       MOV     DPTR,#(sys_ctl + 57)
+   \   000029   E0           MOVX    A,@DPTR
+   \   00002A   6004         JZ      ??power_down_dcin_check_3
+   \                     ??power_down_dcin_check_2:
+   \   00002C   A2B4         MOV     C,0xb0.4
+   \   00002E   40D3         JC      ??power_down_dcin_check_0
+     99                  {
+    100                      if((sys_ctl.first_power_on)&&(task_ctl.last_work!=TASK_MUSIC)){
+   \                     ??power_down_dcin_check_3:
+   \   000030   90....       MOV     DPTR,#(sys_ctl + 49)
+   \   000033   E0           MOVX    A,@DPTR
+   \   000034   6015         JZ      ??power_down_dcin_check_4
+   \   000036   90....       MOV     DPTR,#(task_ctl + 1)
+   \   000039   E0           MOVX    A,@DPTR
+   \   00003A   6405         XRL     A,#0x5
+   \   00003C   600D         JZ      ??power_down_dcin_check_4
+    101                          
+    102                          sys_ctl.first_power_on=0;
+   \   00003E   E4           CLR     A
+   \   00003F   90....       MOV     DPTR,#(sys_ctl + 49)
+   \   000042   F0           MOVX    @DPTR,A
+    103                          device_change_check();
+   \   000043                ; Setup parameters for call to function device_change_check
+   \   000043   90....       MOV     DPTR,#(device_change_check & 0xffff)
+   \   000046   74..         MOV     A,#((device_change_check >> 16) & 0xff)
+   \   000048   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    104                      }
+    105                      ledseg_disp(MENU_POWERON);
+   \                     ??power_down_dcin_check_4:
+   \   00004B                ; Setup parameters for call to function ledseg_disp
+   \   00004B   7900         MOV     R1,#0x0
+   \   00004D   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   000050   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   000052   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    106                      delay_5ms(200);
+   \   000055                ; Setup parameters for call to function delay_5ms
+   \   000055   79C8         MOV     R1,#-0x38
+   \   000057   12....       LCALL   delay_5ms & 0xFFFF
+    107                      ledseg_disp(MENU_MODEL);
+   \   00005A                ; Setup parameters for call to function ledseg_disp
+   \   00005A   7901         MOV     R1,#0x1
+   \   00005C   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   00005F   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   000061   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    108                      delay_5ms(200);
+   \   000064                ; Setup parameters for call to function delay_5ms
+   \   000064   79C8         MOV     R1,#-0x38
+   \   000066   12....       LCALL   delay_5ms & 0xFFFF
+    109              		break;   
+    110              	}             
+    111              }
+    112              task_ctl.work_sta = task_ctl.last_work;
+   \   000069   90....       MOV     DPTR,#(task_ctl + 1)
+   \   00006C   E0           MOVX    A,@DPTR
+   \   00006D   90....       MOV     DPTR,#task_ctl
+   \   000070   F0           MOVX    @DPTR,A
+    113          }
+   \   000071   02....       LJMP    ?BRET
+    114          
+    115          #if TASK_POWEROFF_EN
+    116          //任务主流程
+    117          #pragma location="TASK_POWER"
+
+   \                                 In segment TASK_POWER, align 1, keep-with-next
+    118          void task_poweroff(void)
+   \                     task_poweroff:
+    119          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006                ; Saved register size: 2
+   \   000006                ; Auto size: 0
+    120              
+    121          #if WARNING_POWER_OFF
+    122              dac_enable();
+    123              sys_unmute();
+    124              mp3_res_play_wait(RES_MP3_POWER_OFF);
+    125              dac_disable();
+    126          #endif
+    127              ledseg_disp(MENU_POWEROFF);
+   \   000006                ; Setup parameters for call to function ledseg_disp
+   \   000006   791F         MOV     R1,#0x1f
+   \   000008   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   00000B   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   00000D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    128              led_mode_off();
+   \   000010                ; Setup parameters for call to function led_mode_off
+   \   000010   90....       MOV     DPTR,#(led_mode_off & 0xffff)
+   \   000013   74..         MOV     A,#((led_mode_off >> 16) & 0xff)
+   \   000015   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    129          #if LOWER_POWER_DISPLAY_OFF
+    130          #if IS_LEDSEG_DISPLAY
+    131              u8 i;
+    132              for(i = 0;i < 3;i++)
+   \   000018   7E03         MOV     R6,#0x3
+    133              {
+    134                  u8 temp = 1;
+   \                     ??task_poweroff_0:
+   \   00001A   7F01         MOV     R7,#0x1
+   \   00001C   8008         SJMP    ??task_poweroff_1
+    135                  while(temp--){
+    136                      WATCHDOG_CLR();
+   \                     ??task_poweroff_2:
+   \   00001E   43F720       ORL     0xf7,#0x20
+    137                      delay_5ms(200);
+   \   000021                ; Setup parameters for call to function delay_5ms
+   \   000021   79C8         MOV     R1,#-0x38
+   \   000023   12....       LCALL   delay_5ms & 0xFFFF
+    138                  }
+   \                     ??task_poweroff_1:
+   \   000026   EF           MOV     A,R7
+   \   000027   1F           DEC     R7
+   \   000028   70F4         JNZ     ??task_poweroff_2
+    139              }
+   \   00002A   1E           DEC     R6
+   \   00002B   EE           MOV     A,R6
+   \   00002C   70EC         JNZ     ??task_poweroff_0
+    140          #endif
+    141          #endif
+    142              
+    143          #if 0//SOFT_POWER_ON_OFF
+    144              if(sys_ctl.lowpower_flag || sys_ctl.soft_poweroff_flag){
+    145                  sys_ctl.sleep_flag = 1;
+    146                  #if LED_GREEN_BLINK
+    147                      LED_GREEN_OFF();
+    148                  #endif
+    149                  #if LED_BLUE_BLINK
+    150                      LED_BLUE_OFF();
+    151                  #endif
+    152                  #if LED_STATUS_BLINK
+    153                      LED_STATUS_OFF();
+    154                  #endif
+    155          
+    156                  dac_disable();
+    157                  speaker_mute();
+    158                  IE_EA = 0;
+    159                  WDTCON = 0;
+    160                  SOFT_POWER_CTL_OFF();
+    161                  while(1);
+    162              }
+    163          #endif
+    164          #if BT_ALL_TASK
+    165              bt_close();
+    166          #endif
+    167          
+    168          #if IS_LCD_DISPLAY
+    169              lcd_off();
+    170          #endif
+    171          #if IIS_EN
+    172              //iis_powerdown();	// 关闭IIS
+    173          #endif
+    174          
+    175              power_down_dcin_check();
+   \   00002E                ; Setup parameters for call to function power_down_dcin_check
+   \   00002E   90....       MOV     DPTR,#(power_down_dcin_check & 0xffff)
+   \   000031   74..         MOV     A,#((power_down_dcin_check >> 16) & 0xff)
+   \   000033   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    176             // power_down_enter();
+    177             // sleep_mode_enter();
+    178          }
+   \   000036   D0E0         POP     A
+   \   000038   FF           MOV     R7,A
+   \   000039   D0E0         POP     A
+   \   00003B   FE           MOV     R6,A
+   \   00003C   02....       LJMP    ?BRET
+
+   \                                 In segment SFR_AN, at 0xa8
+   \   union <unnamed> volatile __sfr _A_IE0
+   \                     _A_IE0:
+   \   000000                DS 1
+    179          
+    180          #endif
+
+   Maximum stack usage in bytes:
+
+     Function                   EXT_STACK PSTACK XSTACK
+     --------                   --------- ------ ------
+     power_down_dcin_check             2      0      0
+       -> flush_msg                    0      0      0
+       -> get_msg                      0      0      0
+       -> ledseg_disp                  0      0      0
+       -> device_change_check          0      0      0
+       -> ledseg_disp                  0      0      0
+       -> delay_5ms                    0      0      0
+       -> ledseg_disp                  0      0      0
+       -> delay_5ms                    0      0      0
+     power_down_enter                  0      0      0
+       -> irtcc_write_cfg              0      0      0
+       -> irtcc_read_cfg               0      0      0
+       -> irtcc_write_cfg              0      0      0
+       -> delay_ms                     0      0      0
+       -> irtcc_read_cfg               0      0      0
+       -> irtcc_write_cfg              0      0      0
+       -> delay_ms                     0      0      0
+       -> irtcc_write_cfg              0      0      0
+     task_poweroff                     2      0      0
+       -> ledseg_disp                  4      0      0
+       -> led_mode_off                 4      0      0
+       -> delay_5ms                    4      0      0
+       -> power_down_dcin_check        4      0      0
+
+
+   Segment part sizes:
+
+     Function/Label        Bytes
+     --------------        -----
+     P3                       1
+     P0DIR                    1
+     P1DIR                    1
+     P2DIR                    1
+     P3DIR                    1
+     WDTCON                   1
+     str_power_down_enter    18
+     power_down_enter       146
+     power_down_dcin_check  116
+     task_poweroff           63
+     _A_IE0                   1
+
+ 
+ 262 bytes in segment RTC_SEG
+  18 bytes in segment RTC_SEG_CONST
+   7 bytes in segment SFR_AN
+  63 bytes in segment TASK_POWER
+ 
+ 343 bytes of CODE memory
+   0 bytes of DATA memory (+ 7 bytes shared)
+
+Errors: none
+Warnings: none

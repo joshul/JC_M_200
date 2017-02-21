@@ -1,0 +1,769 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_recording.c    #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_recording.c    #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_recording.ls #
+#                          t                                                 #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_recording.r51 #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_recording.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_recording.c
+      4           * Author    : Hanny
+      5           * Function  : 录音任务 - 录音中任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          
+      9          #include "user_iis.h"
+     10          
+     11          //录音任务调试使能
+     12          #define DBG_TASK_RECORD(...)          //printf(__VA_ARGS__)
+     13          
+     14          #pragma constseg="TASK_RECORD_1_CONST"
+     15          IAR_CONST char str_mic_rec_dir[] = "RECORDM";
+     16          IAR_CONST char str_aux_rec_dir[] = "RECORDL";
+     17          
+     18          #if (RECORD_FILE_NAME == SHORT_NAME)
+     19          
+     20          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     21          IAR_CONST char str_mic_rec_file[] = "RECORDM/MIC0001.WAV";
+     22          IAR_CONST char str_aux_rec_file[] = "RECORDL/AUX0001.WAV";
+     23          #else
+     24          IAR_CONST char str_mic_rec_file[] = "RECORDM/MIC0001.MP3";
+     25          IAR_CONST char str_aux_rec_file[] = "RECORDL/AUX0001.MP3";
+     26          #endif
+     27          
+     28          #define REC_FNAME_NUM_LEN           4                               //文件编号长度，4位
+     29          #define MIC_FNAME_NUM_OFS           (sizeof(str_mic_rec_file)-8-1)  //文件编号位置，总长减去“0001.MP3”和\0
+     30          #define AUX_FNAME_NUM_OFS           (sizeof(str_aux_rec_file)-8-1)  //文件编号位置，总长减去“0001.MP3”和\0
+     31          
+     32          #else
+     33          #define REC_FNAME_NUM_LEN           4                               //文件编号长度，4位
+     34          #define MIC_FNAME_NUM_OFS           sizeof(str_mic_rec_dir)         //文件编号位置，在"RECORDM/"之后
+     35          #define AUX_FNAME_NUM_OFS           sizeof(str_aux_rec_dir)         //文件编号位置，在"RECORDL/"之后
+     36          
+     37          IAR_CONST u8 long_name_file[] = {
+     38              //短文件名前8个字符不能使用空格“space”
+     39              0x30, '0', '0', '1', 0xBD, 0xA8, 0x7E, 0x31, '.',
+     40          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     41              'w', 'a', 'v', '\0',
+     42          #else
+     43              'm', 'p', '3', '\0',
+     44          #endif
+     45              //长文件名,中文要参照Winhex查看
+     46          #if 1 //文件名是“0xxx建荣珠海有限公司-2013年4月2日.MP3”的示例
+     47            //             0          0            1          建          荣          珠          海
+     48              0x30, 0x00, '0',  0x00, '0',  0x00, '1',  0x00, 0xfa, 0x5e, 0x63, 0x83, 0xe0, 0x73, 0x77, 0x6d,
+     49            //有          限          公          司          -           2           0           1
+     50              0x09, 0x67, 0x50, 0x96, 0x6c, 0x51, 0xf8, 0x53, 0x2d, 0x00, 0x32, 0x00, 0x30, 0x00, 0x31, 0x00,
+     51            //3           年          4           月          2           日          .
+     52              0x33, 0x00, 0x74, 0x5e, 0x34, 0x00, 0x08, 0x67, 0x32, 0x00, 0xe5, 0x65, 0x2e, 0x00,
+     53          
+     54          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     55              //W         A           V
+     56              0x57, 0x00, 0x41, 0x00, 0x56, 0x00,
+     57          #else
+     58              //M         P           3
+     59              0x4D, 0x00, 0x50, 0x00, 0x33, 0x00,
+     60          #endif
+     61          
+     62          #else //文件名是“0xxx建荣.MP3”的示例
+     63          //              1            0           0          建          荣          .
+     64              0x30, 0x00, '1',  0x00, '0',  0x00, '0',  0x00, 0xfa, 0x5e, 0x63, 0x83, 0x2e, 0x00,
+     65          
+     66          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+     67              //W         A           V
+     68              0x57, 0x00, 0x41, 0x00, 0x56, 0x00,
+     69          #else
+     70              //M         P           3
+     71              0x4D, 0x00, 0x50, 0x00, 0x33, 0x00,
+     72          #endif
+     73          
+     74              0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
+     75          #endif
+     76          };
+     77          #endif
+     78          
+     79          IAR_CONST u16 tbl_record_spr[6] = {48000L, 32000L, 24000L, 16000L, 12000L, 8000L};
+     80          #pragma constseg=default
+     81          
+     82          #pragma constseg="TASK_RECORD_CONST"
+     83          #if (REC_TYPE == REC_WAV_ADPCM)
+     84          IAR_CONST u8 tbl_wav_head[52] = {
+     85              0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6D, 0x74, 0x20,
+     86              0x14, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     87              0x00, 0x00, 0x04, 0x00, 0x02, 0x00, 0x00, 0x00, 0x66, 0x61, 0x63, 0x74, 0xC8, 0x01, 0x00, 0x00,
+     88              0x00, 0x00, 0x00, 0x00,
+     89          };
+     90          #elif (REC_TYPE == REC_WAV_PCM)
+     91          IAR_CONST u8 tbl_wav_head[52] = {
+     92              0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6D, 0x74, 0x20,
+     93              0x14, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     94              0x00, 0x00, 0x10, 0x00, 0x02, 0x00, 0x00, 0x00, 0x66, 0x61, 0x63, 0x74, 0xC8, 0x01, 0x00, 0x00,
+     95              0x00, 0x00, 0x00, 0x00,
+     96          };
+     97          #endif
+     98          #pragma constseg=default
+     99          
+    100          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+    101          #pragma location="ADPCM_ENC"
+    102          __near_func void task_record_process(void)
+    103          {
+    104              if (t_rec.block_cnt >= BLOCK_LIMIT) {
+    105                  //printf("err\n");
+    106                  return;
+    107              }
+    108          
+    109              if (!t_rec.pos) {
+    110                  adpcm_input = (u16)adc_buf;
+    111              }
+    112          #if (REC_TYPE == REC_WAV_ADPCM)
+    113              adpcm_encode(t_rec.slice+t_rec.pos, t_rec.pos);
+    114              if (t_rec.pos) {
+    115                  t_rec.block_cnt++;
+    116                  if (adpcm_output == ((u16)wav_en_out_buf+WAV_OUT_BUF_SIZE)) {
+    117                      adpcm_output = (u16)wav_en_out_buf;
+    118                  }
+    119              }
+    120          #else
+    121              else {
+    122                  adpcm_input = (u16)adc_buf + t_rec.spl * adc_ch;
+    123              }
+    124              memcpy((u8 *)adpcm_output, (u8 *)adpcm_input, t_rec.spl*adc_ch);
+    125              adpcm_output += t_rec.spl * adc_ch;
+    126              t_rec.block_cnt += adc_ch;
+    127              if (adpcm_output == ((u16)wav_en_out_buf+WAV_OUT_BUF_SIZE)) {
+    128                  adpcm_output = (u16)wav_en_out_buf;
+    129              }
+    130          #endif
+    131              t_rec.pos ^= 1;
+    132          }
+    133          
+    134          #pragma location="TASK_RECORD_SEG_1"
+    135          bool wav_record_init(void)
+    136          {
+    137              //预留512byte写文件头
+    138              my_memset((void *)wav_en_header_buf, 0, 512);
+    139              if(f_write((void *)wav_en_header_buf)) {
+    140                  msgbox(STR_WRITE_DISABLE, NULL, MSGBOX_TIME);
+    141                  DBG_TASK_RECORD("write fail\n");
+    142                  return false;
+    143              }
+    144              t_rec.file_ssect = clust2sect(fat_file.org_clust);
+    145              fat_file.sclust = fat_file.org_clust;
+    146              //printf("file_ssect1=%08lx, sclust=%08lx\n", t_rec.file_ssect, fat_file.org_clust);
+    147          
+    148              if (task_ctl.work_sta == TASK_MIC) {
+    149                  t_rec.spr = tbl_record_spr[SDADC_SPR_MREC];
+    150                  t_rec.spl = MICREC_SAMPLES;
+    151              } else {
+    152                  t_rec.spr = tbl_record_spr[SDADC_SPR_LREC];
+    153                  t_rec.spl = AUXREC_SAMPLES;
+    154              }
+    155              t_rec.pos = 0;
+    156              t_rec.block_cnt = 0;
+    157              t_rec.block_adr = wav_en_out_buf;
+    158              t_rec.slice = t_rec.spl >> 4;
+    159          
+    160              adpcm_channel = adc_ch;
+    161              adpcm_index[0] = 0;
+    162              adpcm_index[1] = 0;
+    163              adpcm_output = (u16)wav_en_out_buf;
+    164              return true;
+    165          }
+    166          
+    167          #pragma location="TASK_RECORD_SEG"
+    168          bool wav_write_header(void *buf)
+    169          {
+    170              t_rec.file_size = fat_file.fsize;
+    171          
+    172              my_memset((void *)buf, 0, 512);
+    173              smemcpy_c((void *)buf, (void __code *)tbl_wav_head, 52);
+    174          
+    175              u32 *ptr0 = (u32 *)buf;
+    176              ptr0[1] = t_rec.file_size - 8;
+    177              ptr0[6] = t_rec.spr;
+    178              ptr0[7] = (t_rec.spr * BLOCK_SIZE) / t_rec.spl;
+    179              ptr0[12] = ((t_rec.file_size - 512) * t_rec.spl) / BLOCK_SIZE;
+    180              ptr0[126] = 0x61746164;
+    181              ptr0[127] = t_rec.file_size - 512;
+    182          
+    183              u16 *ptr1 = (u16 *)buf;
+    184              ptr1[11] = adpcm_channel;
+    185              ptr1[16] = BLOCK_SIZE;
+    186              ptr1[19] = t_rec.spl;
+    187          
+    188              //printf("ssect=%08lx\n", t_rec.file_ssect);
+    189              if (fat_fs.disk_write(buf, t_rec.file_ssect)) {
+    190                  return false;
+    191              }
+    192              return true;
+    193          }
+    194          
+    195          #pragma location="TASK_RECORD_SEG"
+    196          bool wav_close_file(void)
+    197          {
+    198              if(!wav_write_header(wav_en_header_buf)) {
+    199                  return false;
+    200              }
+    201              if(!f_close()) {
+    202                  return false;
+    203              }
+    204              return true;
+    205          }
+    206          
+    207          #pragma location="TASK_RECORD_SEG"
+    208          bool sync_file(void)
+    209          {
+    210              u8 *buf = wav_en_header_buf;
+    211              if (!move_window(0)) {
+    212                  return false;
+    213              }
+    214          
+    215              if(!wav_write_header(buf)) {
+    216                  return false;
+    217              }
+    218              if(fat_fs.disk_read(buf, fat_file.dir_sect)) {
+    219                  return false;
+    220              }
+    221              u8 *dir;
+    222              dir = (u8 *)buf + (fat_file.dir_ptr - fat_fs.win);
+    223              if(fat_fs.fs_type == FS_EXFAT) {
+    224                  mkitem_exfat(dir, (char *)fat_file.fname, AM_ARC, fat_file.org_clust, t_rec.file_size);
+    225              } else {
+    226                  mkitem_fat(dir, (char *)fat_file.fname, dir[DIR_Attr]|AM_ARC, fat_file.org_clust, t_rec.file_size);
+    227              }
+    228              if(fat_fs.disk_write(buf, fat_file.dir_sect)) {
+    229                  return false;
+    230              }
+    231              return true;
+    232          }
+    233          
+    234          //录音控制器初始化
+    235          #pragma location="TASK_RECORD_SEG_1"
+    236          void task_record_wav_init(void)
+    237          {
+    238              if (t_rec.file_open) {
+    239                  f_close();
+    240              }
+    241              if (task_ctl.work_sta == TASK_MIC) {
+    242                  adc_init(SEL_RECMIC);  //选择MIC录音
+    243              } else {
+    244                  adc_init(SEL_RECAUX);  //选择AUX录音
+    245              }
+    246              t_rec.rec_time = 0;                                 //时间清0
+    247              t_rec.file_open = 0;
+    248              t_rec.dir_open = 0;
+    249          }
+    250          
+    251          #pragma location="TASK_RECORD_SEG"
+    252          void record_stop(void)
+    253          {
+    254              adc_stop();
+    255              if (!wav_close_file()) {
+    256                  DBG_TASK_RECORD("close Fail!\n");
+    257              } else {
+    258                  DBG_TASK_RECORD("close OK!\n");
+    259              }
+    260          }
+    261          
+    262          #pragma location="TASK_RECORD_WRITE_SEG"
+    263          void tasksub_record_write(void)
+    264          {
+    265              if (t_rec.block_cnt < 4) {
+    266                  return;
+    267              }
+    268          
+    269              memcpy(rec_write_buf, t_rec.block_adr, 512);
+    270              u8 res = f_write(rec_write_buf);
+    271              //printf("r=%02x\n", res);
+    272              if (res) {
+    273                  if (res == 6) {
+    274                      //磁盘已满，停止录音
+    275                      DBG_TASK_RECORD("disk full!\n");
+    276                      task_record_stop();
+    277                      t_rec.play_flag = 1;
+    278                      //t_rec.rec_sta = REC_STA_STOPPING;           //磁盘已满，停止录音
+    279                  } else {
+    280                      //录音出错，停止录音
+    281                      DBG_TASK_RECORD("write err!\n");
+    282                     // wav_record_abort();
+    283                      task_ctl.dev_change = 1;
+    284                      task_record_stop();
+    285                      //t_rec.file_open = 0;
+    286                      //t_rec.rec_sta = REC_STA_STOPPING;           //录音出错，停止录音
+    287                  }
+    288                  return;
+    289              }
+    290          
+    291              t_rec.block_cnt -= 4;
+    292              t_rec.block_adr += 0x200;
+    293              if (t_rec.block_adr == &wav_en_out_buf[WAV_OUT_BUF_SIZE]) {
+    294                  t_rec.block_adr = wav_en_out_buf;
+    295              }
+    296          }
+    297          
+    298          #else
+    299          
+    300          #pragma location="MP3_EN_COM"
+    301          __near_func void task_record_process(void)
+    302          {
+    303              //printf("rec: %04x\n", (u8 *)0x8000+(t_rec.adc_sample_cnt*2));
+    304              if (!pcm_valid) {
+    305                  memcpy((u8 *)0x8000+(t_rec.adc_sample_cnt*2*adc_ch), adc_buf+(t_rec.pos*t_rec.spl*adc_ch), t_rec.spl*adc_ch);
+    306                  t_rec.adc_sample_cnt += t_rec.spl/2;
+    307                  if (t_rec.adc_sample_cnt >= 576) {
+    308                      t_rec.adc_sample_cnt -= 576;
+    309                      pcm_valid = 1;
+    310                      KICK_SOFT_INT();
+    311          
+    312                  }
+    313              } else {
+    314                  //printf("D");
+    315              }
+    316              t_rec.pos ^= 1;
+    317          }
+    318          
+    319          #pragma location="TASK_RECORD_SEG_1"
+    320          void mp3_record_init(void)
+    321          {
+    322              if (task_ctl.work_sta == TASK_MIC) {
+    323                  t_rec.spl = MICREC_SAMPLES;
+    324              } else {
+    325                  t_rec.spl = AUXREC_SAMPLES;
+    326              }
+    327              t_rec.pos = 0;
+    328              t_rec.adc_sample_cnt = 0;
+    329              mp3en_init();
+    330          }
+    331          
+    332          #pragma location="TASK_RECORD_WRITE_SEG"
+    333          void tasksub_record_write(void)
+    334          {
+    335              u8 try_cnt = 50;
+    336              //printf("L: %04x\n", mp3en_out_len);
+    337              while (mp3en_out_len >= 512 && try_cnt--) {
+    338                  u8 res = f_write(mp3en_rptr);
+    339                  //printf("t%d\n", res);
+    340                  if (res) {
+    341                      if (res == 6) {
+    342                          //磁盘已满，停止录音
+    343                          DBG_TASK_RECORD("disk full!\n");
+    344                          task_record_stop();
+    345                          t_rec.play_flag = 1;
+    346                          //t_rec.rec_sta = REC_STA_STOPPING;           //磁盘已满，停止录音
+    347                      } else {
+    348                          //录音出错，停止录音
+    349                          DBG_TASK_RECORD("write err!\n");
+    350                         // wav_record_abort();
+    351                          task_ctl.dev_change = 1;
+    352                          task_record_stop();
+    353                          //t_rec.file_open = 0;
+    354                          //t_rec.rec_sta = REC_STA_STOPPING;           //录音出错，停止录音
+    355                      }
+    356                      return;
+    357                  }
+    358          
+    359                  mp3en_rptr += 512;
+    360                  IE_EA = 0;
+    361                  mp3en_out_len -= 512;
+    362                  IE_EA = 1;
+    363                  if (mp3en_rptr >= (u8 *)MP3EN_OUT_END) {
+    364                      mp3en_rptr  = (u8 *)MP3EN_BUF_BEG;
+    365                  }
+    366              }
+    367          }
+    368          
+    369          #pragma location="TASK_RECORD_SEG"
+    370          bool sync_file(void)
+    371          {
+    372              return f_sync();
+    373          }
+    374          
+    375          #pragma location="TASK_RECORD_SEG"
+    376          void record_stop(void)
+    377          {
+    378              adc_stop();
+    379              if (!f_close()) {
+    380                  DBG_TASK_RECORD("close Fail!\n");
+    381              } else {
+    382                  DBG_TASK_RECORD("close OK!\n");
+    383              }
+    384          }
+    385          #endif
+    386          
+    387          #pragma location="TASK_RECORD_SEG_1"
+    388          bool record_fname_inc(u8 *buf)
+    389          {
+    390              u8 i;
+    391              u8 *p = buf + (REC_FNAME_NUM_LEN-1);
+    392          
+    393              *p += 1;
+    394              for(i=0; i<(REC_FNAME_NUM_LEN-1); i++) {
+    395                  if(*p > '9') {
+    396                      *p-- = '0';
+    397                      *p += 1;
+    398                  } else {
+    399                      return true;
+    400                  }
+    401              }
+    402          
+    403              return (*p > '9')? false : true;
+    404          }
+    405          
+    406          #pragma location="TASK_RECORD_SEG_1"
+    407          u8 task_record_copy_name(void)
+    408          {
+    409          #if (RECORD_FILE_NAME == SHORT_NAME)
+    410              if(task_ctl.work_sta == TASK_MIC) {
+    411                  memcpy(filename, (char *)str_mic_rec_file, sizeof(str_mic_rec_file));
+    412                  return MIC_FNAME_NUM_OFS;
+    413              } else {
+    414                  memcpy(filename, (char *)str_aux_rec_file, sizeof(str_aux_rec_file));
+    415                  return AUX_FNAME_NUM_OFS;
+    416              }
+    417          #else
+    418              if(task_ctl.work_sta == TASK_MIC) {
+    419                  memcpy(filename, (char *)str_mic_rec_dir, sizeof(str_mic_rec_dir));
+    420                  t_rec.sname_ptr = MIC_FNAME_NUM_OFS;
+    421              } else {
+    422                  memcpy(filename, (char *)str_aux_rec_dir, sizeof(str_aux_rec_dir));
+    423                  t_rec.sname_ptr = AUX_FNAME_NUM_OFS;
+    424              }
+    425              t_rec.lname_ptr = t_rec.sname_ptr + 13;
+    426              //短文件名使用的是gbk编码，长文件名使用的是unicode编码
+    427              filename[t_rec.sname_ptr-1]='/';
+    428              smemcpy_c((void *)(filename+t_rec.sname_ptr), (void __code *)long_name_file, sizeof(long_name_file));
+    429              return t_rec.sname_ptr;
+    430          #endif
+    431          }
+    432          
+    433          //根据文件编号新建文件
+    434          #pragma location="TASK_RECORD_SEG_1"
+    435          bool task_record_create(void)
+    436          {
+    437              u8 file_creat = 0;
+    438              t_rec.file_open = 0;
+    439              u8 rec_fname_ofs = task_record_copy_name();
+    440              while (1) {
+    441          #if (RECORD_FILE_NAME == LONG_NAME)
+    442                  file_creat = f_create_long_name(filename,t_rec.lname_ptr);
+    443          #else
+    444                  file_creat = f_create(filename);
+    445          #endif
+    446                  if (file_creat == 1) {
+    447                      printf("create %s\n", filename);
+    448                      break;
+    449                  } else if(file_creat == 0) {
+    450                      if(!record_fname_inc((u8 *)&filename[rec_fname_ofs])) {
+    451                          //printf(str_rec_create_fail, filename);
+    452                          return false;
+    453                      }
+    454          #if (RECORD_FILE_NAME == LONG_NAME)
+    455                      filename[t_rec.lname_ptr+0] = filename[t_rec.sname_ptr+0];
+    456                      filename[t_rec.lname_ptr+2] = filename[t_rec.sname_ptr+1];
+    457                      filename[t_rec.lname_ptr+4] = filename[t_rec.sname_ptr+2];
+    458                      filename[t_rec.lname_ptr+6] = filename[t_rec.sname_ptr+3];
+    459          #endif
+    460                  } else if (file_creat == 2) {
+    461                      //printf(str_rec_disk_full);
+    462                      return false;
+    463                  }
+    464              }
+    465              t_rec.file_open = 1;
+    466              return true;
+    467          }
+    468          
+    469          #pragma location="TASK_RECORD_SEG_1"
+    470          bool task_record_dirmake(void)
+    471          {
+    472              char dir_name[sizeof(str_mic_rec_dir)];
+    473              if (task_ctl.work_sta == TASK_MIC) {
+    474                  memcpy(dir_name, (char *)str_mic_rec_dir, sizeof(str_mic_rec_dir));
+    475              } else {
+    476                  memcpy(dir_name, (char *)str_aux_rec_dir, sizeof(str_aux_rec_dir));
+    477              }
+    478              return f_mkdir(dir_name);
+    479          }
+    480          
+    481          //开始录音
+    482          #pragma location="TASK_RECORD_SEG_1"
+    483          u8 task_record_start(void)
+    484          {
+    485              if(!record_mount_device()) {
+    486                  return 1;       //err
+    487              }
+    488              if(!t_rec.dir_open) {
+    489          #if IS_LCD_DISPLAY
+    490                  draw_wait();            // 这样做就只会出现一次"请稍后"，符合常理
+    491          #endif
+    492                  t_rec.dir_open = task_record_dirmake();
+    493                  if(!t_rec.dir_open) {
+    494                      return 1;   //make dir fail
+    495                  }
+    496              }
+    497              if (!fs_writable()) {
+    498                  return 1;
+    499              }
+    500              if (!t_rec.file_open) {
+    501                  if(!task_record_create()) {
+    502                      return 2;   //disk full
+    503                  }
+    504          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+    505                  if (!wav_record_init()) {
+    506                      return 1;
+    507                  }
+    508          #endif
+    509                  t_rec.file_open = 1;
+    510              }
+    511          #if (REC_TYPE == REC_MP3)
+    512              mp3_record_init();
+    513          #endif
+    514              return 0;
+    515          }
+    516          
+    517          //暂停录音
+    518          #pragma location="TASK_RECORD_SEG_1"
+    519          void task_record_pause(void)
+    520          {
+    521          #if IIS_EN && AUX_RECORD_EN
+    522              IIS_OUT_DISEN();
+    523          #endif
+    524              adc_stop();
+    525              sync_file();
+    526              t_rec.pos = 0;
+    527          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+    528              t_rec.block_cnt = 0;
+    529              t_rec.block_adr = wav_en_out_buf;
+    530              adpcm_index[0] = 0;
+    531              adpcm_index[1] = 0;
+    532              adpcm_output = (u16)wav_en_out_buf;
+    533          #endif
+    534              t_rec.sync_cnt = 0;
+    535              t_rec.rec_sta = REC_STA_PAUSE;
+    536          }
+    537          
+    538          //停止录音
+    539          #pragma location="TASK_RECORD_SEG_1"
+    540          void task_record_stop(void)
+    541          {
+    542          #if IIS_EN && AUX_RECORD_EN
+    543              IIS_OUT_DISEN();
+    544          #endif
+    545              if(t_rec.file_open) {
+    546              	record_stop();
+    547          	}
+    548              t_rec.file_open = 0;
+    549              t_rec.dir_open = 0;
+    550              t_rec.rec_time = 0;                                 //时间清0
+    551              t_rec.rec_sta = REC_STA_STOP;
+    552          }
+    553          
+    554          //录音中事务处理
+    555          #pragma location="TASK_RECORD_SEG"
+    556          void tasksub_record_event(void)
+    557          {
+    558              WATCHDOG_CLR();
+    559              comm_event();
+    560          
+    561              tasksub_record_write();
+    562          
+    563          #if MUSIC_MODE_AUTO
+    564              if (device_need_activate(DEVICE_SDMMC) || device_need_activate(DEVICE_UDISK)) {
+    565                  if(task_ctl.work_sta == TASK_MUSIC) {           //插入U盘或SD卡时不切模式
+    566                      task_ctl.work_sta = task_ctl.last_work;
+    567                  }
+    568              }
+    569          #endif
+    570              if (device_change()) {
+    571                  if(t_rec.rec_sta == REC_STA_RECORD) {
+    572                      t_rec.play_flag = 0;
+    573                      task_record_stop();
+    574                      t_rec.rec_sta = REC_STA_STOP;           //设备变动，停止录音
+    575                  }
+    576              }
+    577          }
+    578          
+    579          //录音任务初始化
+    580          #pragma location="TASK_RECORD_SEG_1"
+    581          void tasksub_recording_enter(void)
+    582          {
+    583          #if IIS_EN && AUX_RECORD_EN
+    584              if(task_ctl.work_sta == TASK_AUX) {
+    585                  task_aux_eq_exit();     // 退出AUX IIS模式
+    586                  if(t_rec.rec_sta != REC_STA_PAUSE) {
+    587                      //关闭预分配
+    588                      fat_fs.limit_clust = 0;
+    589                      memset(&t_rec,0,sizeof(t_rec));
+    590                      t_rec.rec_sta = REC_STA_STOP;
+    591                  }
+    592                  //录音控制器初始化
+    593                  sys_ctl.sleep_cnt = 0xffff;
+    594                  adc_ch = ((AUX_CHANNEL_SEL & 0x80) >> 7) + 1;
+    595                  amux_init(AUX_CHANNEL_SEL);
+    596                  adc_init(SEL_RECAUX);
+    597          #if MIC_DIRECT_OUT_EN
+    598                  mic_direct_out_enter(MIC_CHANNEL_SEL,11);
+    599                  dac_fade_in();
+    600          #endif
+    601                  amux_play();
+    602                  led_aux_play();
+    603          #if (REC_TYPE == REC_WAV_ADPCM || REC_TYPE == REC_WAV_PCM)
+    604                  wav_load_code(0x60);
+    605          #else
+    606                  mp3en_load_code(0x80);
+    607          #endif
+    608                  pll2_record_set(AUX_CHANNEL_SEL);      // 录音时使用PLL2做IIS时钟
+    609              }
+    610          #endif
+    611              u8 res;
+    612              set_sys_clk(SYS_24M);
+    613              //播放状态
+    614              ocx_clear();
+    615              led_busy();
+    616          #if !IS_LCD_DISPLAY
+    617              draw_wait();
+    618          #endif
+    619              res = task_record_start();
+    620              flush_msg();                        //清空消息池
+    621              if(res == 2) {
+    622                  show_full();
+    623                  //printf(str_rec_err);
+    624                  WATCHDOG_CLR();
+    625                  delay_5ms(200);
+    626                  return;
+    627              } else if(res == 1) {
+    628                  show_err();
+    629                  t_rec.rec_sta = REC_STA_STOP;
+    630                  //printf(str_rec_err);
+    631                  WATCHDOG_CLR();
+    632                  delay_5ms(200);
+    633                  return;
+    634              } else {
+    635                  //printf("rec_start\n");
+    636                  adc_start();
+    637                  t_rec.rec_sta = REC_STA_RECORD;
+    638                  ocx_show_cnt = 0;//控制录音闪烁时间
+    639          #if IS_LCD_DISPLAY
+    640                  // 清除"请稍候"字样
+    641                  line_clear();
+    642                  line_update(2);
+    643                  line_update(4);
+    644                  t_rec.updata_flag = 1;      // 设置更新标志,用于显示正在录音图标
+    645                  task_mic_display();         // 先显示1次，不然要录音1s后才有显示
+    646          #endif
+    647              }
+    648          #if IIS_EN && AUX_RECORD_EN
+    649              if(task_ctl.work_sta == TASK_AUX) {
+    650                  IE1 |= BIT(6);
+    651                  IIS_CON3 |= BIT(3); // KICK IIS Interrupt
+    652              }
+    653          #endif
+    654          }
+    655          
+    656          //退出录音任务
+    657          #pragma location="TASK_RECORD_SEG_1"
+    658          void tasksub_recording_exit(void)
+    659          {
+    660              if (t_rec.rec_sta != REC_STA_STOP && t_rec.rec_sta != REC_STA_PAUSE) {
+    661                  task_record_stop();
+    662              }
+    663              if(t_rec.play_flag) {
+    664                  if (task_ctl.work_sta == TASK_MIC) {
+    665                      memcpy(filename, &filename[sizeof(str_mic_rec_dir)], 13);
+    666                  } else {
+    667                      memcpy(filename, &filename[sizeof(str_aux_rec_dir)], 13);
+    668                  }
+    669              }
+    670          #if IS_LCD_DISPLAY
+    671              t_rec.updata_flag = 1;      // 设置更新标志,用于显示暂停或者停止图标
+    672          #endif
+    673              led_idle();
+    674              ocx_clear();
+    675          #if IIS_EN && AUX_RECORD_EN
+    676              if(task_ctl.work_sta == TASK_AUX) {
+    677                  amux_exit();        // 退出AUX直通
+    678                  pll2_record_exit(); // 重新使用PLL1做IIS时钟
+    679                  work_sta_interrupt = TASK_FM;
+    680                  task_aux_eq_enter();
+    681                  t_rec.aux_record_flag = 1;
+    682              }
+    683              IIS_OUT_EN();       // 重新设置IIS OUT
+    684          #endif
+    685          }
+    686          
+    687          #pragma location="TASK_RECORD_SEG"
+    688          void tasksub_recording_loop(void)
+    689          {
+    690              u8 msg;
+    691              while ((task_ctl.work_sta == TASK_MIC || task_ctl.work_sta == TASK_AUX) && t_rec.rec_sta == REC_STA_RECORD) {
+    692                  tasksub_record_event();
+    693                  while (msg = get_msg()) {
+    694                      tasksub_record_deal_msg(msg);
+    695                  }
+    696                  tasksub_record_display();
+    697              }
+    698          }
+    699          
+    700          #pragma location="TASK_RECORD_SEG"
+    701          void tasksub_recording(void)
+    702          {
+    703              //printf("tasksub_recording\n");
+    704              tasksub_recording_enter();
+    705              tasksub_recording_loop();
+    706              tasksub_recording_exit();
+    707              //printf("tasksub_recording exit\n");
+    708          }
+    709          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

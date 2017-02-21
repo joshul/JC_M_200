@@ -1,0 +1,601 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_ir.c                                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_ir.c                                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_ir.lst                                  #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_ir.r51                                   #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_ir.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_ir.c
+      4           * Author    : Hanny
+      5           * Function  : 用户的IO设置
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x87
+   \   unsigned char volatile __sfr PCON0
+   \                     PCON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa7
+   \   unsigned char volatile __sfr IRCON0
+   \                     IRCON0:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xad
+   \   unsigned char volatile __sfr IRCON1
+   \                     IRCON1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xba
+   \   unsigned char volatile __sfr P0DIR
+   \                     P0DIR:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "user_ir.h"
+     10          #include "user_key.h"
+     11          
+     12          
+     13          #if (HARD_IR_EN || SOFT_IR_EN || SOFT_IR_PORT_INT_EN)
+     14          
+     15          #include SET_USER_PATH(CFG_IO_IR_DIR, /io/io_ir.c)
+
+   \                                 In segment CODE_C, align 1
+   \   unsigned char const __code tbl_ir_dat[25]
+   \                     tbl_ir_dat:
+   \   000000   404D414C     DB 64, 77, 65, 76, 17, 22, 81, 19, 80, 26, 16, 25, 24, 78, 13, 12, 74
+   \            11165113
+   \            501A1019
+   \            184E0D0C
+   \            4A      
+   \   000011   09084605     DB 9, 8, 70, 5, 4, 66, 1, 0
+   \            04420100
+
+   \                                 In segment CODE_C, align 1
+   \   unsigned char const __code tbl_ir_val[25]
+   \                     tbl_ir_val:
+   \   000000   090E2D07     DB 9, 14, 45, 7, 10, 5, 1, 2, 3, 4, 11, 12, 13, 33, 34, 35, 36, 37, 38
+   \            0A050102
+   \            03040B0C
+   \            0D212223
+   \            242526  
+   \   000013   27282914     DB 39, 40, 41, 20, 32, 21
+   \            2015    
+     16          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     17          volatile  u16 ir_data;
+   \                     ir_data:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     18          volatile  u8 ir_state;
+   \                     ir_state:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     19          u16 userCode16;
+   \                     userCode16:
+   \   000000                DS 2
+     20          
+     21          
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+     22          __near_func u8 ir_key_get(u8 ir_data)
+   \                     ir_key_get:
+     23          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     24              u8 knum = IR_KEY_NUM;
+   \   000000   7C19         MOV     R4,#0x19
+     25              while (knum--)
+   \                     ??ir_key_get_0:
+   \   000002   EC           MOV     A,R4
+   \   000003   FA           MOV     R2,A
+   \   000004   1C           DEC     R4
+   \   000005   602C         JZ      ??ir_key_get_1
+     26              {
+     27                  if(userCode16 == IR_USER_CODE8989){
+   \   000007   90....       MOV     DPTR,#userCode16
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   6489         XRL     A,#0x89
+   \   00000D   7004         JNZ     ??ir_key_get_2
+   \   00000F   A3           INC     DPTR
+   \   000010   E0           MOVX    A,@DPTR
+   \   000011   6489         XRL     A,#0x89
+   \                     ??ir_key_get_2:
+   \   000013   70ED         JNZ     ??ir_key_get_0
+     28                      
+     29                      if(ir_data == tbl_ir_dat[knum])return tbl_ir_val[knum];
+   \   000015   1A           DEC     R2
+   \   000016   EA           MOV     A,R2
+   \   000017   24..         ADD     A,#(tbl_ir_dat & 0xff)
+   \   000019   F582         MOV     DPL,A
+   \   00001B   E4           CLR     A
+   \   00001C   34..         ADDC    A,#((tbl_ir_dat >> 8) & 0xff)
+   \   00001E   F583         MOV     DPH,A
+   \   000020   E4           CLR     A
+   \   000021   93           MOVC    A,@A+DPTR
+   \   000022   69           XRL     A,R1
+   \   000023   70DD         JNZ     ??ir_key_get_0
+   \   000025   EA           MOV     A,R2
+   \   000026   24..         ADD     A,#(tbl_ir_val & 0xff)
+   \   000028   F582         MOV     DPL,A
+   \   00002A   E4           CLR     A
+   \   00002B   34..         ADDC    A,#((tbl_ir_val >> 8) & 0xff)
+   \   00002D   F583         MOV     DPH,A
+   \   00002F   E4           CLR     A
+   \   000030   93           MOVC    A,@A+DPTR
+   \   000031   F9           MOV     R1,A
+   \   000032   22           RET
+     30                  }
+     31              }
+     32              return NO_KEY;
+   \                     ??ir_key_get_1:
+   \   000033   7900         MOV     R1,#0x0
+   \   000035   22           RET
+     33          }
+     34          
+     35          
+     36          #if SOFT_IR_EN
+     37          /*****************timer2初始化,红外遥控软解码使用************************/
+     38          volatile type_ir ir;
+     39          #pragma vector = VECTOR_OFFSET(TIMER2_INT)
+     40          #pragma register_bank=2   //0优先级(最低优先级)必须用bank1 //2优先级必须用bank2 //3优先级必须用bank3
+     41          __interrupt __near_func void timer2_isr(void)
+     42          {
+     43              u8 ir_cnt;
+     44              ISR_ENTER();
+     45              if(TMR2CON1 & BIT(6)){
+     46                  //printf("cp!");
+     47                  ir_cnt = TMR2CNTH;
+     48                  //ir_cnt <<= 8;
+     49                  //ir_cnt +=  TMR1CNTL;  //1/48000*128*(0x1A6+1) =1.128   //1/48000*128*(0x353+1)=2.272 与理论符合.
+     50                  TMR2CNTH = 0;
+     51                  TMR2CNTL = 0;
+     52                  TMR2CON1 &= ~BIT(6);
+     53                  //uart_putchar(ir_cnt);
+     54          
+     55              }else if(TMR2CON1 & BIT(7)){
+     56                  //printf("op>");
+     57                  TMR2CON1 &= ~BIT(7);
+     58                  ir_cnt = 0;   //溢出中断 -->ir_state=0;
+     59              }
+     60              //2C 13 01 01 01 01 01 01 01 01 03 03 03 03 03 03 03 03 03 01 03 01 01 01 03 01 01 03
+     61              //01 03 03 03 01 03 3B 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10
+     62              //(9+2.25)/(1/48000*128)/256 = 0x10.7A
+     63              //(110-11.25)/(1/48000*128)/256 = 0x90.A74 (0x8E)这里有点误差,实测0x8E
+     64              //第一个重复脉冲串实测0x13
+     65              if (((ir_cnt > 0x0A) && (ir_cnt < 0x15)) || ((ir_cnt > 0x33) && (ir_cnt < 0x46)) || ((ir_cnt > 0x87) && (ir_cnt < 0x97)))
+     66              {
+     67                 //irState = 32,即按键已得到，当前键码有效使得irState=32，使irData值也不变，随时供KeyScan提取
+     68                 goto EXIT_TM2;
+     69              }
+     70          
+     71              ir.data >>= 1;               //irData低8位存码值
+     72              ir.state++;
+     73              //uart_putchar(ir.state);
+     74              //if(32 == ir.state){uart_putchar(ir.data>>8);uart_putchar(ir.data);}
+     75              if (ir_cnt == 3)
+     76              {
+     77                  ir.data |= 0x8000;       //irData为32位  // 这里是关键，它是半道插入1，相当于irData为16位的情形，通过它，刚好把数据位提出来放到最后一个字节
+     78              }
+     79              else if (ir_cnt == 1)
+     80              {
+     81                  goto EXIT_TM2;
+     82              }
+     83              else
+     84              {
+     85                  ir.state = 0;               //可见 只有counter = 01 02 0B 29 62会认为是有效值，其它都会将irState清0，预示着一下解析IRd ID的开始
+     86                  ir.data = NO_KEY;
+     87              }
+     88          EXIT_TM2:
+     89              ISR_EXIT();
+     90          }
+     91          
+     92          
+     93          void ir_timer2_init(void)
+     94          {
+     95              IE_TM2 = 0;
+     96              P1DIR |= BIT(6);
+     97              P1PUS0 &= ~BIT(6);
+     98              P1PUS1 &= ~BIT(6);
+     99              P1PU  |= BIT(6);//开上拉
+    100              TMR2CON0 = 0x74;    //Falling Edge trigger// Capture Mode //P07 //SystemClk
+    101              TMR2CON1 = 0x37;   //OverflowInt,CaptureInt enalbe   //devide 128
+    102              TMR2PRH = 0xA8;    //The overflow period of the timer is: Tinc-source * T1PSR * (T1PR + 1).
+    103              TMR2PRL = 0x74;    //(1/48000000)*128*(0xA122+1) = 110 ms   //125/(1/48000*128)-1 = 0xA874
+    104              TMR2CNTL = 0;
+    105              TMR2CNTH = 0;
+    106              IP0 &= ~BIT(3);    //优先级2
+    107              IPH0 |= BIT(3);    //Timer2使用优先级：2
+    108              IE_TM2 = 1;
+    109          }
+    110          #endif
+    111          
+    112          #if SOFT_IR_PORT_INT_EN
+    113          //extern interput io for ir
+    114          //--------------------------------------------------------------------------
+    115          //port int + timer2 解码
+    116          
+    117          volatile type_ir ir;
+    118          #pragma vector=VECTOR_OFFSET(PORT_INT)
+    119          #pragma register_bank=2
+    120          __interrupt __near_func void port_isr(void)
+    121          {
+    122              u8 ir_cnt;
+    123              ISR_ENTER();
+    124              //printf("port int->");
+    125              if(PWKPND & BIT(IR_PORT_INT_SEL&0x03))   //PORT 中断
+    126              {
+    127                  PWKPND &=~BIT(IR_PORT_INT_SEL&0x03);
+    128          		TMR2CON0 = 0x00;
+    129                  ir_cnt = TMR2CNTH;
+    130                  //ir_cnt <<= 8;
+    131                  //ir_cnt +=  TMR1CNTL;  //1/48000*128*(0x1A6+1) =1.128   //1/48000*128*(0x353+1)=2.272 与理论符合.
+    132                  TMR2CNTH = 0;
+    133                  TMR2CNTL = 0;
+    134                  TMR2CON0 = 0x14;
+    135                  ir.timeout_cnt = 120;
+    136                  //uart_putchar(ir_cnt);
+    137                  //2C 13 01 01 01 01 01 01 01 01 03 03 03 03 03 03 03 03 03 01 03 01 01 01 03 01 01 03
+    138                  //01 03 03 03 01 03 3B 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10 8E 10
+    139                  //(9+2.25)/(1/48000*128)/256 = 0x10.7A
+    140                  //(110-11.25)/(1/48000*128)/256 = 0x90.A74 (0x8E)这里有点误差,实测0x8E
+    141                  //第一个重复脉冲串实测0x3B
+    142                 if (((ir_cnt > 0x0A) && (ir_cnt < 0x15)) || ((ir_cnt > 0x33) && (ir_cnt < 0x46)) || ((ir_cnt > 0x87) && (ir_cnt < 0x97)))
+    143                 {
+    144                     //irState = 32,即按键已得到，当前键码有效使得irState=32，使irData值也不变，随时供KeyScan提取
+    145                     ISR_EXIT();
+    146                     return;
+    147                 }
+    148          
+    149                 ir.data >>= 1;               //irData低8位存码值
+    150                 ir.state++;
+    151                 //uart_putchar(ir.state);
+    152                 //if(32 == ir.state){uart_putchar(ir.data);}
+    153                 if (ir_cnt == 3)
+    154                 {
+    155                      ir.data |= 0x8000;       //irData为32位  // 这里是关键，它是半道插入1，相当于irData为16位的情形，通过它，刚好把数据位提出来放到最后一个字节
+    156                 }
+    157                 else if (ir_cnt == 1)
+    158                 {
+    159                      ISR_EXIT();
+    160                      return;
+    161                 }
+    162                 else
+    163                {
+    164                      ir.state = 0;               //可见 只有counter = 01 02 0B 29 62会认为是有效值，其它都会将irState清0，预示着一下解析IRd ID的开始
+    165                      ir.data = NO_KEY;
+    166                }
+    167              }
+    168              ISR_EXIT();
+    169          }
+    170          
+    171          void ir_port_int_init(void)
+    172          {
+    173              //printf("ir_port_int_init chip XX = %d\n",get_chip_type());
+    174              TMR2CON0 = 0X14;        //TM2EN_counter mode, SysClk
+    175              TMR2CON1 = 0x07;        //no interrupt, DIV 128
+    176              TMR2PRL = 0xF0;         //
+    177              TMR2PRH = 0xFF;         //120/(1/48000*128)-1=0xAFC7.
+    178              TMR2CNTL = 0;
+    179              TMR2CNTH = 0;           //Clear CNT
+    180              IE1 &= ~BIT(2);
+    181              //------------------------------------
+    182          #if (IR_PORT_INT_SEL == IR_PORT_INT_P01)
+    183              P0DIR |= BIT(1);  //P01
+    184              P0PU |= BIT(1);
+    185              PMUXCON1 &= ~BIT(0);
+    186              PWKEN &= ~BIT(0);
+    187              PWKEDGE = (PWKEDGE&0xE0)|BIT(0);  //FALL EGDE
+    188          #elif(IR_PORT_INT_SEL == IR_PORT_INT_P06)
+    189              P0DIR |= BIT(6);  //P06
+    190              P0PU |= BIT(6);
+    191              PMUXCON1 &= ~BIT(1);
+    192              PWKEN &= ~BIT(1);
+    193              PWKEDGE = (PWKEDGE&0xE0)|BIT(1);  //FALL EGDE
+    194          #elif(IR_PORT_INT_SEL == IR_PORT_INT_P07)
+    195              P0DIR |= BIT(7);  //P07
+    196              P0PU |= BIT(7);
+    197              PMUXCON1 |= BIT(7);
+    198              PMUXCON1 |= BIT(5);
+    199              PWKEN &= ~BIT(3);
+    200              PWKEDGE = (PWKEDGE&0xE0)|BIT(3);  //FALL EGDE
+    201          #elif(IR_PORT_INT_SEL == IR_PORT_INT_P34)
+    202              P3DIR |= BIT(4);  //P34
+    203              P3PU |= BIT(4);
+    204              PWKEN &= ~BIT(2);
+    205              PMUXCON0 &= ~BIT(2);
+    206              PWKEDGE = (PWKEDGE&0xE0)|BIT(2);  //FALL EGDE
+    207          #elif(IR_PORT_INT_SEL == IR_PORT_INT_P20)
+    208              P2DIR |= BIT(0);  //P20
+    209              P2PU |= BIT(0);
+    210              PMUXCON2 |= BIT(0);
+    211              PMUXCON1 &= ~BIT(7);
+    212              PMUXCON1 &= ~BIT(5);
+    213              PWKEN &= ~BIT(3);
+    214              PWKEDGE = (PWKEDGE&0xE0)|BIT(3);  //FALL EGDE
+    215          #else
+    216          #error "please sel ir receiver port"
+    217          #endif
+    218              //--------------------------------------*/
+    219              IPH1 |= BIT(2);  //port使用优先级：2
+    220              IE1 |= BIT(2);   //port interrupt enable
+    221          }
+    222          #endif //SOFT_IR_PORT_INT_EN
+    223          
+    224          #if HARD_IR_EN
+    225          
+    226          #pragma location="INIT_SEG_1"
+
+   \                                 In segment INIT_SEG_1, align 1, keep-with-next
+    227          void ir_hardware_init(void)
+   \                     ir_hardware_init:
+    228          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    229          #if (SYS_CRY == CRY_2M || SYS_CRY == CRY_32K)
+    230              #if 0
+    231              CLKCON2  =  (CLKCON2 &0xF8)|0x06; //0x06, IR Select 32K OSC
+    232              PCON0 &= ~BIT(3);  //IR clk_en
+    233              P3DIR |= BIT(3);
+    234              P3PU |= BIT(3);
+    235              P3PD &=~ BIT(3);
+    236              IRCON0 = 0x21;  //0x21:P33 0x01:P07 0x11:P16  0x31:P40  recv pin  //ir enable
+    237              IRCON1 = 0x5e;
+    238              IRCON1 = 0x28;
+    239              IRCON1 = 0x02;
+    240              IRCON1 = 0x04;
+    241              IRCON1 = 0x09;
+    242              #else
+    243              CLKCON2  =  (CLKCON2 &0xF8)|0x03; //0x03, IR Select 1M OSC
+   \   000000   9078A4       MOV     DPTR,#0x78a4
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   54F8         ANL     A,#0xf8
+   \   000006   4403         ORL     A,#0x3
+   \   000008   F0           MOVX    @DPTR,A
+    244              CLKCON2 &=~BIT(2);
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   C2E2         CLR     0xE0 /* A   */.2
+   \   00000C   F0           MOVX    @DPTR,A
+    245          
+    246              PCON0 &= ~BIT(3);  //IR clk_en
+   \   00000D   5387F7       ANL     0x87,#0xf7
+    247              P0DIR |= BIT(7);
+   \   000010   43BA80       ORL     0xba,#0x80
+    248              P0PU |= BIT(7);
+   \   000013   907840       MOV     DPTR,#0x7840
+   \   000016   E0           MOVX    A,@DPTR
+   \   000017   D2E7         SETB    0xE0 /* A   */.7
+   \   000019   F0           MOVX    @DPTR,A
+    249              P0PD &=~ BIT(7);
+   \   00001A   907847       MOV     DPTR,#0x7847
+   \   00001D   E0           MOVX    A,@DPTR
+   \   00001E   C2E7         CLR     0xE0 /* A   */.7
+   \   000020   F0           MOVX    @DPTR,A
+    250              IRCON0 = 0x01;  //0x21:P33 0x01:P07 0x11:P16  0x31:P40  recv pin  //ir enable
+   \   000021   75A701       MOV     0xa7,#0x1
+    251              IRCON1 = 0x9C;
+   \   000024   75AD9C       MOV     0xad,#-0x64
+    252              IRCON1 = 0x50;
+   \   000027   75AD50       MOV     0xad,#0x50
+    253              IRCON1 = 0x04;
+   \   00002A   75AD04       MOV     0xad,#0x4
+    254              IRCON1 = 0x08;
+   \   00002D   75AD08       MOV     0xad,#0x8
+    255              IRCON1 = 0x11;
+   \   000030   75AD11       MOV     0xad,#0x11
+    256              #endif
+    257          #else
+    258              #error "NO CRY_32K must sel SOFT_IR_EN"
+    259              /*
+    260              CLKCON2  =  (CLKCON2 &0xF8)|0x00;     //0x00 1M//0x04 32K  //IR CLK Select PLL 1M
+    261              PCON0 &= ~BIT(3);  //IR clk_en
+    262              P3DIR |= BIT(3);
+    263              P3PU |= BIT(3);
+    264              P3PD &=~ BIT(3);
+    265              IRCON0 = 0x21; //0x21:P33 0x01:P07 0x11:P16  0x31:P40  recv pin  //ir enable
+    266              IRCON1 = 0x9C;
+    267              IRCON1 = 0x50;
+    268              IRCON1 = 0x04;
+    269              IRCON1 = 0x08;
+    270              IRCON1 = 0x11;
+    271              */
+    272          #endif
+    273          }
+   \   000033   02....       LJMP    ?BRET
+    274          
+    275          //#pragma location="IR_SEG"
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    276          __near_func u8 ir_hardware_scan(void)
+   \                     ir_hardware_scan:
+    277          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    278              static u8 rep_cnt = 0;
+    279              if (IRCON0 & BIT(2)) {
+   \   000000   E5A7         MOV     A,0xa7
+   \   000002   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000004   5030         JNC     ??ir_hardware_scan_0
+    280                  rep_cnt = 0;
+   \   000006   E4           CLR     A
+   \   000007   90....       MOV     DPTR,#??rep_cnt
+   \   00000A   F0           MOVX    @DPTR,A
+    281                  IRCON0 &= ~BIT(2);
+   \   00000B   53A7FB       ANL     0xa7,#0xfb
+    282                  ir_data = IRDAT2;   //IRDAT0和IRDAT1是用户码，开发人员可以根据自己需求设置判断条件
+   \   00000E   90780E       MOV     DPTR,#0x780e
+   \   000011   E0           MOVX    A,@DPTR
+   \   000012   90....       MOV     DPTR,#ir_data
+   \   000015   F0           MOVX    @DPTR,A
+   \   000016   A3           INC     DPTR
+   \   000017   E4           CLR     A
+   \   000018   F0           MOVX    @DPTR,A
+    283                  //printf("%02x\n",ir_data);
+    284                  userCode16 = IRDAT1;
+   \   000019   90780D       MOV     DPTR,#0x780d
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   90....       MOV     DPTR,#userCode16
+   \   000020   F0           MOVX    @DPTR,A
+   \   000021   A3           INC     DPTR
+   \   000022   E4           CLR     A
+   \   000023   F0           MOVX    @DPTR,A
+    285          		userCode16 = (userCode16 << 8) | IRDAT0;
+   \   000024   90....       MOV     DPTR,#userCode16
+   \   000027   E0           MOVX    A,@DPTR
+   \   000028   F9           MOV     R1,A
+   \   000029   90780C       MOV     DPTR,#0x780c
+   \   00002C   E0           MOVX    A,@DPTR
+   \   00002D   90....       MOV     DPTR,#userCode16
+   \   000030   F0           MOVX    @DPTR,A
+   \   000031   A3           INC     DPTR
+   \   000032   E9           MOV     A,R1
+   \   000033   F0           MOVX    @DPTR,A
+   \   000034   8009         SJMP    ??ir_hardware_scan_1
+    286              }
+    287              if (rep_cnt < 23) {
+   \                     ??ir_hardware_scan_0:
+   \   000036   90....       MOV     DPTR,#??rep_cnt
+   \   000039   E0           MOVX    A,@DPTR
+   \   00003A   C3           CLR     C
+   \   00003B   9417         SUBB    A,#0x17
+   \   00003D   5007         JNC     ??ir_hardware_scan_2
+    288                  rep_cnt++;
+   \                     ??ir_hardware_scan_1:
+   \   00003F   90....       MOV     DPTR,#??rep_cnt
+   \   000042   E0           MOVX    A,@DPTR
+   \   000043   04           INC     A
+   \   000044   800E         SJMP    ??ir_hardware_scan_3
+    289              } else {                //超过110 ms没有红外按键
+    290                  ir_data = 0xff;        //PLZ make sure ir_table[irData] is NO_KEY
+   \                     ??ir_hardware_scan_2:
+   \   000046   90....       MOV     DPTR,#ir_data
+   \   000049   74FF         MOV     A,#-0x1
+   \   00004B   F0           MOVX    @DPTR,A
+   \   00004C   A3           INC     DPTR
+   \   00004D   E4           CLR     A
+   \   00004E   F0           MOVX    @DPTR,A
+    291                  rep_cnt = 30;       //time out
+   \   00004F   741E         MOV     A,#0x1e
+   \   000051   90....       MOV     DPTR,#??rep_cnt
+   \                     ??ir_hardware_scan_3:
+   \   000054   F0           MOVX    @DPTR,A
+    292              }
+    293          
+    294              return ir_key_get(ir_data & 0xff);
+   \   000055                ; Setup parameters for call to function ir_key_get
+   \   000055   90....       MOV     DPTR,#ir_data
+   \   000058   E0           MOVX    A,@DPTR
+   \   000059   F8           MOV     R0,A
+   \   00005A   A3           INC     DPTR
+   \   00005B   E0           MOVX    A,@DPTR
+   \   00005C   E8           MOV     A,R0
+   \   00005D   F9           MOV     R1,A
+   \   00005E   12....       LCALL   ir_key_get
+   \   000061   22           RET
+    295          }
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \                     ??rep_cnt:
+   \   000000                DS 1
+    296          
+    297          #endif //HARD_IR_EN
+    298          
+    299          #endif //(HARD_IR_EN || SOFT_IR_EN)
+
+   Maximum stack usage in bytes:
+
+     Function         EXT_STACK PSTACK XSTACK
+     --------         --------- ------ ------
+     ir_hardware_init        0      0      0
+     ir_hardware_scan        0      0      0
+       -> ir_key_get         0      0      0
+     ir_key_get              0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label   Bytes
+     --------------   -----
+     PCON0               1
+     IRCON0              1
+     IRCON1              1
+     P0DIR               1
+     tbl_ir_dat         25
+     tbl_ir_val         25
+     ir_data             2
+     ir_state            1
+     userCode16          2
+     ir_key_get         54
+     ir_hardware_init   54
+     ir_hardware_scan   98
+     rep_cnt             1
+
+ 
+  50 bytes in segment CODE_C
+  54 bytes in segment INIT_SEG_1
+ 152 bytes in segment NEAR_CODE
+   4 bytes in segment SFR_AN
+   6 bytes in segment XDATA_Z
+ 
+ 256 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 4 bytes shared)
+   6 bytes of XDATA memory
+
+Errors: none
+Warnings: none

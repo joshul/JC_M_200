@@ -1,0 +1,572 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:02 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_timer.c                                       #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_timer.c                                       #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_timer.lst                               #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_timer.r51                                #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_timer.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_io.c
+      4           * Author    : Hanny
+      5           * Function  : 用户的IO设置
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "task.h"
+      9          #include "task_music.h"
+     10          #include "task_fm.h"
+     11          #include "user_fft_led.h"
+     12          
+     13          #define DEMO_PWN_TEST                   0       //测试呼吸灯程序
+     14          
+     15          extern u8 flicker_500ms_cnt;                //用来控制一些控制的显示时间
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     16          bool paly_twice_flag = 0;
+   \                     paly_twice_flag:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     17          u16 twice_cnt = 0;
+   \                     twice_cnt:
+   \   000000                DS 2
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     18          u16 tmr100ms_ticks;
+   \                     tmr100ms_ticks:
+   \   000000                DS 2
+     19          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     20          u8 timer5ms_cnt, timer100ms_cnt, timer1s_cnt;
+   \                     timer5ms_cnt:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \                     timer100ms_cnt:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \                     timer1s_cnt:
+   \   000000                DS 1
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     21          u8 ocx_show_cnt;      //用来控制一些控制的显示时间
+   \                     ocx_show_cnt:
+   \   000000                DS 1
+     22          
+     23          #if DEMO_PWN_TEST
+     24          
+     25          #define PWN_CYCLE                       128             //PWN周期
+     26          #define PWN_LEVEL                        24             //一共几极亮度
+     27          
+     28          IAR_CONST u8 tbl_pwn_duty[PWN_LEVEL] = {
+     29              0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+     30              11, 13, 16, 19, 23, 27, 32, 38, 46, 55,
+     31              66, 79, 95, 128,
+     32          };
+     33          
+     34          //软PWN实现呼吸灯
+     35          struct __TYPE_PWN {
+     36              u8 cnt;
+     37              u8 duty1;
+     38              u8 dir1;
+     39              u8 duty2;
+     40              u8 dir2;
+     41              u8 duty3;
+     42              u8 dir3;
+     43          } t_pwn;
+     44          #endif
+     45          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     46          u16 tmr100ms_get_ticks(void)
+   \                     tmr100ms_get_ticks:
+     47          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     48              return tmr100ms_ticks;
+   \   000000   90....       MOV     DPTR,#tmr100ms_ticks
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   FA           MOV     R2,A
+   \   000005   A3           INC     DPTR
+   \   000006   E0           MOVX    A,@DPTR
+   \   000007   FB           MOV     R3,A
+   \   000008   02....       LJMP    ?BRET
+     49          }
+     50          
+     51          #if DEMO_PWN_TEST
+     52          __near_func void pwn_duty_change(void)
+     53          {
+     54              if (t_pwn.dir1) {
+     55                  t_pwn.duty1++;
+     56                  if (t_pwn.duty1 >= PWN_LEVEL-1) {
+     57                      t_pwn.dir1 = 0;
+     58                  }
+     59              } else {
+     60                  t_pwn.duty1--;
+     61                  if (t_pwn.duty1 <= 0) {
+     62                      t_pwn.dir1 = 1;
+     63                  }
+     64              }
+     65          
+     66              if (t_pwn.dir2) {
+     67                  t_pwn.duty2++;
+     68                  if (t_pwn.duty2 >= PWN_LEVEL-1) {
+     69                      t_pwn.dir2 = 0;
+     70                  }
+     71              } else {
+     72                  t_pwn.duty2--;
+     73                  if (t_pwn.duty2 <= 0) {
+     74                      t_pwn.dir2 = 1;
+     75                  }
+     76              }
+     77          
+     78              if (t_pwn.dir3) {
+     79                  t_pwn.duty3++;
+     80                  if (t_pwn.duty3 >= PWN_LEVEL-1) {
+     81                      t_pwn.dir3 = 0;
+     82                  }
+     83              } else {
+     84                  t_pwn.duty3--;
+     85                  if (t_pwn.duty3 <= 0) {
+     86                      t_pwn.dir3 = 1;
+     87                  }
+     88              }
+     89          }
+     90          #endif
+     91          
+     92          //1s 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+     93          __near_func void timer1s_hook(void)
+   \                     timer1s_hook:
+     94          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     95              timer1s_cnt++;
+   \   000000   90....       MOV     DPTR,#timer1s_cnt
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   04           INC     A
+   \   000005   F0           MOVX    @DPTR,A
+     96              if (bt_sleep_cnt) {
+   \   000006   90....       MOV     DPTR,#bt_sleep_cnt
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   6003         JZ      ??timer1s_hook_0
+     97                  bt_sleep_cnt--;
+   \   00000C   E0           MOVX    A,@DPTR
+   \   00000D   14           DEC     A
+   \   00000E   F0           MOVX    @DPTR,A
+     98              }
+     99              sys_ctl.bonoff_1s = !sys_ctl.bonoff_1s;
+   \                     ??timer1s_hook_0:
+   \   00000F   90....       MOV     DPTR,#(sys_ctl + 55)
+   \   000012   12....       LCALL   ?Subroutine0
+    100              put_msg(QSYSTEM_1S);
+   \                     ??CrossCallReturnLabel_0:
+   \   000015                ; Setup parameters for call to function put_msg
+   \   000015   797E         MOV     R1,#0x7e
+   \   000017   12....       LCALL   put_msg
+    101          #if INTERNAL_CHARGE_EN
+    102              charge_detect();
+    103          #endif
+    104              if (timer1s_cnt >= 10) {
+   \   00001A   90....       MOV     DPTR,#timer1s_cnt
+   \   00001D   E0           MOVX    A,@DPTR
+   \   00001E   C3           CLR     C
+   \   00001F   940A         SUBB    A,#0xa
+   \   000021   4007         JC      ??timer1s_hook_1
+    105                  timer1s_cnt = 0;
+   \   000023   E4           CLR     A
+   \   000024   F0           MOVX    @DPTR,A
+    106                  put_msg(QSYSTEM_10S);
+   \   000025                ; Setup parameters for call to function put_msg
+   \   000025   7970         MOV     R1,#0x70
+   \   000027   12....       LCALL   put_msg
+    107              }
+    108          }
+   \                     ??timer1s_hook_1:
+   \   00002A   22           RET
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   F4           CPL     A
+   \   000002   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000004   E4           CLR     A
+   \   000005   92E0         MOV     0xE0 /* A   */.0,C
+   \   000007   F0           MOVX    @DPTR,A
+   \   000008   22           RET
+    109          
+    110          //100ms 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    111          __near_func void timer100ms_hook(void)
+   \                     timer100ms_hook:
+    112          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    113          	tmr100ms_ticks++;
+   \   000000   90....       MOV     DPTR,#tmr100ms_ticks
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   2401         ADD     A,#0x1
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   A3           INC     DPTR
+   \   000008   E0           MOVX    A,@DPTR
+   \   000009   3400         ADDC    A,#0x0
+   \   00000B   F0           MOVX    @DPTR,A
+    114              //暂时屏蔽低电检测
+    115              //task_battery_check();
+    116              put_msg(QSYSTEM_100MS);
+   \   00000C                ; Setup parameters for call to function put_msg
+   \   00000C   797F         MOV     R1,#0x7f
+   \   00000E   12....       LCALL   put_msg
+    117              if (device_set_testready(UDISK_TEST_READY_TIME)) {
+   \   000011                ; Setup parameters for call to function device_set_testready
+   \   000011   790F         MOV     R1,#0xf
+   \   000013   12....       LCALL   device_set_testready
+   \   000016   5006         JNC     ??timer100ms_hook_0
+    118                  task_ctl.dev_change = 1;
+   \   000018   7401         MOV     A,#0x1
+   \   00001A   90....       MOV     DPTR,#(task_ctl + 3)
+   \   00001D   F0           MOVX    @DPTR,A
+    119              }
+    120              
+    121              timer100ms_cnt++;
+   \                     ??timer100ms_hook_0:
+   \   00001E   90....       MOV     DPTR,#timer100ms_cnt
+   \   000021   E0           MOVX    A,@DPTR
+   \   000022   04           INC     A
+   \   000023   F0           MOVX    @DPTR,A
+    122          #if IS_LEDSEG_DISPLAY
+    123              if (timer100ms_cnt % 5 == 0) {
+   \   000024   75F005       MOV     B,#0x5
+   \   000027   84           DIV     AB
+   \   000028   E5F0         MOV     A,B
+   \   00002A   7011         JNZ     ??timer100ms_hook_1
+    124                  sys_ctl.bonoff = !sys_ctl.bonoff;
+   \   00002C   90....       MOV     DPTR,#(sys_ctl + 54)
+   \   00002F   12....       LCALL   ?Subroutine0
+    125                  flicker_500ms_cnt++;
+   \                     ??CrossCallReturnLabel_1:
+   \   000032   90....       MOV     DPTR,#flicker_500ms_cnt
+   \   000035   E0           MOVX    A,@DPTR
+   \   000036   04           INC     A
+   \   000037   F0           MOVX    @DPTR,A
+    126                  put_msg(QSYSTEM_500MS);
+   \   000038                ; Setup parameters for call to function put_msg
+   \   000038   796C         MOV     R1,#0x6c
+   \   00003A   12....       LCALL   put_msg
+    127              }
+    128          #endif
+    129              if (timer100ms_cnt >= 10) {
+   \                     ??timer100ms_hook_1:
+   \   00003D   90....       MOV     DPTR,#timer100ms_cnt
+   \   000040   E0           MOVX    A,@DPTR
+   \   000041   C3           CLR     C
+   \   000042   940A         SUBB    A,#0xa
+   \   000044   4005         JC      ??timer100ms_hook_2
+    130                  timer100ms_cnt = 0;
+   \   000046   E4           CLR     A
+   \   000047   F0           MOVX    @DPTR,A
+    131                  timer1s_hook();
+   \   000048                ; Setup parameters for call to function timer1s_hook
+   \   000048   12....       LCALL   timer1s_hook
+    132              }
+    133          
+    134              //100MS的事件
+    135              if (ocx_show_cnt != 255) {
+   \                     ??timer100ms_hook_2:
+   \   00004B   90....       MOV     DPTR,#ocx_show_cnt
+   \   00004E   E0           MOVX    A,@DPTR
+   \   00004F   64FF         XRL     A,#0xff
+   \   000051   6003         JZ      ??timer100ms_hook_3
+    136                  ocx_show_cnt++;
+   \   000053   E0           MOVX    A,@DPTR
+   \   000054   04           INC     A
+   \   000055   F0           MOVX    @DPTR,A
+    137              }
+    138          
+    139              move_ctl.ms_flag = 1;   //100ms标志
+   \                     ??timer100ms_hook_3:
+   \   000056   7401         MOV     A,#0x1
+   \   000058   90....       MOV     DPTR,#(move_ctl + 8)
+   \   00005B   F0           MOVX    @DPTR,A
+    140          
+    141          #if DEMO_PWN_TEST
+    142              pwn_duty_change();
+    143          #endif
+    144          }
+   \   00005C   22           RET
+    145          
+    146          //50ms 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    147          __near_func void timer50ms_hook(void)
+   \                     timer50ms_hook:
+    148          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    149              if(!sys_ctl.sleep_flag){
+    150                  //led_scan();
+    151              }
+    152          }
+   \   000000   22           RET
+    153          
+    154          #if DEMO_PWN_TEST
+    155          //125us 定时中断
+    156          __near_func void timer125us_hook(void)
+    157          {
+    158              t_pwn.cnt++;
+    159              if (t_pwn.cnt >= PWN_CYCLE) {
+    160                  t_pwn.cnt = 0;
+    161              }
+    162              if (t_pwn.cnt < tbl_pwn_duty[t_pwn.duty1]) {
+    163                  P2 |= BIT(7);
+    164              } else {
+    165                  P2 &= ~BIT(7);
+    166              }
+    167              if (t_pwn.cnt < tbl_pwn_duty[t_pwn.duty2]) {
+    168                  P2 |= BIT(6);
+    169              } else {
+    170                  P2 &= ~BIT(6);
+    171              }
+    172              if (t_pwn.cnt < tbl_pwn_duty[t_pwn.duty3]) {
+    173                  P2 |= BIT(5);
+    174              } else {
+    175                  P2 &= ~BIT(5);
+    176              }
+    177          }
+    178          #endif
+    179          
+    180          #if IS_LEDSEG_7PIN_DISPLAY
+    181          //500us 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    182          __near_func void timer500us_hook(void)
+   \                     timer500us_hook:
+    183          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    184              ledseg_scan();
+    185          }
+   \   000000   22           RET
+    186          #endif
+    187          
+    188          //1ms 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    189          __near_func void timer1ms_hook(void)
+   \                     timer1ms_hook:
+    190          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    191          #if LED_REUSE_ADKEY || SDCLK_REUSE_ADKEY
+    192              adc_chk();
+    193          #endif
+    194          
+    195          #if IS_LEDSEG_5C7S_DISPLAY
+    196              if(!sys_ctl.sleep_flag) {
+    197                  ledseg_scan();
+    198              }
+    199          #endif
+    200          
+    201          #if FFT_LED_EN
+    202               fft_led_scan();
+    203          #endif
+    204          
+    205          #if WKO_OUTPUT_EN
+    206              wko_state_set();
+    207          #endif
+    208          }
+   \   000000   22           RET
+    209          
+    210          //5ms 定时中断
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    211          __near_func void timer5ms_hook(void)
+   \                     timer5ms_hook:
+    212          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    213              timer5ms_cnt++;
+   \   000000   90....       MOV     DPTR,#timer5ms_cnt
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   04           INC     A
+   \   000005   F0           MOVX    @DPTR,A
+    214              if (timer5ms_cnt == 10) {
+   \   000006   640A         XRL     A,#0xa
+   \   000008   600B         JZ      ??timer5ms_hook_0
+    215                  timer50ms_hook();
+    216              } else if (timer5ms_cnt >= 20) {
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   C3           CLR     C
+   \   00000C   9414         SUBB    A,#0x14
+   \   00000E   4005         JC      ??timer5ms_hook_0
+    217                  timer50ms_hook();
+    218                  timer5ms_cnt = 0;
+   \   000010   E4           CLR     A
+   \   000011   F0           MOVX    @DPTR,A
+    219                  timer100ms_hook();
+   \   000012                ; Setup parameters for call to function timer100ms_hook
+   \   000012   12....       LCALL   timer100ms_hook
+    220              }
+    221              key_scan();             //按键扫描
+   \                     ??timer5ms_hook_0:
+   \   000015                ; Setup parameters for call to function key_scan
+   \   000015   12....       LCALL   key_scan
+    222              usb_detect();
+   \   000018                ; Setup parameters for call to function usb_detect
+   \   000018   12....       LCALL   usb_detect
+    223              sd_detect();
+   \   00001B                ; Setup parameters for call to function sd_detect
+   \   00001B   12....       LCALL   sd_detect
+    224          #if (LINEIN_DETECT_EN && !LINEIN_SEG_REUSE)
+    225               linein_detect();
+    226          #endif
+    227          
+    228          #if (EAR_DETECT_EN && !EAR_SEG_REUSE && !EAR_ADKEY_REUSE)
+    229               earphone_detect();
+    230          #endif
+    231          
+    232          #if FFT_LED_EN
+    233               fft_energy_get();
+    234          #endif
+    235          }
+   \   00001E   22           RET
+    236          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    237          void timer_init(void)
+   \                     timer_init:
+    238          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    239          #if DEMO_PWN_TEST
+    240              memset(&t_pwn, 0, sizeof(t_pwn));
+    241              P2DIR &= ~(BIT(7) | BIT(6) | BIT(5));
+    242              P2 &= ~(BIT(7) | BIT(6) | BIT(5));
+    243              t_pwn.duty1 = 1;
+    244              t_pwn.duty2 = 16;
+    245              t_pwn.duty3 = 32;
+    246          #endif
+    247              timer1_init();          //定时器基本功能初始化，以便其它初始化中用到的定时器延时。但此时不支持扩展
+   \   000000                ; Setup parameters for call to function timer1_init
+   \   000000   90....       MOV     DPTR,#(timer1_init & 0xffff)
+   \   000003   74..         MOV     A,#((timer1_init >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    248          }
+   \   000008   02....       LJMP    ?BRET
+    249          
+
+   Maximum stack usage in bytes:
+
+     Function                  EXT_STACK PSTACK XSTACK
+     --------                  --------- ------ ------
+     timer100ms_hook                  0      0      0
+       -> put_msg                     0      0      0
+       -> device_set_testready        0      0      0
+       -> put_msg                     0      0      0
+       -> timer1s_hook                0      0      0
+     timer1ms_hook                    0      0      0
+     timer1s_hook                     0      0      0
+       -> put_msg                     0      0      0
+       -> put_msg                     0      0      0
+     timer500us_hook                  0      0      0
+     timer50ms_hook                   0      0      0
+     timer5ms_hook                    0      0      0
+       -> timer100ms_hook             0      0      0
+       -> key_scan                    0      0      0
+       -> usb_detect                  0      0      0
+       -> sd_detect                   0      0      0
+     timer_init                       0      0      0
+       -> timer1_init                 0      0      0
+     tmr100ms_get_ticks               0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     paly_twice_flag       1
+     twice_cnt             2
+     tmr100ms_ticks        2
+     timer5ms_cnt          1
+     timer100ms_cnt        1
+     timer1s_cnt           1
+     ocx_show_cnt          1
+     tmr100ms_get_ticks   11
+     timer1s_hook         43
+     ?Subroutine0          9
+     timer100ms_hook      93
+     timer50ms_hook        1
+     timer500us_hook       1
+     timer1ms_hook         1
+     timer5ms_hook        31
+     timer_init           11
+
+ 
+  22 bytes in segment BANKED_CODE
+ 179 bytes in segment NEAR_CODE
+   9 bytes in segment XDATA_Z
+ 
+ 201 bytes of CODE  memory
+   9 bytes of XDATA memory
+
+Errors: none
+Warnings: none

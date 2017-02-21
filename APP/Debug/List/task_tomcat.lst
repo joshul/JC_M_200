@@ -1,0 +1,296 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:58 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_tomcat.c                                      #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_tomcat.c                                      #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_tomcat.lst                              #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_tomcat.r51                               #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_tomcat.c
+      1          /*****************************************************************************
+      2           * Module    : Task
+      3           * File      : task_tomcat.c
+      4           * Author    : Hanny
+      5           * Function  : 汤姆猫任务流程
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          
+      9          #if TASK_TOMCAT_EN
+     10          #include "task.h"
+     11          #include "task_tomcat.h"
+     12          #include "user_spi.h"
+     13          __near_func void dac_out(u16 adr, u16 samples, u8 ch);
+     14          IAR_XDATA_A u8 tom_adc_buf[TOM_BUF_SIZE]    @ "TOMCAT_ADC_BUF";
+     15          IAR_XDATA_A u8 tom_wbuf[512]                @ "TOMCAT_WBUF";
+     16          IAR_XDATA_A u8 tom_rbuf[512]                @ "TOMCAT_RBUF";
+     17          IAR_XDATA_A type_task_tomcat t_tom          @ "TOMCAT_XDATA";
+     18          IAR_XDATA_A u16 tom_output                  @ "TOMCAT_XDATA";
+     19          #include SET_USER_PATH(CFG_UI_TOMCAT_DIR, /ui/ui_tomcat.c)
+     20          #pragma location="TOMCAT_PROC"
+     21          __near_func void task_tomcat_process(void)
+     22          {
+     23              if (t_tom.block_cnt >= t_tom.block_lmt) {
+     24                  t_tom.block_cnt = 0;
+     25                  //printf("err\n");
+     26                  //return;
+     27              }
+     28              memcpy((u8*)tom_output, adc_buf+t_tom.pos*128, 128);
+     29              //dac_out((u16)tom_output,TOMCAT_SAMPLES/2, 1);
+     30              u32 v_pow = voice_power((u8*)tom_output, 64);
+     31              sound_detect(v_pow);
+     32              //printf("%08lx ",v_pow);
+     33              tom_output += 128;
+     34              t_tom.block_cnt++;
+     35              if (tom_output >= ((u16)tom_adc_buf+TOM_BUF_SIZE)) {
+     36                  tom_output = (u16)tom_adc_buf;
+     37              }
+     38              t_tom.pos ^= 1;//取反
+     39          }
+     40          
+     41          //录音事务处理
+     42          #pragma location="TASK_TOMCAT_SEG"
+     43          void task_tomcat_record(void)
+     44          {
+     45          #if IS_LCD_DISPLAY
+     46              t_tom.disp_flag = 1;
+     47              task_tomcat_display();  // 显示录音图标
+     48          #endif
+     49              if (t_tom.block_cnt < 4) {
+     50                  return;
+     51              }
+     52              memcpy(tom_wbuf,t_tom.block_adr,512);
+     53              //dac_out((u16)tom_wbuf, 256, 1);
+     54              spi_music_write(tom_wbuf);
+     55              //printf("record:\n");
+     56              //printf_array(tom_wbuf,0x20);
+     57              t_tom.block_cnt -= 4;
+     58              t_tom.block_adr += 0x200;
+     59              if (t_tom.block_adr == &tom_adc_buf[TOM_BUF_SIZE]) {
+     60                  t_tom.block_adr = tom_adc_buf;
+     61              }
+     62          }
+     63          
+     64          //播放事务处理
+     65          #pragma location="TASK_TOMCAT_SEG"
+     66          void task_tomcat_play(void)
+     67          {
+     68          #if IS_LCD_DISPLAY
+     69              t_tom.disp_flag = 1;
+     70              task_tomcat_display();  // 显示播放图标
+     71          #endif
+     72              spi_music_open(t_tom.rec_addr, t_tom.rec_len);//设置开始位置和长度
+     73              //pcm_play();
+     74              while(spi_music_len() && (task_ctl.work_sta == TASK_TOMCAT)) {
+     75                  comm_event();
+     76                  tempo_calc(tom_adc_buf,tom_rbuf);
+     77                  //spi_music_read(tom_rbuf);
+     78                  //printf_array(tom_rbuf,512);
+     79                  task_tomcat_deal_msg(get_msg());
+     80          #if IS_LCD_DISPLAY
+     81                  task_tomcat_display();
+     82          #endif
+     83              }
+     84              tomcat_record_init();
+     85          #if IS_LCD_DISPLAY
+     86              t_tom.disp_flag = 1;    // 显示停止图标
+     87          #endif
+     88          }
+     89          
+     90          //播放初始化
+     91          #pragma location="TASK_TOMCAT_SEG"
+     92          void tomcat_play_init(void)
+     93          {
+     94              sound_set_flag(0, 0);
+     95              adc_stop();
+     96              pcm_play();
+     97              t_tom.sta = TOM_PLAY;
+     98              tempo_init();
+     99          
+    100              t_tom.rec_addr = spi_music_start();     //获取到当前的位置
+    101              t_tom.rec_len = spi_music_len();
+    102              //printf("play:addr=%04x len=%04x\n", t_tom.rec_addr, t_tom.rec_len);
+    103          }
+    104          
+    105          //录音初始化
+    106          #pragma location="TASK_TOMCAT_SEG"
+    107          void tomcat_record_init(void)
+    108          {
+    109              t_tom.pos = 0;
+    110              t_tom.block_cnt = 0;
+    111              t_tom.block_adr = tom_adc_buf;
+    112              t_tom.block_lmt = TOM_BUF_SIZE / TOM_BLOCK_SIZE;
+    113              tom_output = (u16)tom_adc_buf;
+    114              t_tom.sta = TOM_NULL;
+    115          
+    116              spi_record_start();
+    117              adc_start();
+    118              //printf("adc_start\n");
+    119          }
+    120          
+    121          //任务初始化
+    122          #pragma location="TASK_TOMCAT_SEG"
+    123          void task_tomcat_enter(void)
+    124          {
+    125              led_mode_off();
+    126              led_idle();
+    127              set_sys_clk(SYS_48M);
+    128              draw_wait();
+    129              user_change_volume(sys_ctl.volume);//数字音量
+    130              dac_enable();
+    131          #if WARNING_TASK_TOMCAT
+    132              if (work_sta_interrupt == TASK_NULL) {
+    133                  mp3_res_play_wait(RES_MP3_TOMCAT_MODE);
+    134              }
+    135          #endif
+    136              work_sta_interrupt = TASK_NULL;
+    137          
+    138              memset(&t_tom,0,sizeof(t_tom));
+    139              sound_ctl_init(6, 0x200, 50, 0x200);     //连续6次超过0x200L认为开始有声；连续50次低于0x200认为静音
+    140              sound_set_flag(0, 0);
+    141              cr_speed = 54;       //变调速度 {54, 63, 72, 81, 90}, 72为不变调
+    142              tomcat_load_code(0x78);
+    143          
+    144              adc_init(SEL_TOMCAT);
+    145              pcm_init(S_SPR_16000);
+    146              spi_music_init();
+    147              tomcat_record_init();  //录音初始化
+    148              //pcm_play();
+    149          #if THEME_SELECT==THEME_LCD_DEFAULT
+    150              lcd_buf=lcd_buf2;       // tomcat使用lcd_buf2，否则会花屏
+    151              t_tom.last_sta = 0xff;  // 初始化为无效状态
+    152              line_clear();
+    153              disp_menu(STR_MAIN_TOMCAT,0,0, 0,ME_CENTER);
+    154              line_update(0);
+    155              t_tom.picture_disp_flag = 1;
+    156              t_tom.disp_flag = 1;             //设置更新标志
+    157          #endif
+    158          }
+    159          
+    160          //任务退出
+    161          #pragma location="TASK_TOMCAT_SEG"
+    162          void task_tomcat_exit(void)
+    163          {
+    164              adc_stop();
+    165              pcm_stop();
+    166              adc_exit();
+    167              amux_exit();
+    168          #if THEME_SELECT==THEME_LCD_DEFAULT
+    169              lcd_buf=lcd_buf1;   // 退出tomcat，恢复使用大显存
+    170          #endif
+    171          }
+    172          
+    173          //任务事务处理
+    174          #pragma location="TASK_TOMCAT_SEG"
+    175          void task_tomcat_event(void)
+    176          {
+    177              comm_event();
+    178              if (t_tom.auto_play) {
+    179                  if (!sound_flag()) {
+    180                      t_tom.auto_play = 0;
+    181                      tomcat_play_init();
+    182                  }
+    183              } else {
+    184                  if (sound_flag()) {
+    185                      t_tom.auto_play = 1;
+    186                      t_tom.sta = TOM_REC;
+    187                  }
+    188              }
+    189          
+    190              switch(t_tom.sta) {
+    191              case TOM_REC:
+    192                  task_tomcat_record();
+    193                  break;
+    194              case TOM_PLAY:
+    195                  task_tomcat_play();
+    196                  break;
+    197              case TOM_NULL:
+    198                  break;
+    199              }
+    200          }
+    201          
+    202          #pragma constseg="TASK_TOMCAT_CONST"
+    203          IAR_CONST char str_show_tasktomcat[] = "task_tomcat\n";
+    204          #pragma constseg=default
+    205          
+    206          //汤姆猫任务
+    207          #pragma location="TASK_TOMCAT_SEG"
+    208          void task_tomcat(void)
+    209          {
+    210              printf(str_show_tasktomcat);
+    211              task_tomcat_enter();
+    212              while (task_ctl.work_sta == TASK_TOMCAT) {
+    213                  u8 msg = get_msg();
+    214                  task_tomcat_event();
+    215                  task_tomcat_deal_msg(msg);
+    216          #if IS_LCD_DISPLAY
+    217                  if(t_tom.disp_flag) {
+    218          #else
+    219                  if(msg) {
+    220          #endif
+    221                      task_tomcat_display();
+    222                  }
+    223              }
+    224              task_ctl.work_sta = TASK_EXIT;
+    225              task_tomcat_exit();
+    226          }
+    227          
+    228          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

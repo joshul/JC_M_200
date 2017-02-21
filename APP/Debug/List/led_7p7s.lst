@@ -1,0 +1,960 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:52 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_7p7s.c                               #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\ledseg\led_7p7s.c                               #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\led_7p7s.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\led_7p7s.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\display\ledseg\led_7p7s.c
+      1          /*****************************************************************************
+      2           * Module    : ledseg
+      3           * File      : led_7p7s.c
+      4           * Author    : Hanny
+      5           * Function  : led_7p7s数码管显示屏驱动
+      6           *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x90
+   \   unsigned char volatile __sfr P1
+   \                     P1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa0
+   \   unsigned char volatile __sfr P2
+   \                     P2:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa9
+   \   unsigned char volatile __sfr IE1
+   \                     IE1:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xb0
+   \   unsigned char volatile __sfr P3
+   \                     P3:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbb
+   \   unsigned char volatile __sfr P1DIR
+   \                     P1DIR:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xbd
+   \   unsigned char volatile __sfr P3DIR
+   \                     P3DIR:
+   \   000000                DS 1
+      8          #include "led_seg.h"
+      9          
+     10          #if IS_LEDSEG_7PIN_DISPLAY
+     11          #include "led_7p7s.h"
+     12          
+
+   \                                 In segment XDATA_N, align 1
+     13          __no_init u8 pin_disp_buf[7];
+   \                     pin_disp_buf:
+   \   000000                DS 7
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     14          u8 led_seg_valid[7];
+   \                     led_seg_valid:
+   \   000000                DS 7
+
+   \                                 In segment XDATA_N, align 1, root
+     15          IAR_XDATA_A u8 COM_7P7S;
+   \                     COM_7P7S:
+   \   000000                DS 1
+     16          
+     17          //有效位置1
+
+   \                                 In segment CODE_C, align 1
+     18          IAR_CONST u8 tbl_ledseg_valid[7] = {
+   \                     tbl_ledseg_valid:
+   \   000000   3E7D3B37     DB 62, 125, 59, 55, 111, 95, 59
+   \            6F5F3B  
+     19          #if (THEME_SELECT == THEME_LEDSEG_7PIN)
+     20              /*PIN1 | PIN2 | PIN3 | PIN5,
+     21              PIN0 | PIN2 | PIN3 | PIN5 | PIN6,
+     22              PIN0 | PIN2 | PIN3 | PIN4 | PIN5 | PIN6,
+     23              PIN0 | PIN1 | PIN2 | PIN4 | PIN6,
+     24              PIN0 | PIN1 | PIN2 | PIN3 | PIN5,
+     25              PIN0 | PIN1 | PIN2 | PIN3 | PIN4 | PIN6,
+     26              PIN0 | PIN1 | PIN3 | PIN4 | PIN5,*/
+     27              PIN1 | PIN2 | PIN3 | PIN4 | PIN5,
+     28              PIN0 | PIN2 | PIN3 | PIN4 | PIN5 | PIN6,
+     29              PIN0 | PIN1 | PIN3 | PIN4 | PIN5,
+     30              PIN0 | PIN1 | PIN2 | PIN4 | PIN5,
+     31              PIN0 | PIN1 | PIN2 | PIN3 | PIN5 | PIN6,
+     32              PIN0 | PIN1 | PIN2 | PIN3 | PIN4 | PIN6,
+     33              PIN0 | PIN1 | PIN3 | PIN4 | PIN5,
+     34          #else
+     35              PIN1 | PIN2 | PIN3 | PIN4 | PIN5,
+     36              PIN0 | PIN2 | PIN3 | PIN4 | PIN5,
+     37              PIN0 | PIN1 | PIN3 | PIN4 | PIN5 | PIN6,
+     38              PIN0 | PIN1 | PIN2 | PIN4 | PIN5,
+     39              PIN0 | PIN1 | PIN2 | PIN3 | PIN5 | PIN6,
+     40              PIN0 | PIN1 | PIN2 | PIN3 | PIN4 | PIN6,
+     41              PIN2 | PIN4 | PIN5,
+     42          #endif
+     43          };
+     44          
+     45          #include SET_USER_PATH(CFG_IO_KEY_DIR, /io/io_led_seg.c)
+     46          
+     47          //led_7p7s初始化函数
+     48          /****************************************
+     49           
+     50          ****************************************/
+     51          #pragma location="DISP_LED_7P7S_SEG"
+
+   \                                 In segment DISP_LED_7P7S_SEG, align 1, keep-with-next
+     52          void led_7p7s_init(void)
+   \                     led_7p7s_init:
+     53          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     54              //led_7p7s_io_init();
+     55              //P1DIR |= BIT(2);
+     56              P3DIR |= BIT(4);
+   \   000000   43BD10       ORL     0xbd,#0x10
+     57             // P2DIR |= (BIT(0)|BIT(1)|BIT(3)|BIT(4)|BIT(7));
+     58          
+     59              COM_7P7S = 0;
+   \   000003   E4           CLR     A
+   \   000004   90....       MOV     DPTR,#COM_7P7S
+   \   000007   F0           MOVX    @DPTR,A
+     60          
+     61              my_memset((u8*)disp_buf,0x00,5);
+   \   000008                ; Setup parameters for call to function my_memset
+   \   000008   7C05         MOV     R4,#0x5
+   \   00000A   FD           MOV     R5,A
+   \   00000B   F9           MOV     R1,A
+   \   00000C   7A..         MOV     R2,#(disp_buf & 0xff)
+   \   00000E   7B..         MOV     R3,#((disp_buf >> 8) & 0xff)
+   \   000010   12....       LCALL   my_memset & 0xFFFF
+     62              my_memset((u8 *)pin_disp_buf, 0x00, 7);
+   \   000013                ; Setup parameters for call to function my_memset
+   \   000013   7C07         MOV     R4,#0x7
+   \   000015   7D00         MOV     R5,#0x0
+   \   000017   7900         MOV     R1,#0x0
+   \   000019   7A..         MOV     R2,#(pin_disp_buf & 0xff)
+   \   00001B   7B..         MOV     R3,#((pin_disp_buf >> 8) & 0xff)
+   \   00001D   12....       LCALL   my_memset & 0xFFFF
+     63          }
+   \   000020   02....       LJMP    ?BRET
+     64          
+     65          //根据7脚LED的真值表进行映射（每段输出高的IO记为COM端 7*7）COM:0~6  SEG:0~6
+     66          //#pragma location="DISP_LED_7P7S_SEG"
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     67          void led_7p7s_value_set(void)
+   \                     led_7p7s_value_set:
+     68          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003   EF           MOV     A,R7
+   \   000004   C0E0         PUSH    A
+   \   000006   C0..         PUSH    ?VB
+   \   000008                ; Saved register size: 3
+   \   000008                ; Auto size: 0
+     69              u8 ie0, ie1;
+     70              bool ie_ea = IE_EA;
+   \   000008   A2AF         MOV     C,0xa8.7
+   \   00000A   5004         JNC     ??led_7p7s_value_set_0
+   \   00000C   D2..         SETB    ?VB.0
+   \   00000E   8002         SJMP    ??led_7p7s_value_set_1
+   \                     ??led_7p7s_value_set_0:
+   \   000010   C2..         CLR     ?VB.0
+     71              IE_EA = 0;          //关总中断，保护好IE0/IE1后再打开
+   \                     ??led_7p7s_value_set_1:
+   \   000012   C2AF         CLR     0xa8.7
+     72              ie0 = IE0;          //保存IE0
+   \   000014   E5A8         MOV     A,0xa8
+   \   000016   FE           MOV     R6,A
+     73              ie1 = IE1;          //保存IE1
+   \   000017   E5A9         MOV     A,0xa9
+   \   000019   FF           MOV     R7,A
+     74              IE0 = 0;            //关掉IE0
+   \   00001A   75A800       MOV     0xa8,#0x0
+     75              IE1 &= BIT(6);      //关掉IE1，除了UART中断(因为这段处理较长，不能一直关IE_EA，否则会阻塞蓝牙UART中断)
+   \   00001D   53A940       ANL     0xa9,#0x40
+   \   000020   E5A9         MOV     A,0xa9
+     76              IE_EA = ie_ea;      //恢复总中断
+   \   000022   A2..         MOV     C,?VB.0
+   \   000024   92AF         MOV     0xa8.7,C
+     77          
+     78              my_memset((u8 *)pin_disp_buf, 0x00, 7);
+   \   000026                ; Setup parameters for call to function my_memset
+   \   000026   7C07         MOV     R4,#0x7
+   \   000028   7D00         MOV     R5,#0x0
+   \   00002A   7900         MOV     R1,#0x0
+   \   00002C   7A..         MOV     R2,#(pin_disp_buf & 0xff)
+   \   00002E   7B..         MOV     R3,#((pin_disp_buf >> 8) & 0xff)
+   \   000030   12....       LCALL   my_memset & 0xFFFF
+     79          
+     80          /*********** SEG ****************** COM ******** SEG(out)  *******/
+     81          #if (THEME_SELECT == THEME_LEDSEG_7PIN)
+     82          
+     83              if(disp_buf[0] & LED_BIT_A)     pin_disp_buf[0] |= PIN1; //设为1，扫描时对应此SEG位设为输出(FM)
+   \   000033   90....       MOV     DPTR,#disp_buf
+   \   000036   E0           MOVX    A,@DPTR
+   \   000037   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000039   5006         JNC     ??CrossCallReturnLabel_0
+   \   00003B   90....       MOV     DPTR,#pin_disp_buf
+   \   00003E   12....       LCALL   ?Subroutine0 & 0xFFFF
+     84              if(disp_buf[0] & LED_BIT_B)     pin_disp_buf[0] |= PIN2;
+   \                     ??CrossCallReturnLabel_0:
+   \   000041   90....       MOV     DPTR,#disp_buf
+   \   000044   E0           MOVX    A,@DPTR
+   \   000045   A2E1         MOV     C,0xE0 /* A   */.1
+   \   000047   5007         JNC     ??led_7p7s_value_set_2
+   \   000049   90....       MOV     DPTR,#pin_disp_buf
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   D2E2         SETB    0xE0 /* A   */.2
+   \   00004F   F0           MOVX    @DPTR,A
+     85              if(disp_buf[0] & LED_BIT_C)     pin_disp_buf[3] |= PIN0;
+   \                     ??led_7p7s_value_set_2:
+   \   000050   90....       MOV     DPTR,#disp_buf
+   \   000053   E0           MOVX    A,@DPTR
+   \   000054   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000056   5007         JNC     ??led_7p7s_value_set_3
+   \   000058   90....       MOV     DPTR,#(pin_disp_buf + 3)
+   \   00005B   E0           MOVX    A,@DPTR
+   \   00005C   D2E0         SETB    0xE0 /* A   */.0
+   \   00005E   F0           MOVX    @DPTR,A
+     86              if(disp_buf[0] & LED_BIT_D)     pin_disp_buf[4] |= PIN0;
+   \                     ??led_7p7s_value_set_3:
+   \   00005F   90....       MOV     DPTR,#disp_buf
+   \   000062   E0           MOVX    A,@DPTR
+   \   000063   A2E3         MOV     C,0xE0 /* A   */.3
+   \   000065   5007         JNC     ??led_7p7s_value_set_4
+   \   000067   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   00006A   E0           MOVX    A,@DPTR
+   \   00006B   D2E0         SETB    0xE0 /* A   */.0
+   \   00006D   F0           MOVX    @DPTR,A
+     87              if(disp_buf[0] & LED_BIT_E)     pin_disp_buf[0] |= PIN3;
+   \                     ??led_7p7s_value_set_4:
+   \   00006E   90....       MOV     DPTR,#disp_buf
+   \   000071   E0           MOVX    A,@DPTR
+   \   000072   A2E4         MOV     C,0xE0 /* A   */.4
+   \   000074   5007         JNC     ??led_7p7s_value_set_5
+   \   000076   90....       MOV     DPTR,#pin_disp_buf
+   \   000079   E0           MOVX    A,@DPTR
+   \   00007A   D2E3         SETB    0xE0 /* A   */.3
+   \   00007C   F0           MOVX    @DPTR,A
+     88              if(disp_buf[0] & LED_BIT_F)     pin_disp_buf[1] |= PIN0;
+   \                     ??led_7p7s_value_set_5:
+   \   00007D   90....       MOV     DPTR,#disp_buf
+   \   000080   E0           MOVX    A,@DPTR
+   \   000081   A2E5         MOV     C,0xE0 /* A   */.5
+   \   000083   5007         JNC     ??led_7p7s_value_set_6
+   \   000085   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   000088   E0           MOVX    A,@DPTR
+   \   000089   D2E0         SETB    0xE0 /* A   */.0
+   \   00008B   F0           MOVX    @DPTR,A
+     89              if(disp_buf[0] & LED_BIT_G)     pin_disp_buf[2] |= PIN0;
+   \                     ??led_7p7s_value_set_6:
+   \   00008C   90....       MOV     DPTR,#disp_buf
+   \   00008F   E0           MOVX    A,@DPTR
+   \   000090   A2E6         MOV     C,0xE0 /* A   */.6
+   \   000092   5007         JNC     ??led_7p7s_value_set_7
+   \   000094   90....       MOV     DPTR,#(pin_disp_buf + 2)
+   \   000097   E0           MOVX    A,@DPTR
+   \   000098   D2E0         SETB    0xE0 /* A   */.0
+   \   00009A   F0           MOVX    @DPTR,A
+     90              
+     91          
+     92              if(disp_buf[1] & LED_BIT_A)     pin_disp_buf[1] |= PIN2;
+   \                     ??led_7p7s_value_set_7:
+   \   00009B   90....       MOV     DPTR,#(disp_buf + 1)
+   \   00009E   E0           MOVX    A,@DPTR
+   \   00009F   A2E0         MOV     C,0xE0 /* A   */.0
+   \   0000A1   5007         JNC     ??led_7p7s_value_set_8
+   \   0000A3   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   0000A6   E0           MOVX    A,@DPTR
+   \   0000A7   D2E2         SETB    0xE0 /* A   */.2
+   \   0000A9   F0           MOVX    @DPTR,A
+     93              if(disp_buf[1] & LED_BIT_B)     pin_disp_buf[1] |= PIN3;
+   \                     ??led_7p7s_value_set_8:
+   \   0000AA   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000AD   E0           MOVX    A,@DPTR
+   \   0000AE   A2E1         MOV     C,0xE0 /* A   */.1
+   \   0000B0   5007         JNC     ??led_7p7s_value_set_9
+   \   0000B2   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   0000B5   E0           MOVX    A,@DPTR
+   \   0000B6   D2E3         SETB    0xE0 /* A   */.3
+   \   0000B8   F0           MOVX    @DPTR,A
+     94              if(disp_buf[1] & LED_BIT_C)     pin_disp_buf[4] |= PIN1;
+   \                     ??led_7p7s_value_set_9:
+   \   0000B9   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000BC   E0           MOVX    A,@DPTR
+   \   0000BD   A2E2         MOV     C,0xE0 /* A   */.2
+   \   0000BF   5006         JNC     ??CrossCallReturnLabel_1
+   \   0000C1   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   0000C4   12....       LCALL   ?Subroutine0 & 0xFFFF
+     95              if(disp_buf[1] & LED_BIT_D)     pin_disp_buf[1] |= PIN5;
+   \                     ??CrossCallReturnLabel_1:
+   \   0000C7   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000CA   E0           MOVX    A,@DPTR
+   \   0000CB   A2E3         MOV     C,0xE0 /* A   */.3
+   \   0000CD   5006         JNC     ??CrossCallReturnLabel_6
+   \   0000CF   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   0000D2   12....       LCALL   ?Subroutine1 & 0xFFFF
+     96              if(disp_buf[1] & LED_BIT_E)     pin_disp_buf[1] |= PIN4;
+   \                     ??CrossCallReturnLabel_6:
+   \   0000D5   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000D8   E0           MOVX    A,@DPTR
+   \   0000D9   A2E4         MOV     C,0xE0 /* A   */.4
+   \   0000DB   5006         JNC     ??CrossCallReturnLabel_12
+   \   0000DD   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   0000E0   12....       LCALL   ?Subroutine2 & 0xFFFF
+     97              if(disp_buf[1] & LED_BIT_F)     pin_disp_buf[2] |= PIN1;
+   \                     ??CrossCallReturnLabel_12:
+   \   0000E3   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000E6   E0           MOVX    A,@DPTR
+   \   0000E7   A2E5         MOV     C,0xE0 /* A   */.5
+   \   0000E9   5006         JNC     ??CrossCallReturnLabel_2
+   \   0000EB   90....       MOV     DPTR,#(pin_disp_buf + 2)
+   \   0000EE   12....       LCALL   ?Subroutine0 & 0xFFFF
+     98              if(disp_buf[1] & LED_BIT_G)     pin_disp_buf[3] |= PIN1;
+   \                     ??CrossCallReturnLabel_2:
+   \   0000F1   90....       MOV     DPTR,#(disp_buf + 1)
+   \   0000F4   E0           MOVX    A,@DPTR
+   \   0000F5   A2E6         MOV     C,0xE0 /* A   */.6
+   \   0000F7   5006         JNC     ??CrossCallReturnLabel_3
+   \   0000F9   90....       MOV     DPTR,#(pin_disp_buf + 3)
+   \   0000FC   12....       LCALL   ?Subroutine0 & 0xFFFF
+     99              
+    100          
+    101              if(disp_buf[2] & LED_BIT_A)     pin_disp_buf[4] |= PIN3;
+   \                     ??CrossCallReturnLabel_3:
+   \   0000FF   90....       MOV     DPTR,#(disp_buf + 2)
+   \   000102   E0           MOVX    A,@DPTR
+   \   000103   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000105   5007         JNC     ??led_7p7s_value_set_10
+   \   000107   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   00010A   E0           MOVX    A,@DPTR
+   \   00010B   D2E3         SETB    0xE0 /* A   */.3
+   \   00010D   F0           MOVX    @DPTR,A
+    102              if(disp_buf[2] & LED_BIT_B)     pin_disp_buf[2] |= PIN4;
+   \                     ??led_7p7s_value_set_10:
+   \   00010E   90....       MOV     DPTR,#(disp_buf + 2)
+   \   000111   E0           MOVX    A,@DPTR
+   \   000112   A2E1         MOV     C,0xE0 /* A   */.1
+   \   000114   5006         JNC     ??CrossCallReturnLabel_13
+   \   000116   90....       MOV     DPTR,#(pin_disp_buf + 2)
+   \   000119   12....       LCALL   ?Subroutine2 & 0xFFFF
+    103              if(disp_buf[2] & LED_BIT_C)     pin_disp_buf[3] |= PIN4;
+   \                     ??CrossCallReturnLabel_13:
+   \   00011C   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00011F   E0           MOVX    A,@DPTR
+   \   000120   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000122   5006         JNC     ??CrossCallReturnLabel_14
+   \   000124   90....       MOV     DPTR,#(pin_disp_buf + 3)
+   \   000127   12....       LCALL   ?Subroutine2 & 0xFFFF
+    104              if(disp_buf[2] & LED_BIT_D)     pin_disp_buf[5] |= PIN0;
+   \                     ??CrossCallReturnLabel_14:
+   \   00012A   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00012D   E0           MOVX    A,@DPTR
+   \   00012E   A2E3         MOV     C,0xE0 /* A   */.3
+   \   000130   5007         JNC     ??led_7p7s_value_set_11
+   \   000132   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   000135   E0           MOVX    A,@DPTR
+   \   000136   D2E0         SETB    0xE0 /* A   */.0
+   \   000138   F0           MOVX    @DPTR,A
+    105              if(disp_buf[2] & LED_BIT_E)     pin_disp_buf[5] |= PIN2;
+   \                     ??led_7p7s_value_set_11:
+   \   000139   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00013C   E0           MOVX    A,@DPTR
+   \   00013D   A2E4         MOV     C,0xE0 /* A   */.4
+   \   00013F   5007         JNC     ??led_7p7s_value_set_12
+   \   000141   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   000144   E0           MOVX    A,@DPTR
+   \   000145   D2E2         SETB    0xE0 /* A   */.2
+   \   000147   F0           MOVX    @DPTR,A
+    106              if(disp_buf[2] & LED_BIT_F)     pin_disp_buf[3] |= PIN2;
+   \                     ??led_7p7s_value_set_12:
+   \   000148   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00014B   E0           MOVX    A,@DPTR
+   \   00014C   A2E5         MOV     C,0xE0 /* A   */.5
+   \   00014E   5007         JNC     ??led_7p7s_value_set_13
+   \   000150   90....       MOV     DPTR,#(pin_disp_buf + 3)
+   \   000153   E0           MOVX    A,@DPTR
+   \   000154   D2E2         SETB    0xE0 /* A   */.2
+   \   000156   F0           MOVX    @DPTR,A
+    107              if(disp_buf[2] & LED_BIT_G)     pin_disp_buf[4] |= PIN2;
+   \                     ??led_7p7s_value_set_13:
+   \   000157   90....       MOV     DPTR,#(disp_buf + 2)
+   \   00015A   E0           MOVX    A,@DPTR
+   \   00015B   A2E6         MOV     C,0xE0 /* A   */.6
+   \   00015D   5007         JNC     ??led_7p7s_value_set_14
+   \   00015F   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   000162   E0           MOVX    A,@DPTR
+   \   000163   D2E2         SETB    0xE0 /* A   */.2
+   \   000165   F0           MOVX    @DPTR,A
+    108              
+    109          
+    110              if(disp_buf[3] & LED_BIT_A)     pin_disp_buf[6] |= PIN5;
+   \                     ??led_7p7s_value_set_14:
+   \   000166   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000169   E0           MOVX    A,@DPTR
+   \   00016A   A2E0         MOV     C,0xE0 /* A   */.0
+   \   00016C   5006         JNC     ??CrossCallReturnLabel_7
+   \   00016E   90....       MOV     DPTR,#(pin_disp_buf + 6)
+   \   000171   12....       LCALL   ?Subroutine1 & 0xFFFF
+    111              if(disp_buf[3] & LED_BIT_B)     pin_disp_buf[5] |= PIN6;
+   \                     ??CrossCallReturnLabel_7:
+   \   000174   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000177   E0           MOVX    A,@DPTR
+   \   000178   A2E1         MOV     C,0xE0 /* A   */.1
+   \   00017A   5007         JNC     ??led_7p7s_value_set_15
+   \   00017C   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   00017F   E0           MOVX    A,@DPTR
+   \   000180   D2E6         SETB    0xE0 /* A   */.6
+   \   000182   F0           MOVX    @DPTR,A
+    112              if(disp_buf[3] & LED_BIT_C)     pin_disp_buf[4] |= PIN5;
+   \                     ??led_7p7s_value_set_15:
+   \   000183   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000186   E0           MOVX    A,@DPTR
+   \   000187   A2E2         MOV     C,0xE0 /* A   */.2
+   \   000189   5006         JNC     ??CrossCallReturnLabel_8
+   \   00018B   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   00018E   12....       LCALL   ?Subroutine1 & 0xFFFF
+    113              if(disp_buf[3] & LED_BIT_D)     pin_disp_buf[5] |= PIN3;
+   \                     ??CrossCallReturnLabel_8:
+   \   000191   90....       MOV     DPTR,#(disp_buf + 3)
+   \   000194   E0           MOVX    A,@DPTR
+   \   000195   A2E3         MOV     C,0xE0 /* A   */.3
+   \   000197   5007         JNC     ??led_7p7s_value_set_16
+   \   000199   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   00019C   E0           MOVX    A,@DPTR
+   \   00019D   D2E3         SETB    0xE0 /* A   */.3
+   \   00019F   F0           MOVX    @DPTR,A
+    114              if(disp_buf[3] & LED_BIT_E)     pin_disp_buf[3] |= PIN5;
+   \                     ??led_7p7s_value_set_16:
+   \   0001A0   90....       MOV     DPTR,#(disp_buf + 3)
+   \   0001A3   E0           MOVX    A,@DPTR
+   \   0001A4   A2E4         MOV     C,0xE0 /* A   */.4
+   \   0001A6   5006         JNC     ??CrossCallReturnLabel_9
+   \   0001A8   90....       MOV     DPTR,#(pin_disp_buf + 3)
+   \   0001AB   12....       LCALL   ?Subroutine1 & 0xFFFF
+    115              if(disp_buf[3] & LED_BIT_F)     pin_disp_buf[5] |= PIN4;
+   \                     ??CrossCallReturnLabel_9:
+   \   0001AE   90....       MOV     DPTR,#(disp_buf + 3)
+   \   0001B1   E0           MOVX    A,@DPTR
+   \   0001B2   A2E5         MOV     C,0xE0 /* A   */.5
+   \   0001B4   5006         JNC     ??CrossCallReturnLabel_15
+   \   0001B6   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   0001B9   12....       LCALL   ?Subroutine2 & 0xFFFF
+    116              if(disp_buf[3] & LED_BIT_G)     pin_disp_buf[4] |= PIN6;
+   \                     ??CrossCallReturnLabel_15:
+   \   0001BC   90....       MOV     DPTR,#(disp_buf + 3)
+   \   0001BF   E0           MOVX    A,@DPTR
+   \   0001C0   A2E6         MOV     C,0xE0 /* A   */.6
+   \   0001C2   5007         JNC     ??led_7p7s_value_set_17
+   \   0001C4   90....       MOV     DPTR,#(pin_disp_buf + 4)
+   \   0001C7   E0           MOVX    A,@DPTR
+   \   0001C8   D2E6         SETB    0xE0 /* A   */.6
+   \   0001CA   F0           MOVX    @DPTR,A
+    117              
+    118          
+    119              
+    120              if(disp_buf[4] & ICON_FM)       pin_disp_buf[5] |= PIN1;
+   \                     ??led_7p7s_value_set_17:
+   \   0001CB   90....       MOV     DPTR,#(disp_buf + 4)
+   \   0001CE   E0           MOVX    A,@DPTR
+   \   0001CF   A2E6         MOV     C,0xE0 /* A   */.6
+   \   0001D1   5006         JNC     ??CrossCallReturnLabel_4
+   \   0001D3   90....       MOV     DPTR,#(pin_disp_buf + 5)
+   \   0001D6   12....       LCALL   ?Subroutine0 & 0xFFFF
+    121             
+    122              if(disp_buf[4] & ICON_OPT)      pin_disp_buf[0] |= PIN4;
+   \                     ??CrossCallReturnLabel_4:
+   \   0001D9   90....       MOV     DPTR,#(disp_buf + 4)
+   \   0001DC   E0           MOVX    A,@DPTR
+   \   0001DD   A2E5         MOV     C,0xE0 /* A   */.5
+   \   0001DF   5006         JNC     ??CrossCallReturnLabel_16
+   \   0001E1   90....       MOV     DPTR,#pin_disp_buf
+   \   0001E4   12....       LCALL   ?Subroutine2 & 0xFFFF
+    123              if(disp_buf[4] & ICON_DOT)      pin_disp_buf[6] |= PIN4;
+   \                     ??CrossCallReturnLabel_16:
+   \   0001E7   90....       MOV     DPTR,#(disp_buf + 4)
+   \   0001EA   E0           MOVX    A,@DPTR
+   \   0001EB   A2E6         MOV     C,0xE0 /* A   */.6
+   \   0001ED   5006         JNC     ??CrossCallReturnLabel_17
+   \   0001EF   90....       MOV     DPTR,#(pin_disp_buf + 6)
+   \   0001F2   12....       LCALL   ?Subroutine2 & 0xFFFF
+    124              if(disp_buf[4] & ICON_DOT2)     pin_disp_buf[2] |= PIN3;
+   \                     ??CrossCallReturnLabel_17:
+   \   0001F5   90....       MOV     DPTR,#(disp_buf + 4)
+   \   0001F8   E0           MOVX    A,@DPTR
+   \   0001F9   A2E4         MOV     C,0xE0 /* A   */.4
+   \   0001FB   5007         JNC     ??led_7p7s_value_set_18
+   \   0001FD   90....       MOV     DPTR,#(pin_disp_buf + 2)
+   \   000200   E0           MOVX    A,@DPTR
+   \   000201   D2E3         SETB    0xE0 /* A   */.3
+   \   000203   F0           MOVX    @DPTR,A
+    125              if(disp_buf[4] & ICON_AUX){
+   \                     ??led_7p7s_value_set_18:
+   \   000204   90....       MOV     DPTR,#(disp_buf + 4)
+   \   000207   E0           MOVX    A,@DPTR
+   \   000208   A2E2         MOV     C,0xE0 /* A   */.2
+   \   00020A   500D         JNC     ??led_7p7s_value_set_19
+    126                  pin_disp_buf[0] |= PIN5;
+   \   00020C   90....       MOV     DPTR,#pin_disp_buf
+   \   00020F   12....       LCALL   ?Subroutine1 & 0xFFFF
+    127                  pin_disp_buf[1] |= PIN6;
+   \                     ??CrossCallReturnLabel_10:
+   \   000212   90....       MOV     DPTR,#(pin_disp_buf + 1)
+   \   000215   E0           MOVX    A,@DPTR
+   \   000216   D2E6         SETB    0xE0 /* A   */.6
+   \   000218   F0           MOVX    @DPTR,A
+    128              }
+    129              if(disp_buf[4] & ICON_BT) {      
+   \                     ??led_7p7s_value_set_19:
+   \   000219   90....       MOV     DPTR,#(disp_buf + 4)
+   \   00021C   E0           MOVX    A,@DPTR
+   \   00021D   A2E0         MOV     C,0xE0 /* A   */.0
+   \   00021F   500C         JNC     ??CrossCallReturnLabel_5
+    130                  pin_disp_buf[2] |= PIN5;
+   \   000221   90....       MOV     DPTR,#(pin_disp_buf + 2)
+   \   000224   12....       LCALL   ?Subroutine1 & 0xFFFF
+    131                  pin_disp_buf[6] |= PIN1;
+   \                     ??CrossCallReturnLabel_11:
+   \   000227   90....       MOV     DPTR,#(pin_disp_buf + 6)
+   \   00022A   12....       LCALL   ?Subroutine0 & 0xFFFF
+    132              }
+    133          
+    134              /*if(disp_buf[4] & ICON_PLAY)     pin_disp_buf[0] |= PIN5;
+    135              if(disp_buf[4] & ICON_PAUSE)    pin_disp_buf[2] |= PIN5;
+    136              if(disp_buf[4] & ICON_USB)      pin_disp_buf[5] |= PIN1;
+    137              if(disp_buf[4] & ICON_SD)       pin_disp_buf[0] |= PIN4;
+    138              if(disp_buf[4] & ICON_DOT2)     pin_disp_buf[2] |= PIN3;
+    139              if(disp_buf[4] & ICON_FM) {
+    140                  pin_disp_buf[2] |= PIN6;
+    141                  pin_disp_buf[6] |= PIN4;
+    142              }
+    143              if(disp_buf[4] & ICON_MP3)    pin_disp_buf[6] |= PIN2;*/
+    144          
+    145          #elif (THEME_SELECT == THEME_LEDSEG_7PIN_MHZ)
+    146          
+    147              if(disp_buf[0] & LED_BIT_A)     pin_disp_buf[0] |= PIN1; //设为1，扫描时对应此SEG位设为输出(MHZ)
+    148              if(disp_buf[0] & LED_BIT_B)     pin_disp_buf[0] |= PIN2;
+    149              if(disp_buf[0] & LED_BIT_C)     pin_disp_buf[3] |= PIN0;
+    150              if(disp_buf[0] & LED_BIT_D)     pin_disp_buf[4] |= PIN0;
+    151              if(disp_buf[0] & LED_BIT_E)     pin_disp_buf[0] |= PIN3;
+    152              if(disp_buf[0] & LED_BIT_F)     pin_disp_buf[1] |= PIN0;
+    153              if(disp_buf[0] & LED_BIT_G)     pin_disp_buf[2] |= PIN0;
+    154          
+    155              if(disp_buf[1] & LED_BIT_A)     pin_disp_buf[1] |= PIN2;
+    156              if(disp_buf[1] & LED_BIT_B)     pin_disp_buf[1] |= PIN3;
+    157              if(disp_buf[1] & LED_BIT_C)     pin_disp_buf[4] |= PIN1;
+    158              if(disp_buf[1] & LED_BIT_D)     pin_disp_buf[1] |= PIN5;
+    159              if(disp_buf[1] & LED_BIT_E)     pin_disp_buf[1] |= PIN4;
+    160              if(disp_buf[1] & LED_BIT_F)     pin_disp_buf[2] |= PIN1;
+    161              if(disp_buf[1] & LED_BIT_G)     pin_disp_buf[3] |= PIN1;
+    162          
+    163              if(disp_buf[2] & LED_BIT_A)     pin_disp_buf[4] |= PIN3;
+    164              if(disp_buf[2] & LED_BIT_B)     pin_disp_buf[2] |= PIN4;
+    165              if(disp_buf[2] & LED_BIT_C)     pin_disp_buf[3] |= PIN4;
+    166              if(disp_buf[2] & LED_BIT_D)     pin_disp_buf[5] |= PIN0;
+    167              if(disp_buf[2] & LED_BIT_E)     pin_disp_buf[5] |= PIN2;
+    168              if(disp_buf[2] & LED_BIT_F)     pin_disp_buf[3] |= PIN2;
+    169              if(disp_buf[2] & LED_BIT_G)     pin_disp_buf[4] |= PIN2;
+    170          
+    171              if(disp_buf[3] & LED_BIT_A)     pin_disp_buf[6] |= PIN5;
+    172              if(disp_buf[3] & LED_BIT_B)     pin_disp_buf[5] |= PIN6;
+    173              if(disp_buf[3] & LED_BIT_C)     pin_disp_buf[4] |= PIN5;
+    174              if(disp_buf[3] & LED_BIT_D)     pin_disp_buf[5] |= PIN3;
+    175              if(disp_buf[3] & LED_BIT_E)     pin_disp_buf[3] |= PIN5;
+    176              if(disp_buf[3] & LED_BIT_F)     pin_disp_buf[5] |= PIN4;
+    177              if(disp_buf[3] & LED_BIT_G)     pin_disp_buf[4] |= PIN6;
+    178          
+    179              if(disp_buf[4] & ICON_PLAY)     pin_disp_buf[0] |= PIN5;
+    180              if(disp_buf[4] & ICON_PAUSE)    pin_disp_buf[2] |= PIN5;
+    181              if(disp_buf[4] & ICON_USB)      pin_disp_buf[5] |= PIN1;
+    182              if(disp_buf[4] & ICON_SD)       pin_disp_buf[0] |= PIN4;
+    183              if(disp_buf[4] & ICON_DOT2)     pin_disp_buf[2] |= PIN3;
+    184              if(disp_buf[4] & ICON_FM) {
+    185                  pin_disp_buf[2] |= PIN6;
+    186                  pin_disp_buf[6] |= PIN4;
+    187              }
+    188              if(disp_buf[4] & ICON_MP3)    pin_disp_buf[6] |= PIN2;
+    189          #endif
+    190          
+    191              IE0 = ie0;          //先恢复IE0，此时会关IE_EA
+   \                     ??CrossCallReturnLabel_5:
+   \   00022D   8EA8         MOV     0xa8,R6
+    192              IE1 = ie1;          //再恢复IE1
+   \   00022F   8FA9         MOV     0xa9,R7
+    193              IE_EA = ie_ea;      //恢复总中断
+   \   000231   A2..         MOV     C,?VB.0
+   \   000233   92AF         MOV     0xa8.7,C
+    194          }
+   \   000235   D0..         POP     ?VB
+   \   000237   D0E0         POP     A
+   \   000239   FF           MOV     R7,A
+   \   00023A   D0E0         POP     A
+   \   00023C   FE           MOV     R6,A
+   \   00023D   02....       LJMP    ?BRET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   D2E4         SETB    0xE0 /* A   */.4
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   22           RET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   D2E5         SETB    0xE0 /* A   */.5
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   22           RET
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E0           MOVX    A,@DPTR
+   \   000001   D2E1         SETB    0xE0 /* A   */.1
+   \   000003   F0           MOVX    @DPTR,A
+   \   000004   22           RET
+    195          
+    196          #pragma location="DISP_LEDSEG_SCAN"
+
+   \                                 In segment DISP_LEDSEG_SCAN, align 1, keep-with-next
+    197          __near_func bool led_7p7s_reuse(void)
+   \                     led_7p7s_reuse:
+    198          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    199              bool res = false;
+    200          
+    201          #if (LINEIN_DETECT_EN && LINEIN_SEG_REUSE)
+    202              LINEIN_SEG_ENTER_DETECT();
+    203          #endif
+    204          #if (EAR_DETECT_EN && EAR_SEG_REUSE)
+    205              EAR_SEG_ENTER_DETECT();
+    206          #endif			
+    207              delay(20);  //SYSCLK_24M时,20约为20 uS
+   \   000000                ; Setup parameters for call to function delay
+   \   000000   7A14         MOV     R2,#0x14
+   \   000002   7B00         MOV     R3,#0x0
+   \   000004   12....       LCALL   delay
+    208          #if (LINEIN_DETECT_EN && LINEIN_SEG_REUSE)
+    209              linein_detect();
+    210          #endif
+    211          #if (EAR_DETECT_EN && EAR_SEG_REUSE)
+    212              earphone_detect();
+    213          #endif
+    214          #if (LINEIN_DETECT_EN && LINEIN_SEG_REUSE)
+    215              LINEIN_SEG_EXIT_DETECT();
+    216          #endif
+    217          #if (EAR_DETECT_EN && EAR_SEG_REUSE)
+    218              EAR_SEG_EXIT_DETECT();
+    219          #endif		
+    220          #if ((LINEIN_DETECT_EN && LINEIN_SEG_REUSE) || (EAR_DETECT_EN && EAR_SEG_REUSE))
+    221              res = true;
+    222          #endif	
+    223          
+    224              return res;
+   \   000007   C3           CLR     C
+   \   000008   22           RET
+    225          }
+    226          
+    227          /****************************************
+    228           P34   P27   P24   P23   P21   P20   P12
+    229            |     |     |     |     |     |     |
+    230            1     2     3     4     5     6     7
+    231          ****************************************/
+    232          #pragma location="DISP_LEDSEG_SCAN"
+
+   \                                 In segment DISP_LEDSEG_SCAN, align 1, keep-with-next
+    233          __near_func void led_7p7s_scan(void)
+   \                     led_7p7s_scan:
+    234          {
+   \   000000   7404         MOV     A,#0x4
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 7
+   \   000005                ; Auto size: 0
+    235              static u8 count = 0;
+    236              u8 dis_seg = 0,dir_temp,out_temp,dir_temp2,out_temp2,dir_temp3,out_temp3;
+    237              out_temp = P2 & 0x64;      //把所用到的脚全部置0 (并保存没用到的P2脚原来的电平)
+   \   000005   E5A0         MOV     A,0xa0
+    238              out_temp2 = P1 & 0xFB;
+   \   000007   E590         MOV     A,0x90
+    239              out_temp3 = P3 & 0xEF;
+   \   000009   74EF         MOV     A,#-0x11
+   \   00000B   55B0         ANL     A,0xb0
+   \   00000D   FE           MOV     R6,A
+    240              dir_temp = 0;//P2DIR | 0x9B;   //把所用到的脚全部设为输入 (并保存没用到的P2脚原来的方向)
+    241              dir_temp2 = P1DIR | 0x04;
+   \   00000E   E5BB         MOV     A,0xbb
+    242              dir_temp3 = P3DIR | 0x10;
+   \   000010   7410         MOV     A,#0x10
+   \   000012   45BD         ORL     A,0xbd
+   \   000014   F5..         MOV     ?V0 + 0,A
+   \   000016   8006         SJMP    ??led_7p7s_scan_0
+    243          
+    244              while (1) {
+    245                  if (count > 6) {
+    246                      count = 0;
+    247                      COM_7P7S++;
+    248                  }
+    249                  if(COM_7P7S > 6) {
+    250                      COM_7P7S = 0;
+    251                      if(led_7p7s_reuse())
+    252                          return;
+    253                  }
+    254                  if (tbl_ledseg_valid[COM_7P7S] & BIT(count)) {         //节约CPU，只扫描有效的SEG段
+    255                      break;
+    256                  }
+    257                  count++;
+   \                     ??led_7p7s_scan_1:
+   \   000018   90....       MOV     DPTR,#??count
+   \   00001B   E0           MOVX    A,@DPTR
+   \   00001C   04           INC     A
+   \   00001D   F0           MOVX    @DPTR,A
+   \                     ??led_7p7s_scan_0:
+   \   00001E   90....       MOV     DPTR,#??count
+   \   000021   E0           MOVX    A,@DPTR
+   \   000022   C3           CLR     C
+   \   000023   9407         SUBB    A,#0x7
+   \   000025   4008         JC      ??led_7p7s_scan_2
+   \   000027   E4           CLR     A
+   \   000028   F0           MOVX    @DPTR,A
+   \   000029   90....       MOV     DPTR,#COM_7P7S
+   \   00002C   E0           MOVX    A,@DPTR
+   \   00002D   04           INC     A
+   \   00002E   F0           MOVX    @DPTR,A
+   \                     ??led_7p7s_scan_2:
+   \   00002F   90....       MOV     DPTR,#COM_7P7S
+   \   000032   E0           MOVX    A,@DPTR
+   \   000033   C3           CLR     C
+   \   000034   9407         SUBB    A,#0x7
+   \   000036   4008         JC      ??led_7p7s_scan_3
+   \   000038   E4           CLR     A
+   \   000039   F0           MOVX    @DPTR,A
+   \   00003A                ; Setup parameters for call to function delay
+   \   00003A   7A14         MOV     R2,#0x14
+   \   00003C   FB           MOV     R3,A
+   \   00003D   12....       LCALL   delay
+   \                     ??led_7p7s_scan_3:
+   \   000040   75..01       MOV     ?V0 + 2,#0x1
+   \   000043   75..00       MOV     ?V0 + 3,#0x0
+   \   000046   90....       MOV     DPTR,#??count
+   \   000049   E0           MOVX    A,@DPTR
+   \   00004A   78..         MOV     R0,#?V0 + 2
+   \   00004C   12....       LCALL   ?S_SHL
+   \   00004F   AA..         MOV     R2,?V0 + 2
+   \   000051   90....       MOV     DPTR,#COM_7P7S
+   \   000054   E0           MOVX    A,@DPTR
+   \   000055   F8           MOV     R0,A
+   \   000056   24..         ADD     A,#(tbl_ledseg_valid & 0xff)
+   \   000058   F582         MOV     DPL,A
+   \   00005A   E4           CLR     A
+   \   00005B   34..         ADDC    A,#((tbl_ledseg_valid >> 8) & 0xff)
+   \   00005D   F583         MOV     DPH,A
+   \   00005F   E4           CLR     A
+   \   000060   93           MOVC    A,@A+DPTR
+   \   000061   5A           ANL     A,R2
+   \   000062   60B4         JZ      ??led_7p7s_scan_1
+    258              }
+    259          
+    260              dis_seg = pin_disp_buf[COM_7P7S] & BIT(count);
+    261          
+    262              dir_temp &= ~(((dis_seg & 0x02)<<6) | ((dis_seg & 0x04)<<2) | (dis_seg & 0x08) | ((dis_seg & 0x10)>>3) | ((dis_seg & 0x20)>>5));  //把要显示的段设为输出 (前面已经把所有脚置0)
+    263              dir_temp2 &= ~((dis_seg & 0x40)>>4);         //p12
+    264              dir_temp3 &= ~((dis_seg & 0x01)<<4);         //p34
+   \   000064   E8           MOV     A,R0
+   \   000065   24..         ADD     A,#(pin_disp_buf & 0xff)
+   \   000067   F582         MOV     DPL,A
+   \   000069   E4           CLR     A
+   \   00006A   34..         ADDC    A,#((pin_disp_buf >> 8) & 0xff)
+   \   00006C   F583         MOV     DPH,A
+   \   00006E   E0           MOVX    A,@DPTR
+   \   00006F   A2E0         MOV     C,0xE0 /* A   */.0
+   \   000071   E4           CLR     A
+   \   000072   92E0         MOV     0xE0 /* A   */.0,C
+   \   000074   5A           ANL     A,R2
+   \   000075   5401         ANL     A,#0x1
+   \   000077   C4           SWAP    A
+   \   000078   F4           CPL     A
+   \   000079   52..         ANL     ?V0 + 0,A
+    265          
+    266              if(COM_7P7S == 0)
+   \   00007B   90....       MOV     DPTR,#COM_7P7S
+   \   00007E   E0           MOVX    A,@DPTR
+   \   00007F   700A         JNZ     ??led_7p7s_scan_4
+    267              {
+    268                  dir_temp3 &= ~BIT(4);
+   \   000081   E5..         MOV     A,?V0 + 0
+   \   000083   C2E4         CLR     0xE0 /* A   */.4
+   \   000085   F5..         MOV     ?V0 + 0,A
+    269                  out_temp3 |= BIT(4);
+   \   000087   EE           MOV     A,R6
+   \   000088   D2E4         SETB    0xE0 /* A   */.4
+   \   00008A   FE           MOV     R6,A
+    270              }
+    271              else if(COM_7P7S == 1)
+    272              {
+    273                  dir_temp &= ~BIT(7);
+    274                  out_temp |= BIT(7);
+    275              }
+    276              else if(COM_7P7S == 2)
+    277              {
+    278                  dir_temp &= ~BIT(4);
+    279                  out_temp |= BIT(4);
+    280              }
+    281              else if(COM_7P7S == 3)
+    282              {
+    283                  dir_temp &= ~BIT(3);
+    284                  out_temp |= BIT(3);
+    285              }
+    286              else if(COM_7P7S == 4)
+    287              {
+    288                  dir_temp &= ~BIT(1);
+    289                  out_temp |= BIT(1);
+    290              }
+    291              else if(COM_7P7S == 5)
+    292              {
+    293                  dir_temp &= ~BIT(0);
+    294                  out_temp |= BIT(0);
+    295              }
+    296              else if(COM_7P7S == 6)
+    297              {
+    298                  dir_temp2 &= ~BIT(2);
+    299                  out_temp2 |= BIT(2);
+    300              }
+    301          //    P2 = out_temp;
+    302          //    P2DIR = dir_temp;
+    303          //    P1 = out_temp2;
+    304          //    P1DIR = dir_temp2;
+    305              P3 = out_temp3;
+   \                     ??led_7p7s_scan_4:
+   \   00008B   8EB0         MOV     0xb0,R6
+    306              P3DIR = dir_temp3;
+   \   00008D   85..BD       MOV     0xbd,?V0 + 0
+    307          
+    308              count++;        //扫描下一SEG
+   \   000090   90....       MOV     DPTR,#??count
+   \   000093   E0           MOVX    A,@DPTR
+   \   000094   04           INC     A
+   \   000095   F0           MOVX    @DPTR,A
+    309          }
+   \   000096   7F04         MOV     R7,#0x4
+   \   000098   02....       LJMP    ?FUNC_LEAVE_SP
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+   \                     ??count:
+   \   000000                DS 1
+
+   \                                 In segment SFR_AN, at 0xa8
+   \   union <unnamed> volatile __sfr _A_IE0
+   \                     _A_IE0:
+   \   000000                DS 1
+    310          
+    311          
+    312          
+    313          #endif
+
+   Maximum stack usage in bytes:
+
+     Function           EXT_STACK PSTACK XSTACK
+     --------           --------- ------ ------
+     led_7p7s_init             0      0      0
+       -> my_memset            0      0      0
+       -> my_memset            0      0      0
+     led_7p7s_reuse            0      0      0
+       -> delay                0      0      0
+     led_7p7s_scan             7      0      0
+       -> delay               14      0      0
+     led_7p7s_value_set        3      0      0
+       -> my_memset            6      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     P1                    1
+     P2                    1
+     IE1                   1
+     P3                    1
+     P1DIR                 1
+     P3DIR                 1
+     pin_disp_buf          7
+     led_seg_valid         7
+     COM_7P7S              1
+     tbl_ledseg_valid      7
+     led_7p7s_init        35
+     led_7p7s_value_set  576
+     ?Subroutine2          5
+     ?Subroutine1          5
+     ?Subroutine0          5
+     led_7p7s_reuse        9
+     led_7p7s_scan       155
+     count                 1
+     _A_IE0                1
+
+ 
+ 591 bytes in segment BANKED_CODE
+   7 bytes in segment CODE_C
+ 164 bytes in segment DISP_LEDSEG_SCAN
+  35 bytes in segment DISP_LED_7P7S_SEG
+   7 bytes in segment SFR_AN
+   8 bytes in segment XDATA_N
+   8 bytes in segment XDATA_Z
+ 
+ 797 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 7 bytes shared)
+  16 bytes of XDATA memory
+
+Errors: none
+Warnings: none

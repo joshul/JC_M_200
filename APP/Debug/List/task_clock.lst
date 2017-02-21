@@ -1,0 +1,1103 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:27:56 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_clock.c                                       #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask_clock.c                                       #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task_clock.lst                               #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task_clock.r51                                #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task_clock.c
+      1          /*****************************************************************************
+      2          * Module    : Task
+      3          * File      : task_clock.c
+      4          * Author    : Caiyue_Chen, Hanny
+      5          * Email     :
+      6          * Function  : 日历
+      7          *****************************************************************************/
+      8          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0x9f
+   \   unsigned char volatile __sfr IRTCON
+   \                     IRTCON:
+   \   000000                DS 1
+      9          #include "task.h"
+     10          #include "task_clock.h"
+     11          
+     12          void task_clock_set_inc(void);
+     13          void task_clock_set_dec(void);
+     14          #define ALARM_ITEMS_NUM         3
+     15          
+     16          #if ALARM_EN
+     17          
+     18          #define CLOCK_ITEMS_NUM         4
+     19          
+     20          #else
+     21          
+     22          
+     23          #define CLOCK_ITEMS_NUM         3
+     24          
+     25          #endif
+     26          
+     27          //#define SECS_PER_DAY            86400
+     28          #define DAYS_FOUR_YEAR          1461UL
+     29          #define DAYS_ONE_YEAR           365UL
+     30          #define SECS_PER_HOUR           3600UL
+     31          
+     32          //task clock controller
+
+   \                                 In segment CLOCK_XDATA, align 1, root
+     33          IAR_XDATA_A type_clock_task t_clock @ "CLOCK_XDATA";
+   \                     t_clock:
+   \   000000                DS 13
+     34          
+     35          #include SET_USER_PATH(CFG_UI_CLOCK_DIR, /ui/ui_clock.c)
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_clock_show_display(void)
+   \                     task_clock_show_display:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   90....       MOV     DPTR,#t_clock
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   6008         JZ      ??task_clock_show_display_0
+   \   000006   90....       MOV     DPTR,#task_ctl
+   \   000009   E0           MOVX    A,@DPTR
+   \   00000A   6416         XRL     A,#0x16
+   \   00000C   7016         JNZ     ??task_clock_show_display_1
+   \                     ??task_clock_show_display_0:
+   \   00000E   E59F         MOV     A,0x9f
+   \   000010   A2E3         MOV     C,0xE0 /* A   */.3
+   \   000012   5010         JNC     ??task_clock_show_display_1
+   \   000014   539FF7       ANL     0x9f,#0xf7
+   \   000017                ; Setup parameters for call to function make_time
+   \   000017                ; Setup parameters for call to function irtcc_read_rtc
+   \   000017   79E0         MOV     R1,#-0x20
+   \   000019   12....       LCALL   irtcc_read_rtc & 0xFFFF
+   \   00001C   90....       MOV     DPTR,#(make_time & 0xffff)
+   \   00001F   74..         MOV     A,#((make_time >> 16) & 0xff)
+   \   000021   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_clock_show_display_1:
+   \   000024                ; Setup parameters for call to function ledseg_disp
+   \   000024   7915         MOV     R1,#0x15
+   \   000026   90....       MOV     DPTR,#(ledseg_disp & 0xffff)
+   \   000029   74..         MOV     A,#((ledseg_disp >> 16) & 0xff)
+   \   00002B                REQUIRE ?Subroutine1
+   \   00002B                ; // Fall through to label ?Subroutine1
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \                     ?Subroutine1:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_clock_display(void)
+   \                     task_clock_display:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000                ; Setup parameters for call to function ledseg_ocx_event
+   \   000000   90....       MOV     DPTR,#(ledseg_ocx_event & 0xffff)
+   \   000003   74..         MOV     A,#((ledseg_ocx_event >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000008   90....       MOV     DPTR,#(ledseg_ocx + 2)
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_clock_display>_0`:
+   \   00000F   00           DB        0
+   \   000010   00           DB        0
+   \   000011   ....         DW        ??task_clock_display_0
+   \   000013   ....         DW        ??task_clock_display_1
+   \                     ??task_clock_display_1:
+   \   000015                ; Setup parameters for call to function task_clock_show_display
+   \   000015   90....       MOV     DPTR,#(task_clock_show_display & 0xffff)
+   \   000018   74..         MOV     A,#((task_clock_show_display >> 16) & 0xff)
+   \   00001A   8005         SJMP    ??task_clock_display_2
+   \                     ??task_clock_display_0:
+   \   00001C                ; Setup parameters for call to function ledseg_ocx_display
+   \   00001C   90....       MOV     DPTR,#(ledseg_ocx_display & 0xffff)
+   \   00001F   74..         MOV     A,#((ledseg_ocx_display >> 16) & 0xff)
+   \                     ??task_clock_display_2:
+   \   000021   80..         SJMP    ?Subroutine1
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_clock_deal_msg(u8)
+   \                     task_clock_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_clock_deal_msg>_0`:
+   \   000004   A2           DB        162
+   \   000005   00           DB        0
+   \   000006   ....         DW        ??task_clock_deal_msg_0
+   \   000008   ....         DW        ??task_clock_deal_msg_1
+   \                     ??task_clock_deal_msg_1:
+   \   00000A   E4           CLR     A
+   \   00000B   90....       MOV     DPTR,#(t_clock + 1)
+   \   00000E   F0           MOVX    @DPTR,A
+   \   00000F   7401         MOV     A,#0x1
+   \   000011   90....       MOV     DPTR,#t_clock
+   \   000014   F0           MOVX    @DPTR,A
+   \   000015   E4           CLR     A
+   \   000016   90....       MOV     DPTR,#(t_clock + 8)
+   \   000019   F0           MOVX    @DPTR,A
+   \   00001A                ; Setup parameters for call to function ledseg_ocx_show_setting_clock
+   \   00001A   90....       MOV     DPTR,#(ledseg_ocx_show_setting_clock & 0xffff)
+   \   00001D   74..         MOV     A,#((ledseg_ocx_show_setting_clock >> 16) & 0xff)
+   \   00001F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000022   8003         SJMP    ??task_clock_deal_msg_2
+   \                     ??task_clock_deal_msg_0:
+   \   000024                ; Setup parameters for call to function deal_msg
+   \   000024   12....       LCALL   deal_msg & 0xFFFF
+   \                     ??task_clock_deal_msg_2:
+   \   000027   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \   __banked_func __ext_stack_reentrant void task_clock_set_deal_msg(u8)
+   \                     task_clock_set_deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   E9           MOV     A,R1
+   \   000001   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for task_clock_set_deal_msg>_0`:
+   \   000004   00           DB        0
+   \   000005   0F           DB        15
+   \   000006   01           DB        1
+   \   000007   ....         DW        ??task_clock_set_deal_msg_0
+   \   000009   03           DB        3
+   \   00000A   ....         DW        ??task_clock_set_deal_msg_1
+   \   00000C   11           DB        17
+   \   00000D   ....         DW        ??task_clock_set_deal_msg_0
+   \   00000F   13           DB        19
+   \   000010   ....         DW        ??task_clock_set_deal_msg_1
+   \   000012   82           DB        130
+   \   000013   ....         DW        ??task_clock_set_deal_msg_2
+   \   000015   86           DB        134
+   \   000016   ....         DW        ??task_clock_set_deal_msg_3
+   \   000018   A1           DB        161
+   \   000019   ....         DW        ??task_clock_set_deal_msg_0
+   \   00001B   A2           DB        162
+   \   00001C   ....         DW        ??task_clock_set_deal_msg_4
+   \   00001E   A3           DB        163
+   \   00001F   ....         DW        ??task_clock_set_deal_msg_1
+   \   000021   B1           DB        177
+   \   000022   ....         DW        ??task_clock_set_deal_msg_0
+   \   000024   B3           DB        179
+   \   000025   ....         DW        ??task_clock_set_deal_msg_1
+   \   000027   E1           DB        225
+   \   000028   ....         DW        ??task_clock_set_deal_msg_0
+   \   00002A   E3           DB        227
+   \   00002B   ....         DW        ??task_clock_set_deal_msg_1
+   \   00002D   F1           DB        241
+   \   00002E   ....         DW        ??task_clock_set_deal_msg_0
+   \   000030   F3           DB        243
+   \   000031   ....         DW        ??task_clock_set_deal_msg_1
+   \   000033   ....         DW        ??task_clock_set_deal_msg_5
+   \                     ??task_clock_set_deal_msg_4:
+   \   000035   E4           CLR     A
+   \   000036   90....       MOV     DPTR,#(t_time + 5)
+   \   000039   F0           MOVX    @DPTR,A
+   \   00003A                ; Setup parameters for call to function set_rtc_time
+   \   00003A   90....       MOV     DPTR,#(set_rtc_time & 0xffff)
+   \   00003D   74..         MOV     A,#((set_rtc_time >> 16) & 0xff)
+   \   00003F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??task_clock_set_deal_msg_3:
+   \   000042   E4           CLR     A
+   \   000043   90....       MOV     DPTR,#t_clock
+   \                     ??task_clock_set_deal_msg_6:
+   \   000046   F0           MOVX    @DPTR,A
+   \   000047   8030         SJMP    ??task_clock_set_deal_msg_7
+   \                     ??task_clock_set_deal_msg_2:
+   \   000049   90....       MOV     DPTR,#(t_clock + 1)
+   \   00004C   E0           MOVX    A,@DPTR
+   \   00004D   04           INC     A
+   \   00004E   F0           MOVX    @DPTR,A
+   \   00004F   C3           CLR     C
+   \   000050   9402         SUBB    A,#0x2
+   \   000052   4025         JC      ??task_clock_set_deal_msg_7
+   \   000054   E4           CLR     A
+   \   000055   80EF         SJMP    ??task_clock_set_deal_msg_6
+   \                     ??task_clock_set_deal_msg_0:
+   \   000057                ; Setup parameters for call to function task_clock_set_dec
+   \   000057   90....       MOV     DPTR,#(task_clock_set_dec & 0xffff)
+   \   00005A   74..         MOV     A,#((task_clock_set_dec >> 16) & 0xff)
+   \                     ??task_clock_set_deal_msg_8:
+   \   00005C   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00005F   7401         MOV     A,#0x1
+   \   000061   90....       MOV     DPTR,#(t_clock + 8)
+   \   000064   F0           MOVX    @DPTR,A
+   \   000065                ; Setup parameters for call to function ledseg_ocx_show_setting_clock
+   \   000065   90....       MOV     DPTR,#(ledseg_ocx_show_setting_clock & 0xffff)
+   \   000068   74..         MOV     A,#((ledseg_ocx_show_setting_clock >> 16) & 0xff)
+   \   00006A   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00006D   800A         SJMP    ??task_clock_set_deal_msg_7
+   \                     ??task_clock_set_deal_msg_1:
+   \   00006F                ; Setup parameters for call to function task_clock_set_inc
+   \   00006F   90....       MOV     DPTR,#(task_clock_set_inc & 0xffff)
+   \   000072   74..         MOV     A,#((task_clock_set_inc >> 16) & 0xff)
+   \   000074   80E6         SJMP    ??task_clock_set_deal_msg_8
+   \                     ??task_clock_set_deal_msg_5:
+   \   000076                ; Setup parameters for call to function deal_msg
+   \   000076   12....       LCALL   deal_msg & 0xFFFF
+   \                     ??task_clock_set_deal_msg_7:
+   \   000079   02....       LJMP    ?BRET
+     36          
+     37          void task_clock_event(void);
+     38          
+     39          #if !SYSTEM_TIME_SET
+     40          
+     41          #pragma constseg="LIST_CONTENT"
+
+   \                                 In segment LIST_CONTENT, align 1
+     42          u16 IAR_CONST tbl_clock_items[CLOCK_ITEMS_NUM] ={
+   \                     tbl_clock_items:
+   \   000000   6D00         DW 109
+   \   000002   00000000     DB 0, 0, 0, 0
+     43             // STR_MAIN_CLOCK,             //标题：电子钟
+     44              STR_TIME_SET,              //时钟设置
+     45          #if ALARM_EN
+     46              STR_ALARM_SET,              //闹钟设置
+     47              STR_ALARM_CYCLE,            //闹钟周期
+     48              STR_ALARM_MUSIC,            //闹钟音乐
+     49          #endif
+     50          };
+     51          #endif
+     52          
+     53          #pragma constseg="LIST_CONTENT"     // 这里必须指定位置，不然会显示乱码
+
+   \                                 In segment LIST_CONTENT, align 1
+     54          string IAR_CONST tbl_alarm_music_items[3] ={
+   \                     tbl_alarm_music_items:
+   \   000000   98009900     DW 152, 153, 154
+   \            9A00    
+     55              STR_ALARM_MUSIC,            //title 闹钟音乐
+     56              STR_ALMMUSIC_IN,           //内置音乐
+     57              STR_ALMMUSIC_DISK,           //磁盘音乐
+     58          };
+     59          
+     60          #pragma constseg="LIST_CONTENT"
+
+   \                                 In segment LIST_CONTENT, align 1
+     61          string IAR_CONST tbl_alarmon_items[ALARM_ITEMS_NUM] ={
+   \                     tbl_alarmon_items:
+   \   000000   6E007000     DW 110, 112, 111
+   \            6F00    
+     62              STR_ALARM_SET,              //title 闹钟设置
+     63              STR_ALARM_OFF,              //闹铃关闭
+     64              STR_ALARM_ON,               //闹铃开启
+     65          };
+     66          
+     67          #pragma constseg="CHECK_CONTENT"
+
+   \                                 In segment CHECK_CONTENT, align 1
+     68          string IAR_CONST tbl_clock_week_checkbox[CLOCK_WEEK_NUM] ={
+   \                     tbl_clock_week_checkbox:
+   \   000000   7A007400     DW 122, 116, 117, 118, 119, 120, 121
+   \            75007600
+   \            77007800
+   \            7900    
+     69              STR_SATURDAY,
+     70              STR_SUNDAY,
+     71              STR_MONDAY,
+     72              STR_TUESDAY,
+     73              STR_WEDNESDAY,
+     74              STR_THURSDAY,
+     75              STR_FRIDAY,
+     76          };
+     77          
+     78          enum {
+     79              ITEM_SETTING, ITEM_ALARM, ITEM_ALARM_CYC, ITEM_ALM_MUSIC,
+     80          };
+     81          
+     82          #pragma constseg="TASK_CLOCK_CONST"
+     83          
+
+   \                                 In segment TASK_CLOCK_CONST, align 1
+     84          IAR_CONST u8 day_per_month[12] = {
+   \                     day_per_month:
+   \   000000   1F1C1F1E     DB 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+   \            1F1E1F1F
+   \            1E1F1E1F
+     85              31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+     86          };
+     87          #pragma constseg=default
+     88          
+     89          extern u16 crc_calculate(void *buf, u16 len);
+     90          
+     91          
+     92          #pragma location="TASK_CLOCK_SEG"
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+     93          u8 task_show_time_get_weekday(u8 show_year, u8 show_month, u8 show_day)
+   \                     task_show_time_get_weekday:
+     94          {
+   \   000000   7402         MOV     A,#0x2
+   \   000002   12....       LCALL   ?FUNC_ENTER_SP
+   \   000005                ; Saved register size: 5
+   \   000005                ; Auto size: 0
+     95              u16 days;
+     96              u8 four_year, year;
+     97              u8 month;
+     98              year = show_year;
+     99              four_year = year / 4;
+    100              year = year % 4;
+   \   000005   7403         MOV     A,#0x3
+   \   000007   59           ANL     A,R1
+   \   000008   FF           MOV     R7,A
+    101              days = four_year * DAYS_FOUR_YEAR;
+    102              days += year * DAYS_ONE_YEAR;
+   \   000009   E9           MOV     A,R1
+   \   00000A   13           RRC     A
+   \   00000B   13           RRC     A
+   \   00000C   543F         ANL     A,#0x3f
+   \   00000E   FC           MOV     R4,A
+   \   00000F   75F0B5       MOV     B,#-0x4b
+   \   000012   A4           MUL     AB
+   \   000013   CC           XCH     A,R4
+   \   000014   AEF0         MOV     R6,B
+   \   000016   75F005       MOV     B,#0x5
+   \   000019   A4           MUL     AB
+   \   00001A   2E           ADD     A,R6
+   \   00001B   FD           MOV     R5,A
+   \   00001C   EF           MOV     A,R7
+   \   00001D   F8           MOV     R0,A
+   \   00001E   75F06D       MOV     B,#0x6d
+   \   000021   A4           MUL     AB
+   \   000022   C8           XCH     A,R0
+   \   000023   AEF0         MOV     R6,B
+   \   000025   2E           ADD     A,R6
+   \   000026   F9           MOV     R1,A
+   \   000027   E8           MOV     A,R0
+   \   000028   2C           ADD     A,R4
+   \   000029   F8           MOV     R0,A
+   \   00002A   E9           MOV     A,R1
+   \   00002B   3D           ADDC    A,R5
+   \   00002C   F9           MOV     R1,A
+    103              for (month=0; month!=show_month; month++) {
+   \   00002D   7C00         MOV     R4,#0x0
+   \   00002F   8010         SJMP    ??task_show_time_get_weekday_0
+    104                  days += day_per_month[month];
+   \                     ??task_show_time_get_weekday_1:
+   \   000031   8C..         MOV     ?V0 + 0,R4
+   \   000033   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_0:
+   \   000036   F5..         MOV     ?V0 + 0,A
+   \   000038   E8           MOV     A,R0
+   \   000039   25..         ADD     A,?V0 + 0
+   \   00003B   F8           MOV     R0,A
+   \   00003C   E9           MOV     A,R1
+   \   00003D   3400         ADDC    A,#0x0
+   \   00003F   F9           MOV     R1,A
+    105              }
+   \   000040   0C           INC     R4
+   \                     ??task_show_time_get_weekday_0:
+   \   000041   EA           MOV     A,R2
+   \   000042   6C           XRL     A,R4
+   \   000043   70EC         JNZ     ??task_show_time_get_weekday_1
+    106              if (year !=0 || month >= 2) {
+   \   000045   EF           MOV     A,R7
+   \   000046   7006         JNZ     ??task_show_time_get_weekday_2
+   \   000048   EC           MOV     A,R4
+   \   000049   C3           CLR     C
+   \   00004A   9402         SUBB    A,#0x2
+   \   00004C   4008         JC      ??task_show_time_get_weekday_3
+    107                  days++;
+   \                     ??task_show_time_get_weekday_2:
+   \   00004E   E8           MOV     A,R0
+   \   00004F   2401         ADD     A,#0x1
+   \   000051   08           INC     R0
+   \   000052   E9           MOV     A,R1
+   \   000053   3400         ADDC    A,#0x0
+   \   000055   F9           MOV     R1,A
+    108              }
+    109              days += show_day;
+    110              return (days%7);
+   \                     ??task_show_time_get_weekday_3:
+   \   000056   EB           MOV     A,R3
+   \   000057   28           ADD     A,R0
+   \   000058   F8           MOV     R0,A
+   \   000059   E4           CLR     A
+   \   00005A   39           ADDC    A,R1
+   \   00005B   F9           MOV     R1,A
+   \   00005C   7A07         MOV     R2,#0x7
+   \   00005E   7B00         MOV     R3,#0x0
+   \   000060   12....       LCALL   ?US_DIV_MOD
+   \   000063   EA           MOV     A,R2
+   \   000064   F9           MOV     R1,A
+   \   000065   7F02         MOV     R7,#0x2
+   \   000067   02....       LJMP    ?BANKED_LEAVE_SP
+    111          }
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   E5..         MOV     A,?V0 + 0
+   \                     ??Subroutine0_0:
+   \   000002   24..         ADD     A,#(day_per_month & 0xff)
+   \   000004   F582         MOV     DPL,A
+   \   000006   E4           CLR     A
+   \   000007   34..         ADDC    A,#((day_per_month >> 8) & 0xff)
+   \   000009   F583         MOV     DPH,A
+   \   00000B   E4           CLR     A
+   \   00000C   93           MOVC    A,@A+DPTR
+   \   00000D   22           RET
+    112          
+    113          //获取本月天数
+    114          #pragma location="TASK_CLOCK_SEG"
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+    115          u8 task_show_time_get_month_day(u8 month, u8 year)
+   \                     task_show_time_get_month_day:
+    116          {
+   \   000000                ; Saved register size: 2
+   \   000000                ; Auto size: 0
+    117              u8 ajust = 0;
+   \   000000   7B00         MOV     R3,#0x0
+    118              if (month == 1 && year % 4 == 0) {
+   \   000002   7401         MOV     A,#0x1
+   \   000004   69           XRL     A,R1
+   \   000005   7006         JNZ     ??task_show_time_get_month_day_0
+   \   000007   7403         MOV     A,#0x3
+   \   000009   5A           ANL     A,R2
+   \   00000A   7001         JNZ     ??task_show_time_get_month_day_0
+    119                  //闰年二月。由于年的有效时间为2000 ~ 2099，所以省略400的判断
+    120                  ajust = 1;
+   \   00000C   0B           INC     R3
+    121              }
+    122              return (day_per_month[month] + ajust);
+   \                     ??task_show_time_get_month_day_0:
+   \   00000D   E9           MOV     A,R1
+   \   00000E   12....       LCALL   ??Subroutine0_0
+   \                     ??CrossCallReturnLabel_1:
+   \   000011   2B           ADD     A,R3
+   \   000012   F9           MOV     R1,A
+   \   000013   02....       LJMP    ?BRET
+    123          }
+    124          
+    125          #pragma location="TASK_CLOCK_SEG_1"
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+    126          void task_show_time_init(void)
+   \                     task_show_time_init:
+    127          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    128              make_time(irtcc_read_rtc(READ_RTC));
+   \   000000                ; Setup parameters for call to function make_time
+   \   000000                ; Setup parameters for call to function irtcc_read_rtc
+   \   000000   79E0         MOV     R1,#-0x20
+   \   000002   12....       LCALL   irtcc_read_rtc & 0xFFFF
+   \   000005   90....       MOV     DPTR,#(make_time & 0xffff)
+   \   000008   74..         MOV     A,#((make_time >> 16) & 0xff)
+   \   00000A                REQUIRE ?Subroutine2
+   \   00000A                ; // Fall through to label ?Subroutine2
+    129          #if IS_LCD_DISPLAY
+    130              t_clock.show_year = t_time.year;
+    131              t_clock.show_month = t_time.month;
+    132              t_clock.show_day = t_time.day;
+    133              t_clock.show_wday = task_show_time_get_weekday(t_clock.show_year, t_clock.show_month, t_clock.show_day);
+    134          #endif
+    135          }
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+   \                     ?Subroutine2:
+   \   000000   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000003   02....       LJMP    ?BRET
+    136          
+    137          //任务初始化
+    138          #pragma location="TASK_CLOCK_SEG_1"
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+    139          void task_clock_enter(void)
+   \                     task_clock_enter:
+    140          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    141          #if (WARNING_TASK_CLOCK && TASK_RTC_EN)
+    142              set_sys_clk(SYS_24M);
+    143              if (work_sta_interrupt == TASK_NULL) {
+    144                  dac_enable();
+    145                  mp3_res_play_wait(RES_MP3_CLOCK_MODE);
+    146                  dac_disable();
+    147              }
+    148          #endif
+    149              set_sys_clk(SYS_12M);
+   \   000000                ; Setup parameters for call to function set_sys_clk
+   \   000000   7902         MOV     R1,#0x2
+   \   000002   90....       MOV     DPTR,#(set_sys_clk & 0xffff)
+   \   000005   74..         MOV     A,#((set_sys_clk >> 16) & 0xff)
+   \   000007   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    150              task_ctl.work_sta = TASK_CLOCK;
+   \   00000A   7410         MOV     A,#0x10
+   \   00000C   90....       MOV     DPTR,#task_ctl
+   \   00000F   F0           MOVX    @DPTR,A
+    151              t_clock.sub_sta = STA_SHOW_CLOCK;
+   \   000010   E4           CLR     A
+   \   000011   90....       MOV     DPTR,#t_clock
+   \   000014   F0           MOVX    @DPTR,A
+    152              t_clock.set_sta = 0;
+   \   000015   90....       MOV     DPTR,#(t_clock + 1)
+   \   000018   F0           MOVX    @DPTR,A
+    153              t_clock.index = 0;
+   \   000019   90....       MOV     DPTR,#(t_clock + 2)
+   \   00001C   F0           MOVX    @DPTR,A
+    154          #if TASK_SHOWTIME_EN
+    155              t_clock.back_sec = 0;
+    156          #endif
+    157              work_sta_interrupt = TASK_NULL;
+   \   00001D   90....       MOV     DPTR,#work_sta_interrupt
+   \   000020   F0           MOVX    @DPTR,A
+    158              task_show_time_init();
+   \   000021                ; Setup parameters for call to function task_show_time_init
+   \   000021   90....       MOV     DPTR,#(task_show_time_init & 0xffff)
+   \   000024   74..         MOV     A,#((task_show_time_init >> 16) & 0xff)
+   \   000026   80..         SJMP    ?Subroutine2
+    159          
+    160              //时钟下，显存比较充裕，使用大显存
+    161              set_lcd_buf(LCD_FULL_MODE);
+    162          }
+    163          
+    164          //任务退出
+    165          #pragma location="TASK_CLOCK_SEG_1"
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+    166          void task_clock_exit(void)
+   \                     task_clock_exit:
+    167          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    168          }
+   \   000000   02....       LJMP    ?BRET
+    169          
+    170          //获取本月天数
+    171          #pragma location="TASK_CLOCK_SEG"
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+    172          u8 task_clock_get_month_day(void)
+   \                     task_clock_get_month_day:
+    173          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002                ; Saved register size: 2
+   \   000002                ; Auto size: 0
+    174              u8 ajust = 0;
+   \   000002   7A00         MOV     R2,#0x0
+    175              if (t_time.month == 1 && t_time.year % 4 == 0) {
+   \   000004   90....       MOV     DPTR,#(t_time + 1)
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   F5..         MOV     ?V0 + 0,A
+   \   00000A   7401         MOV     A,#0x1
+   \   00000C   65..         XRL     A,?V0 + 0
+   \   00000E   7009         JNZ     ??task_clock_get_month_day_0
+   \   000010   90....       MOV     DPTR,#t_time
+   \   000013   E0           MOVX    A,@DPTR
+   \   000014   5403         ANL     A,#0x3
+   \   000016   7001         JNZ     ??task_clock_get_month_day_0
+    176                  //闰年二月。由于年的有效时间为2000 ~ 2099，所以省略400的判断
+    177                  ajust = 1;
+   \   000018   0A           INC     R2
+    178              }
+    179              return (day_per_month[t_time.month] + ajust);
+   \                     ??task_clock_get_month_day_0:
+   \   000019   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_2:
+   \   00001C   2A           ADD     A,R2
+   \   00001D   F9           MOV     R1,A
+   \   00001E   D0..         POP     ?V0 + 0
+   \   000020   02....       LJMP    ?BRET
+    180          }
+    181          
+    182          //设置项++
+    183          #pragma location="TASK_CLOCK_SEG_1"
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+    184          void task_clock_set_inc(void)
+   \                     task_clock_set_inc:
+    185          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    186          #if IS_LCD_DISPLAY
+    187              u8 month_day;
+    188          #endif
+    189              switch (t_clock.set_sta) {
+   \   000000   90....       MOV     DPTR,#(t_clock + 1)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_clock_set_inc>_0`:
+   \   000007   00           DB        0
+   \   000008   01           DB        1
+   \   000009   ....         DW        ??task_clock_set_inc_0
+   \   00000B   ....         DW        ??task_clock_set_inc_1
+   \   00000D   ....         DW        ??task_clock_set_inc_2
+    190          #if IS_LCD_DISPLAY
+    191              case STA_SET_TIME_YEAR:
+    192                  t_time.year++;
+    193                  if (t_time.year > 99) {             //year最大只能到99
+    194                      t_time.year = 0;
+    195                  }
+    196                  month_day = task_clock_get_month_day();
+    197                  if (t_time.day >= month_day) {
+    198                      t_time.day = month_day - 1;
+    199                  }
+    200                  break;
+    201              case STA_SET_TIME_MONTH:
+    202                  t_time.month++;
+    203                  if (t_time.month > 11) {
+    204                      t_time.month = 0;
+    205                  }
+    206                  month_day = task_clock_get_month_day();
+    207                  if (t_time.day >= month_day) {
+    208                      t_time.day = month_day - 1;
+    209                  }
+    210                  break;
+    211              case STA_SET_TIME_DAY:
+    212                  t_time.day++;
+    213                  month_day = task_clock_get_month_day();
+    214                  if (t_time.day >= month_day) {
+    215                      t_time.day = 0;
+    216                  }
+    217                  break;
+    218          #endif
+    219              case STA_SET_TIME_HOUR:
+    220                  t_time.hour++;
+   \                     ??task_clock_set_inc_1:
+   \   00000F   90....       MOV     DPTR,#(t_time + 3)
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   04           INC     A
+   \   000014   F0           MOVX    @DPTR,A
+    221                  if (t_time.hour > 23) {
+   \   000015   C3           CLR     C
+   \   000016   9418         SUBB    A,#0x18
+   \   000018   8009         SJMP    ??task_clock_set_inc_3
+    222                      t_time.hour = 0;
+    223                  }
+    224                  break;
+    225              case STA_SET_TIME_MIN:
+    226                  t_time.minute++;
+   \                     ??task_clock_set_inc_2:
+   \   00001A   90....       MOV     DPTR,#(t_time + 4)
+   \   00001D   E0           MOVX    A,@DPTR
+   \   00001E   04           INC     A
+   \   00001F   F0           MOVX    @DPTR,A
+    227                  if (t_time.minute > 59) {
+   \   000020   C3           CLR     C
+   \   000021   943C         SUBB    A,#0x3c
+   \                     ??task_clock_set_inc_3:
+   \   000023   4002         JC      ??task_clock_set_inc_0
+    228                      t_time.minute = 0;
+   \   000025   E4           CLR     A
+   \   000026   F0           MOVX    @DPTR,A
+    229                  }
+    230                  break;
+    231              }
+    232          }
+   \                     ??task_clock_set_inc_0:
+   \   000027   02....       LJMP    ?BRET
+    233          
+    234          //设置项--
+    235          #pragma location="TASK_CLOCK_SEG_1"
+
+   \                                 In segment TASK_CLOCK_SEG_1, align 1, keep-with-next
+    236          void task_clock_set_dec(void)
+   \                     task_clock_set_dec:
+    237          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    238          #if IS_LCD_DISPLAY
+    239              u8 month_day;
+    240          #endif
+    241              switch (t_clock.set_sta) {
+   \   000000   90....       MOV     DPTR,#(t_clock + 1)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_clock_set_dec>_0`:
+   \   000007   00           DB        0
+   \   000008   01           DB        1
+   \   000009   ....         DW        ??task_clock_set_dec_0
+   \   00000B   ....         DW        ??task_clock_set_dec_1
+   \   00000D   ....         DW        ??task_clock_set_dec_2
+    242          #if IS_LCD_DISPLAY
+    243              case STA_SET_TIME_YEAR:
+    244                  if (t_time.year == 0) {             //year最大只能到99
+    245                      t_time.year = 100;
+    246                  }
+    247                  t_time.year--;
+    248                  month_day = task_clock_get_month_day();
+    249                  if (t_time.day >= month_day) {
+    250                      t_time.day = month_day - 1;
+    251                  }
+    252                  break;
+    253              case STA_SET_TIME_MONTH:
+    254                  if (t_time.month == 0) {
+    255                      t_time.month = 12;
+    256                  }
+    257                  t_time.month--;
+    258                  month_day = task_clock_get_month_day();
+    259                  if (t_time.day >= month_day) {
+    260                      t_time.day = month_day - 1;
+    261                  }
+    262                  break;
+    263              case STA_SET_TIME_DAY:
+    264                  month_day = task_clock_get_month_day();
+    265                  if (t_time.day == 0) {
+    266                      t_time.day = month_day;
+    267                  }
+    268                  t_time.day--;
+    269                  break;
+    270          #endif
+    271              case STA_SET_TIME_HOUR:
+    272                  if (t_time.hour == 0) {
+   \                     ??task_clock_set_dec_1:
+   \   00000F   90....       MOV     DPTR,#(t_time + 3)
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   700D         JNZ     ??task_clock_set_dec_3
+    273                      t_time.hour = 24;
+   \   000015   7418         MOV     A,#0x18
+   \   000017   8008         SJMP    ??task_clock_set_dec_4
+    274                  }
+    275                  t_time.hour--;
+    276                  break;
+    277              case STA_SET_TIME_MIN:
+    278                  if (t_time.minute == 0) {
+   \                     ??task_clock_set_dec_2:
+   \   000019   90....       MOV     DPTR,#(t_time + 4)
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   7003         JNZ     ??task_clock_set_dec_3
+    279                      t_time.minute = 60;
+   \   00001F   743C         MOV     A,#0x3c
+   \                     ??task_clock_set_dec_4:
+   \   000021   F0           MOVX    @DPTR,A
+    280                  }
+    281                  t_time.minute--;
+   \                     ??task_clock_set_dec_3:
+   \   000022   E0           MOVX    A,@DPTR
+   \   000023   14           DEC     A
+   \   000024   F0           MOVX    @DPTR,A
+    282                  break;
+    283              }
+    284          }
+   \                     ??task_clock_set_dec_0:
+   \   000025   02....       LJMP    ?BRET
+    285          
+    286          #if FILE_NAV_EN
+    287          #pragma location="TASK_CLOCK_SEG_1"
+    288          void task_clock_alm_music_set(void)
+    289          {
+    290              u8 index;
+    291              u16 f_index;
+    292              u16 name_crc;
+    293              index = listbox(NULL, 3,  NULL, (u16)tbl_alarm_music_items, LIST_TIME);
+    294              if(index<2)
+    295              {
+    296                  if(index == 1)
+    297                  {
+    298                      device_change();
+    299                      if (fs_need_mounted()) {
+    300                          draw_wait();
+    301                          set_sys_clk(SYS_48M);                   //提高主频，加速
+    302                          fs_init();
+    303                          set_sys_clk(SYS_24M);
+    304                      }
+    305                      if (!device_is_actived(fs_cur_dev())) {
+    306                          index = 0;
+    307                          return;
+    308                      }
+    309                      if (!fs_is_mounted()) {
+    310                          index = 0;
+    311                          return;
+    312                      }
+    313                      f_scan_set(SCAN_SUB_FOLDER, &file_filter_music, &dir_filter_music);
+    314                      if(!music_total())
+    315                      {
+    316                          index = 0;
+    317                          return;
+    318                      }
+    319                      f_index = filelist(1, FL_CDUP);
+    320                      if (f_index == 0) {
+    321                          index = 0;
+    322                          return;
+    323                      }
+    324                      else
+    325                      {
+    326          
+    327                          if (!f_open_opt(f_index)) {
+    328                              index = 0;
+    329                              return;
+    330                          }
+    331                          f_get_opt_filename(filename);
+    332                          name_crc = crc_calculate(filename,8);
+    333                          irtcc_write_ram16(ALM_FILE_NUM, f_index);
+    334                          irtcc_write_ram16(ALM_NAME_CRC, name_crc);
+    335                      }
+    336                  }
+    337                  irtcc_write_ram8(ALM_MUSIC_TYPE, index);
+    338              }
+    339          }
+    340          #endif
+    341          
+    342          //任务事件处理
+    343          #pragma location="TASK_CLOCK_SEG"
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+    344          void task_clock_event(void)
+   \                     task_clock_event:
+    345          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    346              comm_event();
+   \   000000                ; Setup parameters for call to function comm_event
+   \   000000   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000003   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000005   02....       LJMP    ?Subroutine1
+    347          #if WARNING_LOWPOWER
+    348              set_sys_clk(SYS_24M);
+    349              if(sys_ctl.lowpower_warning_flag == 1){
+    350                  sys_ctl.lowpower_warning_flag = 2;
+    351                  dac_enable();
+    352                  mp3_res_play_wait(RES_MP3_PLEASE_CHARGE);
+    353                  dac_disable();
+    354              }
+    355          #endif
+    356          }
+    357          
+    358          #pragma constseg="TASK_CLOCK_SEG_CONST"
+
+   \                                 In segment TASK_CLOCK_SEG_CONST, align 1
+    359          IAR_CONST char str_show_taskclock[] = "task_clock\n";
+   \                     str_show_taskclock:
+   \   000000   7461736B     DB "task_clock\012"
+   \            5F636C6F
+   \            636B0A00
+    360          #pragma constseg=default
+    361          //任务主流程
+    362          #pragma location="TASK_CLOCK_SEG"
+
+   \                                 In segment TASK_CLOCK_SEG, align 1, keep-with-next
+    363          void task_clock(void)
+   \                     task_clock:
+    364          {
+   \   000000   EE           MOV     A,R6
+   \   000001   C0E0         PUSH    A
+   \   000003                ; Saved register size: 1
+   \   000003                ; Auto size: 0
+    365              printf(str_show_taskclock);
+   \   000003                ; Setup parameters for call to function my_printf
+   \   000003   7A..         MOV     R2,#(str_show_taskclock & 0xff)
+   \   000005   7B..         MOV     R3,#((str_show_taskclock >> 8) & 0xff)
+   \   000007   12....       LCALL   my_printf & 0xFFFF
+    366              task_clock_enter();
+   \   00000A                ; Setup parameters for call to function task_clock_enter
+   \   00000A   90....       MOV     DPTR,#(task_clock_enter & 0xffff)
+   \   00000D   74..         MOV     A,#((task_clock_enter >> 16) & 0xff)
+   \   00000F   800F         SJMP    ??task_clock_0
+    367              while (task_ctl.work_sta == TASK_CLOCK) {
+    368                  u8 msg = get_msg();
+    369                  task_clock_event();
+    370                  switch (t_clock.sub_sta) {
+    371                  case STA_SHOW_CLOCK:
+    372                      task_clock_deal_msg(msg);
+    373                      break;
+    374          #if !SYSTEM_TIME_SET
+    375                  case STA_SET_CLOCK:
+    376                      task_clock_set_deal_msg(msg);
+   \                     ??task_clock_1:
+   \   000011                ; Setup parameters for call to function task_clock_set_deal_msg
+   \   000011   EE           MOV     A,R6
+   \   000012   F9           MOV     R1,A
+   \   000013   90....       MOV     DPTR,#(task_clock_set_deal_msg & 0xffff)
+   \   000016   74..         MOV     A,#((task_clock_set_deal_msg >> 16) & 0xff)
+   \                     ??task_clock_2:
+   \   000018   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    377                      break;
+    378          #endif
+    379          #if ALARM_EN
+    380                  case STA_SHOW_ALARM:
+    381                      task_clock_alarm_deal_msg(msg);
+    382                      break;
+    383                  case STA_SET_ALARM:
+    384                      task_clock_alarmset_deal_msg(msg);
+    385                      break;
+    386          #endif
+    387                  }
+    388                  task_clock_display();
+   \                     ??task_clock_3:
+   \   00001B                ; Setup parameters for call to function task_clock_display
+   \   00001B   90....       MOV     DPTR,#(task_clock_display & 0xffff)
+   \   00001E   74..         MOV     A,#((task_clock_display >> 16) & 0xff)
+   \                     ??task_clock_0:
+   \   000020   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000023   90....       MOV     DPTR,#task_ctl
+   \   000026   E0           MOVX    A,@DPTR
+   \   000027   6410         XRL     A,#0x10
+   \   000029   7025         JNZ     ??task_clock_4
+   \   00002B                ; Setup parameters for call to function get_msg
+   \   00002B   12....       LCALL   get_msg & 0xFFFF
+   \   00002E   E9           MOV     A,R1
+   \   00002F   FE           MOV     R6,A
+   \   000030                ; Setup parameters for call to function comm_event
+   \   000030   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000033   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   000035   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000038   90....       MOV     DPTR,#t_clock
+   \   00003B   E0           MOVX    A,@DPTR
+   \   00003C   12....       LCALL   ?UC_SWITCH_DENSE
+   \                     `?<Jumptable for task_clock>_0`:
+   \   00003F   00           DB        0
+   \   000040   01           DB        1
+   \   000041   ....         DW        ??task_clock_3
+   \   000043   ....         DW        ??task_clock_5
+   \   000045   ....         DW        ??task_clock_1
+   \                     ??task_clock_5:
+   \   000047                ; Setup parameters for call to function task_clock_deal_msg
+   \   000047   EE           MOV     A,R6
+   \   000048   F9           MOV     R1,A
+   \   000049   90....       MOV     DPTR,#(task_clock_deal_msg & 0xffff)
+   \   00004C   74..         MOV     A,#((task_clock_deal_msg >> 16) & 0xff)
+   \   00004E   80C8         SJMP    ??task_clock_2
+    389              }
+    390              task_clock_exit();
+    391          }
+   \                     ??task_clock_4:
+   \   000050   D0E0         POP     A
+   \   000052   FE           MOV     R6,A
+   \   000053   02....       LJMP    ?BRET
+    392          
+
+   Maximum stack usage in bytes:
+
+     Function                       EXT_STACK PSTACK XSTACK
+     --------                       --------- ------ ------
+     task_clock                            1      0      0
+       -> my_printf                        2      0      0
+       -> task_clock_enter                 2      0      0
+       -> task_clock_set_deal_msg          2      0      0
+       -> task_clock_display               2      0      0
+       -> get_msg                          2      0      0
+       -> comm_event                       2      0      0
+       -> task_clock_deal_msg              2      0      0
+     task_clock_deal_msg                   1      0      0
+       -> ledseg_ocx_show_setting_clock
+                                           0      0      0
+       -> deal_msg                         0      0      0
+     task_clock_display                    1      0      0
+       -> ledseg_ocx_event                 0      0      0
+       -> task_clock_show_display          0      0      0
+       -> ledseg_ocx_display               0      0      0
+     task_clock_enter                      1      0      0
+       -> set_sys_clk                      0      0      0
+       -> task_show_time_init              0      0      0
+     task_clock_event                      0      0      0
+       -> comm_event                       0      0      0
+     task_clock_exit                       0      0      0
+     task_clock_get_month_day              2      0      0
+     task_clock_set_deal_msg               1      0      0
+       -> set_rtc_time                     0      0      0
+       -> task_clock_set_dec               0      0      0
+       -> ledseg_ocx_show_setting_clock
+                                           0      0      0
+       -> task_clock_set_inc               0      0      0
+       -> ledseg_ocx_show_setting_clock
+                                           0      0      0
+       -> deal_msg                         0      0      0
+     task_clock_set_dec                    0      0      0
+     task_clock_set_inc                    0      0      0
+     task_clock_show_display               0      0      0
+       -> irtcc_read_rtc                   0      0      0
+       -> make_time                        0      0      0
+       -> ledseg_disp                      0      0      0
+     task_show_time_get_month_day          2      0      0
+     task_show_time_get_weekday            5      0      0
+     task_show_time_init                   0      0      0
+       -> irtcc_read_rtc                   0      0      0
+       -> make_time                        0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label               Bytes
+     --------------               -----
+     IRTCON                          1
+     t_clock                        13
+     task_clock_show_display        43
+     ?Subroutine1                    6
+     task_clock_display             35
+     task_clock_deal_msg            42
+     task_clock_set_deal_msg       124
+     tbl_clock_items                 6
+     tbl_alarm_music_items           6
+     tbl_alarmon_items               6
+     tbl_clock_week_checkbox        14
+     day_per_month                  12
+     task_show_time_get_weekday    106
+     ?Subroutine0                   14
+     task_show_time_get_month_day   22
+     task_show_time_init            10
+     ?Subroutine2                    6
+     task_clock_enter               40
+     task_clock_exit                 3
+     task_clock_get_month_day       35
+     task_clock_set_inc             42
+     task_clock_set_dec             40
+     task_clock_event                8
+     str_show_taskclock             12
+     task_clock                     86
+
+ 
+  14 bytes in segment CHECK_CONTENT
+  13 bytes in segment CLOCK_XDATA
+  18 bytes in segment LIST_CONTENT
+   1 byte  in segment SFR_AN
+  12 bytes in segment TASK_CLOCK_CONST
+ 521 bytes in segment TASK_CLOCK_SEG
+ 141 bytes in segment TASK_CLOCK_SEG_1
+  12 bytes in segment TASK_CLOCK_SEG_CONST
+ 
+ 718 bytes of CODE  memory
+   0 bytes of DATA  memory (+ 1 byte shared)
+  13 bytes of XDATA memory
+
+Errors: none
+Warnings: none

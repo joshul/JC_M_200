@@ -1,0 +1,965 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_RTC6218.c                          #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_RTC6218.c                          #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm_RTC6218.lst                          #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm_RTC6218.r51                           #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm\user_fm_RTC6218.c
+      1          #include "include.h"
+      2          #include "RTC6218.h"
+      3          #include "user_fm.h"
+      4          /*
+      5          RTC6218收音效果
+      6          a、五十k步进
+      7          RTC62XX_CKHopping  数组倒数第5byte，  越大台越多(可能假台也多了,假台多可以调小它)
+      8          RTC62XX_power_up   数组倒数第1byte，  越大台越多(可能假台也多了,假台多可以调小它)
+      9          b、一百k步进
+     10          RTC62XX_power_up   数组倒数第1、2 byte，  越大台越多(可能假台也多了,假多少可以调小它)
+     11          */
+     12          
+     13          #if (FM_TYPE == FM_RTC6218)
+     14          
+     15          #define RTC62xxDelay
+     16          //#define INTERNAL_XTAL_6218  //增强晶振驱动能力
+     17          #define SINGLE_SETP_SEEK
+     18          
+     19          #define CRYSTAL_32KHz       0
+     20          #define CRYSTAL_12MHz       1
+     21          
+     22          #if (FM_CLK_SEL == P33_OUT_32K)
+     23              #define FM_CLOCK        CRYSTAL_32KHz
+     24          #elif ((FM_CLK_SEL == P33_OUT_12M) || (FM_CLK_SEL == FMOSC_REUSE_12MSDCLK))
+     25              #define FM_CLOCK        CRYSTAL_12MHz
+     26          #else
+     27              #define FM_CLOCK        CRYSTAL_32KHz
+     28          #endif
+     29          
+     30          #if (FM_CLK_SEL != P33_OUT_12M || FM_CLK_SEL == FMOSC_REUSE_12MSDCLK)
+     31              #define INTERNAL_XTAL_6218  //共晶振时增强晶振驱动能力
+     32          #endif
+     33          
+     34          #pragma constseg = "FM_CONST_RTC6218"
+     35          const u8 RTC62XX_turnoff[]= {0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+     36                                       0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+     37                                       0x16,0xAA
+     38                                      };
+     39          const u8 RTC62XX_turnon[] = {0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+     40                                       0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+     41                                       0x96,0xAA
+     42                                      };
+     43          //Bk4_6 [7:0] 50k DC
+     44          const u8  RTC62XX_CKHopping[]= {0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x70,0x01, 0x20,0x00,
+     45                                          0x05,0x0F, 0x0E,0x85, 0x5A,0xA6, 0xDC,0x53, 0x80,0x00, 0x00,0xA3, 0x00,0xA3,
+     46                                          0xD0,0x08, 0x7F,0x80, 0x3C,0x08, 0xA6,0xCF, 0x81,0x00, 0x00,0x00, 0x01,/*0x30、0x20*/0x20,
+     47                                          0x47,0x00, 0x00,0x00		// TP Suggested hopping enable 20131203
+     48                                         };
+     49          const u8  RTC62XX_swbk5[]= {0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x70,0x01, 0x60,0x00,
+     50                                      0x35,0x90, 0x63,0x11, 0x30,0x08, 0x00,0x17, 0x0D,0x79, 0x7D,0x2F, 0x80,0x00,
+     51                                      0x02,0x01, 0x77,0x1F, 0x32,0x41, 0x26,0x28, 0xA5,0x16, 0x86,0x80, 0x00,0x00,
+     52                                      0x00,0x00, 0x00,0x00
+     53                                      };
+     54          // off AFC re-tune
+     55          const u8  RTC62XX_swbk1[]= {0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x70,0x01, 0x40,0x00,
+     56                                      0x14,0x08, 0x01,0x00, 0x03,0x70, 0x00,0x70, 0x00,0x52, 0x02,0xC0, 0x00,0x00,
+     57                                      0x14,0x40, 0x00,0x80, 0x0A,0x40, 0x00,0x00, 0x40,0x02, 0x80,0x5A, 0x0D,0x35,
+     58                                      0x73,0x67, 0x00,0x00
+     59                                     };
+     60          
+     61          #if FM_CLOCK == CRYSTAL_32KHz
+     62              #ifndef INTERNAL_XTAL_6218
+     63              // last byte is spike threshold, the larger the more, recommand under 0x50, default 0x10
+     64              const  u8 RTC62XX_power_up[] = {0xC0,0x00, 0x09,0x00, 0x00,0x00, 0x00,0x0C, 0x80,0x00, 0x00,0x00, 0x00,0x00, 0x40,0x30};
+     65              #else
+     66              const  u8 RTC62XX_power_up[] = {0xC0,0x00, 0x09,0x00, 0x00,0x00, 0x00,0x0C, 0x80,0x00, 0xB4,0x00, 0x00,0x00, 0x40,0x40};  // 76~108MHz
+     67              #endif
+     68          #elif FM_CLOCK == CRYSTAL_12MHz
+     69              #ifndef INTERNAL_XTAL_6218
+     70              // last byte is spike threshold, the larger the more, recommand under 0x50, default 0x10
+     71              const  u8 RTC62XX_power_up[] = {0xC0,0x00, 0x18,0x00, 0x00,0x00, 0x00,0x0C, 0x80,0x01, 0x70,0x00, 0x00,0x00, 0x40,0x20/*0x50*/}; //0x50
+     72              #else
+     73              const  u8 RTC62XX_power_up[] = {0xC0,0x00, 0x18,0x00, 0x00,0x00, 0x00,0x0C, 0x80,0x01, 0xB4,0x00, 0x00,0x00, 0x35,0x20};
+     74              #endif
+     75          #else
+     76              #error "请选择FM_CLOCK"
+     77          #endif
+     78          
+     79          //const  u8 RTC62XX_rPwrOff[] = {0xC0,0x0f,0x04,0x00,0x00,0x00,0x00,0x0c,0xc0,0x00};
+     80          
+     81          #if FM_CLOCK == CRYSTAL_32KHz
+     82              #ifndef INTERNAL_XTAL_6218
+     83              const u8 RTC62XX_Initial_value[] =         {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0xe0,0x00};	// RSSI_TH = 0x0C
+     84              const u8 RTC62XX_Initial_gotobk3value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0xc0,0x00};	// RSSI_TH = 0x0C
+     85              const u8 RTC62XX_Initial_gotobk4value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0x20,0x00};	// RSSI_TH = 0x0C
+     86              #else
+     87              const u8 RTC62XX_Initial_value[] =         {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0xB4,0x00,0xe0,0x00};	// RSSI_TH = 0x0C
+     88              const u8 RTC62XX_Initial_gotobk3value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0xc0,0x00};	// RSSI_TH = 0x0C
+     89              const u8 RTC62XX_Initial_gotobk4value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0x20,0x00};	// RSSI_TH = 0x0C
+     90              #endif
+     91          #elif FM_CLOCK == CRYSTAL_12MHz
+     92              #ifndef INTERNAL_XTAL_6218
+     93              const u8 RTC62XX_Initial_value[] =         {0xC0,0x00,0x18,0x00,0x00,0x00,0x00,0x0c,0x80,0x01,0x70,0x00,0xe0,0x00};  // RSSI_TH = 0x0C
+     94              const u8 RTC62XX_Initial_gotobk3value[] =  {0xC0,0x00,0x18,0x00,0x00,0x00,0x00,0x0c,0x80,0x01,0x70,0x00,0xc0,0x00};  // RSSI_TH = 0x0C
+     95              const u8 RTC62XX_Initial_gotobk4value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0x20,0x00};	// RSSI_TH = 0x0C
+     96              #else
+     97              const u8 RTC62XX_Initial_value[] =         {0xC0,0x00,0x18,0x00,0x00,0x00,0x00,0x0c,0x80,0x01,0xB4,0x00,0xe0,0x00};  // RSSI_TH = 0x0C
+     98              const u8 RTC62XX_Initial_gotobk3value[] =  {0xC0,0x00,0x18,0x00,0x00,0x00,0x00,0x0c,0x80,0x01,0xB4,0x00,0xc0,0x00};  // RSSI_TH = 0x0C
+     99              const u8 RTC62XX_Initial_gotobk4value[] =  {0xC0,0x00,0x09,0x00,0x00,0x00,0x00,0x0c,0x80,0x00,0x00,0x00,0x20,0x00};	// RSSI_TH = 0x0C
+    100              #endif
+    101          #else
+    102              #error "请选择FM_CLOCK"
+    103          #endif
+    104          
+    105          const u8 RTC62XX_Initial_value1[] = {0x00,0x72,0x00,0xFF,0x00,0x1F,0x03,0xFF,0x56,0xD1,0x13,0xB7,0x00,0x00};
+    106          #pragma constseg=default
+    107          
+    108          u8 Spike_Diff_TH = 16;
+    109          u8 g_rssi_th=0x09;			// 20131202 bank5_0 RSSI compensation 0x02A1->0x0201, so RSSI_TH should be decreased 10db
+    110          u8 killed_by_mono_count=0, real_count=0;
+    111          
+    112          
+    113          #pragma location="FM_SEG_RTC6218"
+    114          void RTC6218N_Delay(u16 n)
+    115          {
+    116              while (n--)
+    117                  asm("nop");
+    118          }
+    119          
+    120          #pragma location="FM_SEG_RTC6218"
+    121          void OperationRTC6218N_write(const u8 __code *data, u8 numBytes)
+    122          {
+    123              iic_start();
+    124              iic_sendbyte(0xc8);
+    125              iic_getack();
+    126              for(u8 j = 0; j < numBytes; j++){
+    127                  iic_sendbyte(data[j]);
+    128                  iic_getack();
+    129              }
+    130              RTC6218N_Delay(10);		//delay_5ms(1);
+    131              iic_stop();
+    132          }
+    133          
+    134          #pragma location="FM_SEG_RTC6218"
+    135          void OperationRTC6218N_write_a(u8 *data, u8 numBytes)
+    136          {
+    137              iic_start();
+    138              iic_sendbyte(0xc8);
+    139              iic_getack();
+    140              for(u8 j = 0; j < numBytes; j++){
+    141                  iic_sendbyte(data[j]);
+    142                  iic_getack();
+    143              }
+    144              RTC6218N_Delay(10);		//delay_5ms(1);
+    145              iic_stop();
+    146          }
+    147          
+    148          #pragma location="FM_SEG_RTC6218"
+    149          void OperationRTC6218N_read(u8 *data, u8 numBytes)
+    150          {
+    151              iic_start();
+    152              iic_sendbyte(0xc9);
+    153              iic_getack();
+    154              for(u8 j = 0; j < numBytes; j++){
+    155                  data[j] = iic_getbyte();
+    156                  if(j==numBytes-1){
+    157                      iic_sendnack();
+    158                  }
+    159                  else{
+    160                      iic_sendack();
+    161                  }
+    162              }
+    163              RTC6218N_Delay(10);		//delay_5ms(1);
+    164              iic_stop();
+    165          }
+    166          
+    167          /*************************************************************
+    168          *  Radio get ID
+    169          *
+    170          *************************************************************/
+    171          #pragma location="FM_INIT_RTC6218"
+    172          u8 RTC6218_online(void)
+    173          {
+    174              u8 RTC68XX_reg_data[16];
+    175          
+    176              for(u8 i=0; i<3; i++){      //IIC与其他引脚复用时 FM ID 改为读三次比较保险
+    177                  OperationRTC6218N_read(RTC68XX_reg_data,16);
+    178                  //printf("ID1: 0x%02x , ID2: 0x%02x\n",RTC68XX_reg_data[12],RTC68XX_reg_data[13]);  //此句注释保留在这里，方便调试
+    179                  if (RTC68XX_reg_data[12] == 0x16 && RTC68XX_reg_data[13] == 0x88){
+    180                      RTC6218_init();
+    181                      return 1;
+    182                  }
+    183              }
+    184              return 0;
+    185          }
+    186          
+    187          #pragma location="FM_SEG_RTC6218_1"
+    188          void RTC6218_init_bk3_regf_b_stereo_lowTh(void)
+    189          {
+    190              u8 RTC68XX_reg_data[32+16];
+    191          
+    192          	//printf("RTC6218_init_bk3_regf_b set rb rf value\n\n");
+    193              OperationRTC6218N_write(RTC62XX_Initial_gotobk3value,14);//change bk3
+    194              RTC6218N_Delay(10);		//delay_5ms(1);
+    195              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    196              RTC6218N_Delay(10);		//delay_5ms(1);
+    197              //printf("bk3={\n \n");
+    198              //for(i=0;i<4;i++){
+    199          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    200                       RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    201                       RTC68XX_reg_data[8*i+3], \
+    202          			 RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    203                       RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    204          	//}
+    205              //printf("}\n");
+    206              RTC68XX_reg_data[32]=RTC68XX_reg_data[0];
+    207          	RTC68XX_reg_data[33]=RTC68XX_reg_data[1];
+    208          	RTC68XX_reg_data[34]=0x40;		// changtt : discussed with TP to rollback stereo TH : 0x10
+    209          	RTC68XX_reg_data[35]=0xff;
+    210              RTC68XX_reg_data[36]=RTC68XX_reg_data[4];
+    211          	RTC68XX_reg_data[37]=RTC68XX_reg_data[5];
+    212              RTC68XX_reg_data[38]=RTC68XX_reg_data[6];
+    213          	RTC68XX_reg_data[39]=RTC68XX_reg_data[7];
+    214          	RTC68XX_reg_data[40]=RTC68XX_reg_data[8];
+    215          	RTC68XX_reg_data[41]=RTC68XX_reg_data[9];
+    216          	RTC68XX_reg_data[42]=0x0c;
+    217          	RTC68XX_reg_data[43]=0x40;
+    218              RTC68XX_reg_data[44]=RTC68XX_reg_data[12]; //reg 0
+    219          	RTC68XX_reg_data[45]=RTC68XX_reg_data[13];
+    220          	RTC68XX_reg_data[46]=RTC68XX_reg_data[14]; //reg 1
+    221          	RTC68XX_reg_data[47]=RTC68XX_reg_data[15];
+    222          
+    223              OperationRTC6218N_write_a(RTC68XX_reg_data+16,32);
+    224              RTC6218N_Delay(10);		//delay_5ms(1);
+    225              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    226              RTC6218N_Delay(10);		//delay_5ms(1);
+    227              //printf("read after write low_th bk3={\n");
+    228              //for(u8 i=0;i<4;i++){
+    229          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    230                       RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    231                       RTC68XX_reg_data[8*i+3], \
+    232          			 RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    233                       RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    234          
+    235          	//}
+    236             // //printf("}\n");
+    237              RTC68XX_reg_data[28]=0x00;
+    238          	RTC68XX_reg_data[29]=0x00;
+    239          	OperationRTC6218N_write_a(RTC68XX_reg_data+16,14); //change to bk0
+    240              RTC6218N_Delay(10);		//delay_5ms(1);
+    241          }
+    242          
+    243          #pragma location="FM_SEG_RTC6218_1"
+    244          void RTC6218_init_bk3_regf_b(void)
+    245          {
+    246              u8 RTC68XX_reg_data[32+16];
+    247          
+    248          	//printf("RTC6218_init_bk3_regf_b set default value\n\n\n");
+    249              OperationRTC6218N_write(RTC62XX_Initial_gotobk3value,14);//change bk3
+    250              RTC6218N_Delay(10);		//delay_5ms(1);
+    251              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    252              RTC6218N_Delay(10);		//delay_5ms(1);
+    253              //printf("bk3={\n");
+    254              //for(u8 i=0;i<4;i++){
+    255          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    256                       RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    257                       RTC68XX_reg_data[8*i+3], \
+    258          			 RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    259                       RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    260          	//}
+    261              //printf("}\n\n");
+    262              RTC68XX_reg_data[32]=RTC68XX_reg_data[0];
+    263          	RTC68XX_reg_data[33]=RTC68XX_reg_data[1];
+    264          	RTC68XX_reg_data[34]=0x40;
+    265          	RTC68XX_reg_data[35]=0x40;
+    266              RTC68XX_reg_data[36]=RTC68XX_reg_data[4];
+    267          	RTC68XX_reg_data[37]=RTC68XX_reg_data[5];
+    268              RTC68XX_reg_data[38]=RTC68XX_reg_data[6];
+    269          	RTC68XX_reg_data[39]=RTC68XX_reg_data[7];
+    270          	RTC68XX_reg_data[40]=RTC68XX_reg_data[8];
+    271          	RTC68XX_reg_data[41]=RTC68XX_reg_data[9];
+    272          	RTC68XX_reg_data[42]=0x0d;
+    273          	RTC68XX_reg_data[43]=0x40;
+    274              RTC68XX_reg_data[44]=RTC68XX_reg_data[12]; //reg 0
+    275          	RTC68XX_reg_data[45]=RTC68XX_reg_data[13];
+    276          	RTC68XX_reg_data[46]=RTC68XX_reg_data[14]; //reg 1
+    277          	RTC68XX_reg_data[47]=RTC68XX_reg_data[15];
+    278          
+    279              OperationRTC6218N_write_a(RTC68XX_reg_data+16,32);
+    280              RTC6218N_Delay(10);		//delay_5ms(1);
+    281              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    282              RTC6218N_Delay(10);		//delay_5ms(1);
+    283              //printf("read after write default bk3={\n");
+    284              //for(u8 i=0;i<4;i++){
+    285          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    286                       RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    287                       RTC68XX_reg_data[8*i+3], \
+    288          			 RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    289                       RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    290          
+    291          	//}
+    292             // //printf("}\n\n");
+    293              RTC68XX_reg_data[28]=0x00;
+    294          	RTC68XX_reg_data[29]=0x00;
+    295          	OperationRTC6218N_write_a(RTC68XX_reg_data+16,14); //change to bk0
+    296              RTC6218N_Delay(10);		//delay_5ms(1);
+    297          }
+    298          
+    299          #pragma location="FM_INIT_RTC6218"
+    300          void RTC6218_init(void)
+    301          {
+    302              OperationRTC6218N_write(RTC62XX_turnoff,30);
+    303              delay_5ms(5);
+    304              OperationRTC6218N_write(RTC62XX_turnon,30);
+    305              delay_5ms(40);
+    306              OperationRTC6218N_write(RTC62XX_CKHopping,46);
+    307              RTC6218N_Delay(10);		//delay_5ms(5);
+    308          #if 0
+    309              OperationRTC6218N_write(RTC62XX_swbk5,46);
+    310              RTC6218N_Delay(10);		//delay_5ms(5);
+    311              OperationRTC6218N_write(RTC62XX_swbk1,46);
+    312              RTC6218N_Delay(10);		//delay_5ms(5);
+    313          #endif
+    314              //RTC6218_init_bk3_regf_b();
+    315              //delay_5ms(5);
+    316              OperationRTC6218N_write(RTC62XX_power_up,16);
+    317              RTC6218N_Delay(10);		//delay_5ms(40);
+    318          }
+    319          
+    320          #pragma location="FM_SEG_RTC6218"
+    321          void RTC6218_off(void)
+    322          {
+    323              //OperationRTC6218N_write(RTC62XX_rPwrOff,10);
+    324              //delay_5ms(1);
+    325              OperationRTC6218N_write(RTC62XX_turnoff,30);
+    326              delay_5ms(1);
+    327          }
+    328          
+    329          /**************************************
+    330          
+    331          RTC6218N_Set_Property_FM_Volume()
+    332          
+    333          FM_Volumn: 0~15
+    334          
+    335          ***************************************/
+    336          #pragma location="FM_SEG_RTC6218"
+    337          void RTC6218_set_vol(u8 FM_Volumn)
+    338          {
+    339              // Some FM IC has 17 level, RTC serise only level 16
+    340              /*if (FM_Volumn>0){
+    341                  FM_Volumn--;
+    342              }*/
+    343              u8 RTC62XX_set_property[] = {0xC0,0x0f};
+    344              RTC62XX_set_property[1] = (RTC62XX_set_property[1] & 0xf0) | FM_Volumn;
+    345              OperationRTC6218N_write_a(RTC62XX_set_property,2);
+    346          }
+    347          
+    348          //add by cyrus for debug spike
+    349          #pragma location="FM_SEG_RTC6218_1"
+    350          void key_func_RTC6218_sub_spike(void)
+    351          {
+    352              u8 RTC68XX_reg_data[32];
+    353              delay_5ms(1);
+    354              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    355              delay_5ms(10);
+    356              //printf("key_func_RTC6218_add_spike read1 Spike bank0_r9low=%x\n", RTC68XX_reg_data[31]);
+    357              if((0x30==RTC68XX_reg_data[31])){
+    358          		RTC68XX_reg_data[31] = 0x10;
+    359              }
+    360              else{
+    361          		RTC68XX_reg_data[31]+=4;
+    362          	}
+    363              //printf("key_func_RTC6218_add_spike write Spike bank0_r9low=%x\n", RTC68XX_reg_data[31]);
+    364              OperationRTC6218N_write_a(RTC68XX_reg_data+16,16);
+    365              delay_5ms(40);
+    366              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    367              //printf("key_func_RTC6218_add_spike r after w Spike bank0_r9low=%x\n", RTC68XX_reg_data[31]);
+    368              delay_5ms(5);
+    369          }
+    370          
+    371          //add by cyrus for debug spike
+    372          #pragma location="FM_SEG_RTC6218_1"
+    373          void key_func_RTC6218_sub_50kdc(void)
+    374          {
+    375              u8 RTC68XX_reg_data[32+16];
+    376          
+    377              OperationRTC6218N_write(RTC62XX_Initial_gotobk4value,14);//change bk3
+    378              delay_5ms(1);
+    379              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    380          	//printf("bk4={\n");
+    381              //for(u8 i=0;i<4;i++){
+    382          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    383                      RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    384                      RTC68XX_reg_data[8*i+3], \
+    385          		 	RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    386                     	RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    387          	//}
+    388              //printf("}\n\n");
+    389          	if(0x40==RTC68XX_reg_data[25]){
+    390          		RTC68XX_reg_data[25]=0x10;
+    391          	}
+    392          	else{
+    393          		RTC68XX_reg_data[25]+=4;
+    394          	}
+    395          
+    396              //printf("key_func_RTC6218_add_dc will write dc =0x%02x\n", RTC68XX_reg_data[25]);
+    397              OperationRTC6218N_write_a(RTC68XX_reg_data+16,10);
+    398          
+    399              delay_5ms(1);
+    400              OperationRTC6218N_read(RTC68XX_reg_data,32);
+    401          	//printf("read after write bk4={\n");
+    402              //for(u8 i=0;i<4;i++){
+    403          		//printf("0x%02x%02x,0x%02x%02x,0x%02x%02x,0x%02x%02x,", \
+    404                      RTC68XX_reg_data[8*i+0],RTC68XX_reg_data[8*i+1],RTC68XX_reg_data[8*i+2], \
+    405                      RTC68XX_reg_data[8*i+3], \
+    406          		 	RTC68XX_reg_data[8*i+4],RTC68XX_reg_data[8*i+5], \
+    407                     	RTC68XX_reg_data[8*i+6],RTC68XX_reg_data[8*i+7]);
+    408          	//}
+    409          	RTC68XX_reg_data[28]=0x00;
+    410          	RTC68XX_reg_data[29]=0x00;
+    411          	OperationRTC6218N_write_a(RTC68XX_reg_data+16,14); //change to bk0
+    412              delay_5ms(10);
+    413          }
+    414          
+    415          //add by cyrus for debug rssi threshhold
+    416          #pragma location="FM_SEG_RTC6218_1"
+    417          void key_func_RTC6218_add_rssi_th(void)
+    418          {
+    419              //printf("key_func_RTC6218_add_rssi enter rssi=%x\n", rssi_th);
+    420              if(0x30==g_rssi_th){
+    421          		g_rssi_th = 0x10;
+    422              }
+    423              else{
+    424          		g_rssi_th=+4;
+    425          	}
+    426              //printf("key_func_RTC6218_add_rssi exit rssi=%x\n", rssi_th);
+    427          }
+    428          
+    429          /**************************************
+    430          RTC6218N_FM_Tune_Freq()
+    431          
+    432          channel_freq: 8750~10800
+    433          channel_space: 50,100,200
+    434          ***************************************/
+    435          #pragma location="FM_SEG_RTC6218"
+    436          void RTC6218_set_freq(u16 channel_freq)
+    437          {
+    438              //channel_freq=channel_freq*10;
+    439              u16 freq_reg_data, loop_counter = 0;
+    440              u8 RTC6218N_reg_data[32];
+    441              u8 RTC6218N_channel_start_tune[] = {0xC0,0x00,0x98,0xCA};	//107.7MHz, 76~108
+    442              u8 RTC6218N_channel_stop_tune[] = {0xC0,0x00,0x18,0xCA};
+    443              u8 volume_temp = 0;
+    444              //u8 RSSIValue;
+    445              //int Spike_Count;
+    446              //u16 DC_Count;
+    447          
+    448              // store volume setting for hardware seek complete.
+    449              OperationRTC6218N_read(RTC6218N_reg_data, 18);
+    450              volume_temp = RTC6218N_reg_data[17] & 0x0f;
+    451              //printf("RTC6218_set_freq channel_freq = %d\n", channel_freq);
+    452              RTC6218N_channel_start_tune[1] = (RTC6218N_channel_start_tune[1] & 0xf0) | volume_temp;
+    453              RTC6218N_channel_stop_tune[1] = (RTC6218N_channel_stop_tune[1] & 0xf0) | volume_temp;
+    454          
+    455              //set tune bit
+    456              //freq_reg_data = (channel_freq - 8750)/10;
+    457              //freq_reg_data = (channel_freq - 8750)/5;
+    458              freq_reg_data = (channel_freq - 7600)/5;
+    459              RTC6218N_channel_start_tune[3] = freq_reg_data & 0xff;
+    460              RTC6218N_channel_start_tune[2] = (RTC6218N_channel_start_tune[2] & 0xfc) | (freq_reg_data >> 8);
+    461              RTC6218N_channel_stop_tune[3] = RTC6218N_channel_start_tune[3] ;
+    462          
+    463              RTC6218N_channel_start_tune[2]&= 0x7f;
+    464              OperationRTC6218N_write_a(RTC6218N_channel_start_tune, 4);
+    465              RTC6218N_Delay(10);		//delay_5ms(1);
+    466              RTC6218N_channel_start_tune[2]|= 0x80;
+    467              OperationRTC6218N_write_a(RTC6218N_channel_start_tune, 4);
+    468              do{
+    469          		delay_5ms(8);			// changtt fixed - wait more than 35ms
+    470                  OperationRTC6218N_read(RTC6218N_reg_data, 2);
+    471                  loop_counter++;//printf("loop_counter: 0x%04x\n",loop_counter);
+    472              }
+    473              while(((RTC6218N_reg_data[0]&0x40) == 0) && (loop_counter < 70)); //0xffff  //for loop_counter, when tune, the loop time must > 60ms
+    474              loop_counter = 0;
+    475          
+    476              //clear tune bit
+    477              OperationRTC6218N_write_a(RTC6218N_channel_stop_tune, 4);
+    478              //wait STC=0
+    479              do{
+    480                  OperationRTC6218N_read(RTC6218N_reg_data, 2);
+    481                  loop_counter++;//printf("loop_counter: 0x%02x\n",loop_counter);
+    482              }
+    483              while(((RTC6218N_reg_data[0]&0x40) != 0) && (loop_counter < 0xff));
+    484          
+    485              //debug
+    486              OperationRTC6218N_write(RTC62XX_Initial_value,14);  // change to bk7
+    487              RTC6218N_Delay(10);		//delay_5ms(1);
+    488              OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    489              //Spike_Count = RTC6218N_reg_data[20];
+    490              if(RTC6218N_reg_data[22]&0x2!=0){
+    491          		//DC_Count = (~(((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23])+1) &0x1ff ; //2's complement
+    492              }
+    493              else{
+    494                  //DC_Count = (((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23]);
+    495              }
+    496              OperationRTC6218N_write(RTC62XX_Initial_value1,14); // change to bk0
+    497          
+    498              //printf("Spike_Count_1=%x,DC_Count=%x\n\n", Spike_Count,DC_Count);
+    499          	//printf("bank 7_4 = %x%x\n",RTC6218N_reg_data[20],RTC6218N_reg_data[21]);
+    500          	//printf("bank 7_5 = %x%x\n",RTC6218N_reg_data[22],RTC6218N_reg_data[23]);
+    501              //OperationRTC6218N_read (RTC6218N_reg_data, 4);
+    502              //RSSIValue = RTC6218N_reg_data[3];
+    503              //printf("RSSIValue = %d\n",RSSIValue);
+    504          	//printf("\n\n\n");
+    505          }
+    506          
+    507          #pragma location="FM_SEG_RTC6218_1"
+    508          void RTC6218_set_freq_for_debug_12M_tune(u16 channel_freq)
+    509          {
+    510              //channel_freq=channel_freq*10;
+    511              u16 freq_reg_data, loop_counter = 0;
+    512              u8 RTC6218N_reg_data[32];
+    513              u8 RTC6218N_channel_start_tune[] = {0xC0,0x00,0x98,0xCA};	//107.7MHz, 76~108
+    514              u8 RTC6218N_channel_stop_tune[] = {0xC0,0x00,0x18,0xCA};
+    515              u8 volume_temp = 0;
+    516              //u8 RSSIValue;
+    517              //int Spike_Count;
+    518              //u16 DC_Count;
+    519          
+    520              //store volume setting for hardware seek complete.
+    521              OperationRTC6218N_read(RTC6218N_reg_data, 18);
+    522              volume_temp = RTC6218N_reg_data[17] & 0x0f;
+    523              //printf("channel_freq = %d\n", channel_freq);
+    524              RTC6218N_channel_start_tune[1] = (RTC6218N_channel_start_tune[1] & 0xf0) | volume_temp;
+    525              RTC6218N_channel_stop_tune[1] = (RTC6218N_channel_stop_tune[1] & 0xf0) | volume_temp;
+    526          
+    527              //set tune bit
+    528              //freq_reg_data = (channel_freq - 8750)/10;
+    529              //freq_reg_data = (channel_freq - 8750)/5;
+    530              freq_reg_data = (channel_freq - 7600)/5;
+    531              RTC6218N_channel_start_tune[3] = freq_reg_data & 0xff;
+    532              RTC6218N_channel_start_tune[2] = (RTC6218N_channel_start_tune[2] & 0xfc) | (freq_reg_data >> 8);
+    533              RTC6218N_channel_stop_tune[3] = RTC6218N_channel_start_tune[3] ;
+    534          
+    535              RTC6218N_channel_start_tune[2]&= 0x7f;
+    536              OperationRTC6218N_write_a(RTC6218N_channel_start_tune, 4);
+    537              RTC6218N_Delay(10);		//delay_5ms(1);
+    538              RTC6218N_channel_start_tune[2]|= 0x80;
+    539              OperationRTC6218N_write_a(RTC6218N_channel_start_tune, 4);
+    540              do{
+    541          		delay_5ms(2);			// changtt fixed - wait more than 35ms
+    542                  OperationRTC6218N_read(RTC6218N_reg_data, 2);
+    543                  loop_counter++;
+    544              }
+    545              while(((RTC6218N_reg_data[0]&0x40) == 0) && (loop_counter < 0xffff));		//for loop_counter, when tune, the loop time must > 60ms
+    546              loop_counter = 0;
+    547          
+    548              //debug
+    549              OperationRTC6218N_write(RTC62XX_Initial_value,14);  // change to bk7
+    550              RTC6218N_Delay(10);		//delay_5ms(1);
+    551              OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    552              //Spike_Count = RTC6218N_reg_data[20];
+    553              if(RTC6218N_reg_data[22]&0x2!=0){
+    554                 //DC_Count = (~(((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23])+1) &0x1ff ; //2's complement
+    555              }
+    556              else{
+    557                 //DC_Count = (((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23]);
+    558              }
+    559              OperationRTC6218N_write(RTC62XX_Initial_value1,14); // change to bk0
+    560          
+    561              //printf("Spike_Count_1=%x\n", Spike_Count);
+    562              //printf("DC_Count=%x\n", DC_Count);
+    563          	//printf("stc=1 bank 7_1 = 0x%x%x\n",RTC6218N_reg_data[14],RTC6218N_reg_data[15]);
+    564          	//printf("stc=1 bank 7_3 = 0x%x%x\n",RTC6218N_reg_data[18],RTC6218N_reg_data[19]);
+    565          	//printf("stc=1 bank 7_4 = 0x%x%x\n",RTC6218N_reg_data[20],RTC6218N_reg_data[21]);
+    566          	//printf("stc=1 bank 7_5 = 0x%x%x\n",RTC6218N_reg_data[22],RTC6218N_reg_data[23]);
+    567              //OperationRTC6218N_read (RTC6218N_reg_data, 4);
+    568              //RSSIValue = RTC6218N_reg_data[3];
+    569              //printf("RSSIValue = %d\n",RSSIValue);
+    570          	
+    571              //clear tune bit
+    572              OperationRTC6218N_write_a(RTC6218N_channel_stop_tune, 4);
+    573              //wait STC=0
+    574              do{
+    575                  OperationRTC6218N_read(RTC6218N_reg_data, 2);
+    576                  loop_counter++;
+    577              }while(((RTC6218N_reg_data[0]&0x40) != 0) && (loop_counter < 0xff));
+    578          
+    579              OperationRTC6218N_write(RTC62XX_Initial_value,14);  // change to bk7
+    580              RTC6218N_Delay(10);		//delay_5ms(1);
+    581              OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    582              //Spike_Count = RTC6218N_reg_data[20];
+    583              if(RTC6218N_reg_data[22]&0x2!=0){
+    584                 //DC_Count = (~(((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23])+1) &0x1ff ; //2's complement
+    585              }
+    586              else{
+    587                 //DC_Count = (((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23]);
+    588              }
+    589              OperationRTC6218N_write(RTC62XX_Initial_value1,14); // change to bk0
+    590          
+    591              //printf("Spike_Count_1=%x\n", Spike_Count);
+    592              //printf("DC_Count=%x\n", DC_Count);
+    593          	//printf("stc=0 bank 7_1 = 0x%x%x\n",RTC6218N_reg_data[14],RTC6218N_reg_data[15]);
+    594          	//printf("stc=0 bank 7_3 = 0x%x%x\n",RTC6218N_reg_data[18],RTC6218N_reg_data[19]);
+    595          	//printf("stc=0 bank 7_4 = 0x%x%x\n",RTC6218N_reg_data[20],RTC6218N_reg_data[21]);
+    596          	//printf("stc=0 bank 7_5 = 0x%x%x\n",RTC6218N_reg_data[22],RTC6218N_reg_data[23]);
+    597          	//printf("bank 7_5 = 0x%x%x\n",RTC6218N_reg_data[22],RTC6218N_reg_data[23]);
+    598              //OperationRTC6218N_read (RTC6218N_reg_data, 4);
+    599              //RSSIValue = RTC6218N_reg_data[3];
+    600              //printf("RSSIValue = %d\n",RSSIValue);
+    601              //printf("\n\n\n");
+    602          }
+    603          
+    604          /**************************************
+    605          RTC6218N_myabs()
+    606          ***************************************/
+    607          int myabs(int i)
+    608          {
+    609              return i < 0 ? -i : i;
+    610          }
+    611          
+    612          /**************************************
+    613          RTC6218N_FM_Tune_Freq()
+    614          
+    615          channel_freq: 8750~10800
+    616          channel_space: 50,100,200
+    617          ***************************************/
+    618          #if 0
+    619          
+    620          #pragma location="FM_SEG_RTC6218"
+    621          u8 RTC6218_seek(u16 channel_freq)
+    622          {
+    623              u8 RTC6218N_reg_data[32];
+    624              u8 RSSIValue;
+    625          
+    626              if (channel_freq==960){
+    627                return 0;
+    628              }
+    629          
+    630              RTC6218_set_freq(channel_freq);
+    631          
+    632              OperationRTC6218N_write(RTC62XX_Initial_value,14);
+    633              delay_5ms(1);
+    634              OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    635              OperationRTC6218N_write(RTC62XX_Initial_value1,14);
+    636              delay_5ms(1);
+    637              if((RTC6218N_reg_data[22]&0x80)!= 0){
+    638                  return 0;
+    639              }
+    640              OperationRTC6218N_read (RTC6218N_reg_data, 4);
+    641              RSSIValue = RTC6218N_reg_data[3];
+    642          		
+    643              //printf("channel_freq=%d, RSSIValue= %d\n", channel_freq, RSSIValue); //cloud add
+    644          
+    645              if(RSSIValue > RTC62XX_Initial_value[7]){
+    646                  return 1;
+    647              }
+    648              else{
+    649                  return 0;
+    650              }
+    651          }
+    652          
+    653          #else
+    654          
+    655          /***********************************************************************
+    656          //1、RTC6218搜台函数
+    657          //2、返回值说明：
+    658          //		0表示非真台；
+    659          //		1表示所搜频率为真台且下一个搜索频率增加步进为50KHz；
+    660          //		2表示(所搜频率+50KHz)为真台且下一个搜索频率增加步进为100KHz；
+    661          //3、补充说明：
+    662          		返回值分开1和2是为了减少重复台；
+    663          ***********************************************************************/
+    664          #pragma location="TASK_FMPLAY_SEG"
+    665          __near_func u8 RTC6218_seek(u16 channel_freq)
+    666          {
+    667          	bool g_need_st_judge = 0;
+    668              u8 RTC6218N_reg_data[24];
+    669              u8 /*RSSIValue= 0,*/Stereo_flag= 0;
+    670              //int Spike_Count_1=0;//, Spike_Count_2=0, Spike_Count_3=0;
+    671              u16 DC_Count_1=0, DC_Count_2=0, /*DC_Count_3=0,*/ min_DC=0;
+    672          	u8 readCnt=10,stereoCount=0;
+    673          	u8 shiftindex=0;
+    674              //printf("%d>",channel_freq);
+    675          #if 1  //收台时跳过一些干绕频点
+    676              if ((channel_freq==9600  /*9595*/) || (channel_freq==10800 /*10795*/)){
+    677                return 0;
+    678              }
+    679          #endif
+    680          
+    681              if ((channel_freq==9000) ||(channel_freq==9595) || (channel_freq==9600) || (channel_freq == 9615) \
+    682                  || (channel_freq == 9620)|| (channel_freq == 9645)||(channel_freq >= 10790))
+    683              {
+    684                //return 0;
+    685                  g_need_st_judge = 1;
+    686              }
+    687              else
+    688              {
+    689                  g_need_st_judge = 0;
+    690              }
+    691          
+    692          
+    693          	if(8740 == channel_freq){
+    694          		RTC6218_init_bk3_regf_b_stereo_lowTh();
+    695          	}
+    696              //printf("\t%d\n", channel_freq);
+    697              RTC6218_set_freq(channel_freq);
+    698          
+    699              OperationRTC6218N_write(RTC62XX_Initial_value,14);  // change to bk7
+    700              RTC6218N_Delay(10);		//delay_5ms(1);
+    701              OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    702              //Spike_Count_1 = RTC6218N_reg_data[20];
+    703              if(RTC6218N_reg_data[22]&0x2!=0){
+    704                  DC_Count_1 = (~(((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23])+1) &0x1ff; //2's complement
+    705              }
+    706              else{
+    707                  DC_Count_1 = (((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23]); //2's complement
+    708              }
+    709          
+    710          
+    711          
+    712          
+    713              OperationRTC6218N_write(RTC62XX_Initial_value1,14); // change to bk0
+    714          
+    715              if((RTC6218N_reg_data[22]&0x80)== 0)
+    716              {
+    717                  //printf("%02d\t",real_count+killed_by_mono_count+1);
+    718                  //printf("%5d \t",channel_freq);
+    719                  //printf("0x%02x\t0x%02x\t", DC_Count_1,Spike_Count_1);
+    720          
+    721                  // tune second station
+    722                  //printf("RTC6218_seek set channel_freq = %d+5 first\n", channel_freq);
+    723                  RTC6218_set_freq(channel_freq + 5);  // if seek down channel_freq - 5
+    724                  OperationRTC6218N_write(RTC62XX_Initial_value,14);  // change to bk7
+    725              	RTC6218N_Delay(10);		//delay_5ms(1);
+    726                  OperationRTC6218N_read (RTC6218N_reg_data, 24);	// Readout (BK7_5[15])
+    727                  //Spike_Count_2 = RTC6218N_reg_data[20];
+    728                  if(RTC6218N_reg_data[22]&0x2!=0){
+    729                     DC_Count_2 = (~(((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23])+1) &0x1ff; //2's complement
+    730                  }
+    731                  else{
+    732                     DC_Count_2 = (((RTC6218N_reg_data[22]& 0x1)<<8) | RTC6218N_reg_data[23]); //2's complement
+    733                  }
+    734                  OperationRTC6218N_write(RTC62XX_Initial_value1,14); // change to bk0
+    735          
+    736          		if((RTC6218N_reg_data[22]&0x80)== 0)
+    737          	    //if(myabs(Spike_Count_1-Spike_Count_2)<Spike_Diff_TH || myabs(Spike_Count_2-Spike_Count_3)<Spike_Diff_TH)
+    738                  {
+    739                      //printf("%5d \t",channel_freq+5);
+    740                      //printf("0x%02x\t0x%02x\t", DC_Count_2,Spike_Count_2);
+    741                      // select minimun DC
+    742          
+    743                      //min_DC =  ((DC_Count_1<DC_Count_2)&&(DC_Count_1<DC_Count_3))?DC_Count_1:((DC_Count_2<DC_Count_3)?DC_Count_2:DC_Count_3);
+    744          			min_DC =  (DC_Count_1<DC_Count_2) ? DC_Count_1 : DC_Count_2;
+    745          	
+    746          			//printf("min_DC=%x\n",min_DC);
+    747          
+    748          			if(min_DC == DC_Count_1){
+    749                        #ifdef SINGLE_SETP_SEEK
+    750          			  //printf("RTC6218_seek set channel_freq = %d second,min_DC=%d\n", channel_freq,min_DC);
+    751                        RTC6218_set_freq(channel_freq);
+    752          			  shiftindex = 0;
+    753                        //printf("+5\t");
+    754                        #endif
+    755                      }
+    756                      else if(min_DC == DC_Count_2){
+    757                        #ifdef SINGLE_SETP_SEEK
+    758          			  //printf("RTC6218_seek set channel_freq = %d+5 second,min_DC=%d\n", channel_freq,min_DC);	
+    759                        RTC6218_set_freq(channel_freq+5);
+    760          			  shiftindex = 1;
+    761                        //printf("+10\t");
+    762                        #endif
+    763                      }
+    764                  }
+    765          		else
+    766          		{
+    767                    //printf("first station got\n");
+    768                      //printf("\t\t\t");
+    769                      //printf("\t\t");
+    770                      //printf("+5\t");
+    771          		  RTC6218_set_freq(channel_freq);
+    772          		  shiftindex = 0;
+    773          		}//end of "if((RTC6218N_reg_data[22]&0x80)== 0)"
+    774          
+    775              	RTC6218N_Delay(10);		//delay_5ms(1);
+    776              	OperationRTC6218N_read (RTC6218N_reg_data, 4);
+    777              	//RSSIValue = RTC6218N_reg_data[3];
+    778          		//return 1+shiftindex;
+    779          		
+    780                  //printf("%d\n",RSSIValue);
+    781          
+    782          
+    783          
+    784                  //if(RSSIValue > g_rssi_th)
+    785                  if(g_need_st_judge)
+    786                  {
+    787                  #if 1
+    788                      //delay_5ms(200);
+    789                      //delay_5ms(60);
+    790                      for(readCnt=10;readCnt>0;readCnt--)//stereo标志位需要300ms才刷新一次，且不太可靠故读10次中有3次则认为是立体声台
+    791                      {
+    792                          delay_5ms(60);//300ms
+    793                          OperationRTC6218N_read (RTC6218N_reg_data, 2);
+    794                          //printf("reg0x10= 0x%02x%02x\n",RTC6218N_reg_data[0],RTC6218N_reg_data[1]);
+    795                          Stereo_flag = (RTC6218N_reg_data[0]&0x04)>>2;
+    796                          //printf("%1d",Stereo_flag);
+    797          
+    798                          stereoCount += ((Stereo_flag) ? 1:0);
+    799          
+    800          
+    801                          if(stereoCount >= 3)
+    802                          {
+    803                              break;
+    804                          }
+    805                      }
+    806          			//printf("|%d\t %d \t",stereoCount,RSSIValue);
+    807                      if(stereoCount >= 3)
+    808                      {
+    809                          real_count++;
+    810                          //printf("Real \t\n");
+    811          
+    812                          //printf("real and stereo real_count = %d,stereoCount=%d\n",real_count,stereoCount);
+    813                         if(10785 == channel_freq)
+    814                         {
+    815                            RTC6218_init_bk3_regf_b();
+    816                         }
+    817                         // RTC6218_set_vol(15);    //搜索到真台后设为最大音量，程序里让其自动播放一小段时间
+    818                         return 1+shiftindex;
+    819                      }
+    820                      else
+    821                      {
+    822                          //printf("killed \t \n");
+    823          
+    824                          killed_by_mono_count++;
+    825                          //printf("killed couse of mono count++ = %d\n",killed_by_mono_count);
+    826                          if(10785 == channel_freq)
+    827                          {
+    828                              RTC6218_init_bk3_regf_b();
+    829                         	}
+    830                         return 0;
+    831                      }
+    832          
+    833          
+    834          
+    835          
+    836                  #else
+    837                    return 1;
+    838                  #endif
+    839                  }
+    840                  else // else of "if(g_need_st_judge)"
+    841                  {
+    842                      if(10785 == channel_freq)
+    843                      {
+    844                          RTC6218_init_bk3_regf_b();
+    845                      }
+    846                      real_count++;
+    847                       //printf("\n");
+    848                      return 1+shiftindex;
+    849                  }
+    850              }
+    851          	else //else of first"if((RTC6218N_reg_data[22]&0x80)== 0)"
+    852          	{
+    853                  if(10785 == channel_freq){
+    854          			RTC6218_init_bk3_regf_b();
+    855                  }
+    856          		return 0;
+    857          	}
+    858          }
+    859          
+    860          #pragma location="FM_SEG_RTC6218_1"
+    861          u8 RTC6218_seek_fortest(u16 channel_freq)
+    862          {
+    863              //u8 RTC6218N_reg_data[24];
+    864              //u8 RSSIValue;
+    865              //int Spike_Count_1=0, Spike_Count_2=0, Spike_Count_3=0;
+    866              //u16 DC_Count_1=0, DC_Count_2=0, DC_Count_3=0, min_DC=0;
+    867          	uint8 i=0;
+    868          
+    869              if ((channel_freq==9595) || (channel_freq==9600) || (channel_freq >= 10790)){
+    870                return 0;
+    871              }
+    872          
+    873              channel_freq= 9845;
+    874              for(i=0;i<20;i++){
+    875              	delay_5ms(1);
+    876              	RTC6218_set_freq_for_debug_12M_tune(channel_freq);
+    877          	}
+    878          
+    879          	channel_freq= 9850;
+    880              for(i=0;i<20;i++){
+    881              	delay_5ms(1);
+    882              	RTC6218_set_freq_for_debug_12M_tune(channel_freq);
+    883          	}
+    884          
+    885          	channel_freq= 9200;
+    886              for(i=0;i<20;i++){
+    887              	delay_5ms(1);
+    888              	RTC6218_set_freq_for_debug_12M_tune(channel_freq);
+    889          	}
+    890          
+    891              while(1){
+    892              };
+    893          }
+    894          #endif
+    895          
+    896          #endif
+    897          
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,1389 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   28/Jun/2016  10:44:30 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask.c                                             #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\t #
+#                          ask.c                                             #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\task.lst                                     #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\task.r51                                      #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\task\task.c
+      1          /*****************************************************************************
+      2          * Module    : Task
+      3          * File      : task.c
+      4          * Author    : Hanny
+      5          * Function  : 任务控制器
+      6          *****************************************************************************/
+      7          #include "include.h"
+
+   \                                 In segment SFR_AN, at 0xf7
+   \   unsigned char volatile __sfr WDTCON
+   \                     WDTCON:
+   \   000000                DS 1
+      8          #include "task.h"
+      9          #include "user_tas5711.h"
+     10          
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     11          type_task_ctl task_ctl;
+   \                     task_ctl:
+   \   000000                DS 5
+     12          void BtMainLoop(void);
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     13          type_move_ctl move_ctl;
+   \                     move_ctl:
+   \   000000                DS 11
+
+   \                                 In segment XDATA_Z, align 1, keep-with-next
+   \   000000                REQUIRE __INIT_XDATA_Z
+     14          u8 work_sta_interrupt = TASK_NULL;          //电话中断标志
+   \                     work_sta_interrupt:
+   \   000000                DS 1
+     15          extern void bt_pincode_init(void);
+     16          extern void task_init(void);
+     17          
+     18          //任务切换顺序表
+     19          #pragma constseg="TASK_CONST"
+
+   \                                 In segment TASK_CONST, align 1
+     20          IAR_CONST u8 tbl_task_order[] = {
+   \                     tbl_task_order:
+   \   000000   0203040D     DB 2, 3, 4, 13, 5
+   \            05      
+     21          
+     22          #if TASK_AUX_EN
+     23              TASK_AUX, 
+     24              TASK_COAX,
+     25              TASK_OPTI,
+     26          #if 0    
+     27              TASK_AUX2,
+     28              TASK_AUX3,
+     29          #endif   
+     30          #endif
+     31          #if TASK_BT_EN && (!MP3BT_DECT_EN)
+     32              TASK_BT,
+     33          #endif
+     34          #if TASK_BTHID_EN && (!MP3BT_DECT_EN)
+     35              TASK_BT_HID,
+     36          #endif    
+     37          #if TASK_MUSIC_EN
+     38              TASK_MUSIC,
+     39          #endif
+     40          #if TASK_VOICE_EN
+     41              TASK_VOICE,
+     42          #endif
+     43          #if TASK_MIC_EN
+     44              TASK_MIC,
+     45          #endif
+     46          #if TASK_FM_EN
+     47              TASK_FM,
+     48          #endif
+     49          
+     50          #if TASK_AUX_EQ_EN
+     51              TASK_AUX_EQ,
+     52          #endif
+     53          #if TASK_SPEAKER_EN
+     54              TASK_SPEAKER,
+     55          #endif
+     56          #if TASK_TOMCAT_EN
+     57              TASK_TOMCAT,
+     58          #endif
+     59          #if TASK_RTC_EN
+     60              TASK_CLOCK,
+     61          #endif
+     62          #if TASK_USBDEV_EN
+     63              TASK_USBDEV,
+     64          #endif
+     65          
+     66          };
+     67          #pragma constseg=default
+     68          #define TASK_TOTAL  sizeof(tbl_task_order)
+     69          
+     70          #include SET_USER_PATH(CFG_UI_COMM_DIR, /ui/ui_comm.c)         //UI控制
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+   \   __near_func __ext_stack_reentrant void deal_msg(u8)
+   \                     deal_msg:
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+   \   000000   C2F0         CLR     B.0
+   \   000002   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000005   E0           MOVX    A,@DPTR
+   \   000006   FA           MOV     R2,A
+   \   000007   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   FB           MOV     R3,A
+   \   00000C   E9           MOV     A,R1
+   \   00000D   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for deal_msg>_0`:
+   \   000010   00           DB        0
+   \   000011   13           DB        19
+   \   000012   04           DB        4
+   \   000013   ....         DW        ??deal_msg_0
+   \   000015   05           DB        5
+   \   000016   ....         DW        ??deal_msg_1
+   \   000018   0A           DB        10
+   \   000019   ....         DW        ??deal_msg_2
+   \   00001B   0B           DB        11
+   \   00001C   ....         DW        ??deal_msg_3
+   \   00001E   0C           DB        12
+   \   00001F   ....         DW        ??deal_msg_4
+   \   000021   0D           DB        13
+   \   000022   ....         DW        ??deal_msg_5
+   \   000024   0F           DB        15
+   \   000025   ....         DW        ??deal_msg_6
+   \   000027   15           DB        21
+   \   000028   ....         DW        ??deal_msg_7
+   \   00002A   2D           DB        45
+   \   00002B   ....         DW        ??deal_msg_8
+   \   00002D   7D           DB        125
+   \   00002E   ....         DW        ??deal_msg_9
+   \   000030   86           DB        134
+   \   000031   ....         DW        ??deal_msg_10
+   \   000033   87           DB        135
+   \   000034   ....         DW        ??deal_msg_11
+   \   000036   89           DB        137
+   \   000037   ....         DW        ??deal_msg_12
+   \   000039   8E           DB        142
+   \   00003A   ....         DW        ??deal_msg_13
+   \   00003C   A4           DB        164
+   \   00003D   ....         DW        ??deal_msg_0
+   \   00003F   A5           DB        165
+   \   000040   ....         DW        ??deal_msg_1
+   \   000042   AE           DB        174
+   \   000043   ....         DW        ??deal_msg_14
+   \   000045   E4           DB        228
+   \   000046   ....         DW        ??deal_msg_0
+   \   000048   E5           DB        229
+   \   000049   ....         DW        ??deal_msg_1
+   \   00004B   ....         DW        ??deal_msg_15
+   \                     ??deal_msg_13:
+   \   00004D   EB           MOV     A,R3
+   \   00004E   6003         JZ      $+5
+   \   000050   02....       LJMP    ??deal_msg_15
+   \   000053   7401         MOV     A,#0x1
+   \   000055   90....       MOV     DPTR,#(sys_ctl + 61)
+   \   000058   F0           MOVX    @DPTR,A
+   \   000059   02....       LJMP    ??deal_msg_16
+   \                     ??deal_msg_14:
+   \   00005C   EB           MOV     A,R3
+   \   00005D   6003         JZ      $+5
+   \   00005F   02....       LJMP    ??deal_msg_15
+   \   000062                ; Setup parameters for call to function ledseg_ocx_show_version
+   \   000062   90....       MOV     DPTR,#(ledseg_ocx_show_version & 0xffff)
+   \   000065   74..         MOV     A,#((ledseg_ocx_show_version >> 16) & 0xff)
+   \   000067   02....       LJMP    ??deal_msg_17
+   \                     ??deal_msg_12:
+   \   00006A   741A         MOV     A,#0x1a
+   \   00006C   02....       LJMP    ??deal_msg_18
+   \                     ??deal_msg_11:
+   \   00006F   EB           MOV     A,R3
+   \   000070   6003         JZ      $+5
+   \   000072   02....       LJMP    ??deal_msg_15
+   \   000075   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   000078   E0           MOVX    A,@DPTR
+   \   000079   04           INC     A
+   \   00007A   F0           MOVX    @DPTR,A
+   \   00007B   90....       MOV     DPTR,#task_ctl
+   \   00007E   E0           MOVX    A,@DPTR
+   \   00007F   6405         XRL     A,#0x5
+   \   000081   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   000084   701F         JNZ     ??deal_msg_19
+   \   000086   E0           MOVX    A,@DPTR
+   \   000087   FA           MOV     R2,A
+   \   000088   C3           CLR     C
+   \   000089   9406         SUBB    A,#0x6
+   \   00008B   400B         JC      ??deal_msg_20
+   \                     ??deal_msg_21:
+   \   00008D   7401         MOV     A,#0x1
+   \   00008F   F0           MOVX    @DPTR,A
+   \                     ??deal_msg_22:
+   \   000090                ; Setup parameters for call to function ledseg_ocx_show_menu
+   \   000090   90....       MOV     DPTR,#(ledseg_ocx_show_menu & 0xffff)
+   \   000093   74..         MOV     A,#((ledseg_ocx_show_menu >> 16) & 0xff)
+   \   000095   02....       LJMP    ??deal_msg_17
+   \                     ??deal_msg_20:
+   \   000098   7405         MOV     A,#0x5
+   \   00009A   6A           XRL     A,R2
+   \   00009B   70F3         JNZ     ??deal_msg_22
+   \                     ??deal_msg_23:
+   \   00009D                ; Setup parameters for call to function ledseg_ocx_show_file
+   \   00009D   90....       MOV     DPTR,#(ledseg_ocx_show_file & 0xffff)
+   \   0000A0   74..         MOV     A,#((ledseg_ocx_show_file >> 16) & 0xff)
+   \   0000A2   02....       LJMP    ??deal_msg_17
+   \                     ??deal_msg_19:
+   \   0000A5   E0           MOVX    A,@DPTR
+   \   0000A6   C3           CLR     C
+   \   0000A7   9405         SUBB    A,#0x5
+   \   0000A9   40E5         JC      ??deal_msg_22
+   \   0000AB   80E0         SJMP    ??deal_msg_21
+   \                     ??deal_msg_1:
+   \   0000AD   D2F0         SETB    B.0
+   \                     ??deal_msg_0:
+   \   0000AF   90....       MOV     DPTR,#(sys_ctl + 70)
+   \   0000B2   E0           MOVX    A,@DPTR
+   \   0000B3   FA           MOV     R2,A
+   \   0000B4   7015         JNZ     ??deal_msg_24
+   \   0000B6   7401         MOV     A,#0x1
+   \   0000B8   F0           MOVX    @DPTR,A
+   \                     ??deal_msg_25:
+   \   0000B9                ; Setup parameters for call to function AudioCodec_Volume_Set
+   \   0000B9   E0           MOVX    A,@DPTR
+   \   0000BA   F9           MOV     R1,A
+   \   0000BB   90....       MOV     DPTR,#(AudioCodec_Volume_Set & 0xffff)
+   \   0000BE   74..         MOV     A,#((AudioCodec_Volume_Set >> 16) & 0xff)
+   \   0000C0   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000C3                ; Setup parameters for call to function ledseg_ocx_show_vol
+   \   0000C3   90....       MOV     DPTR,#(ledseg_ocx_show_vol & 0xffff)
+   \   0000C6   74..         MOV     A,#((ledseg_ocx_show_vol >> 16) & 0xff)
+   \   0000C8   02....       LJMP    ??deal_msg_17
+   \                     ??deal_msg_24:
+   \   0000CB   7405         MOV     A,#0x5
+   \   0000CD   6A           XRL     A,R2
+   \   0000CE   70E9         JNZ     ??deal_msg_25
+   \   0000D0                ; Setup parameters for call to function music_file_num_set
+   \   0000D0   90....       MOV     DPTR,#(music_file_num_set & 0xffff)
+   \   0000D3   74..         MOV     A,#((music_file_num_set >> 16) & 0xff)
+   \   0000D5   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0000D8   80C3         SJMP    ??deal_msg_23
+   \                     ??deal_msg_6:
+   \   0000DA   EB           MOV     A,R3
+   \   0000DB   6003         JZ      $+5
+   \   0000DD   02....       LJMP    ??deal_msg_15
+   \   0000E0   90....       MOV     DPTR,#task_ctl
+   \   0000E3   E0           MOVX    A,@DPTR
+   \   0000E4   640D         XRL     A,#0xd
+   \   0000E6   7003         JNZ     $+5
+   \   0000E8   02....       LJMP    ??deal_msg_15
+   \                     ??deal_msg_9:
+   \   0000EB   740D         MOV     A,#0xd
+   \   0000ED   02....       LJMP    ??deal_msg_18
+   \                     ??deal_msg_2:
+   \   0000F0   EB           MOV     A,R3
+   \   0000F1   6003         JZ      $+5
+   \   0000F3   02....       LJMP    ??deal_msg_15
+   \   0000F6   90....       MOV     DPTR,#(sys_ctl + 58)
+   \   0000F9   E0           MOVX    A,@DPTR
+   \   0000FA   04           INC     A
+   \   0000FB   F0           MOVX    @DPTR,A
+   \   0000FC   C3           CLR     C
+   \   0000FD   9404         SUBB    A,#0x4
+   \   0000FF   A2D2         MOV     C,0xD0 /* PSW */.2
+   \   000101   65D0         XRL     A,PSW
+   \   000103   33           RLC     A
+   \   000104   4003         JC      ??deal_msg_26
+   \   000106   7401         MOV     A,#0x1
+   \   000108   F0           MOVX    @DPTR,A
+   \                     ??deal_msg_26:
+   \   000109                ; Setup parameters for call to function Duty_set
+   \   000109   90....       MOV     DPTR,#(Duty_set & 0xffff)
+   \   00010C   74..         MOV     A,#((Duty_set >> 16) & 0xff)
+   \   00010E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000111                ; Setup parameters for call to function ledseg_ocx_show_dim
+   \   000111   90....       MOV     DPTR,#(ledseg_ocx_show_dim & 0xffff)
+   \   000114   74..         MOV     A,#((ledseg_ocx_show_dim >> 16) & 0xff)
+   \   000116   8051         SJMP    ??deal_msg_17
+   \                     ??deal_msg_3:
+   \   000118   EB           MOV     A,R3
+   \   000119   6003         JZ      $+5
+   \   00011B   02....       LJMP    ??deal_msg_15
+   \   00011E   7401         MOV     A,#0x1
+   \   000120   6A           XRL     A,R2
+   \   000121   7003         JNZ     $+5
+   \   000123   02....       LJMP    ??deal_msg_15
+   \   000126   7401         MOV     A,#0x1
+   \   000128   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   00012B   F0           MOVX    @DPTR,A
+   \   00012C   E4           CLR     A
+   \   00012D   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000130   F0           MOVX    @DPTR,A
+   \   000131                ; Setup parameters for call to function AudioCodec_Eq_Set
+   \   000131   7901         MOV     R1,#0x1
+   \   000133   8016         SJMP    ??deal_msg_27
+   \                     ??deal_msg_4:
+   \   000135   EB           MOV     A,R3
+   \   000136   6003         JZ      $+5
+   \   000138   02....       LJMP    ??deal_msg_15
+   \   00013B   EA           MOV     A,R2
+   \   00013C   7003         JNZ     $+5
+   \   00013E   02....       LJMP    ??deal_msg_15
+   \   000141   E4           CLR     A
+   \   000142   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000145   F0           MOVX    @DPTR,A
+   \   000146   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000149   F0           MOVX    @DPTR,A
+   \   00014A                ; Setup parameters for call to function AudioCodec_Eq_Set
+   \   00014A   F9           MOV     R1,A
+   \                     ??deal_msg_27:
+   \   00014B   90....       MOV     DPTR,#(AudioCodec_Eq_Set & 0xffff)
+   \   00014E   74..         MOV     A,#((AudioCodec_Eq_Set >> 16) & 0xff)
+   \   000150   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000153                ; Setup parameters for call to function spi_param_write8
+   \   000153   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000156   E0           MOVX    A,@DPTR
+   \   000157   FB           MOV     R3,A
+   \   000158   7A08         MOV     R2,#0x8
+   \   00015A   7900         MOV     R1,#0x0
+   \   00015C   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   00015F   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000161   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000164                ; Setup parameters for call to function ledseg_ocx_show_eq
+   \   000164   90....       MOV     DPTR,#(ledseg_ocx_show_eq & 0xffff)
+   \   000167   74..         MOV     A,#((ledseg_ocx_show_eq >> 16) & 0xff)
+   \                     ??deal_msg_17:
+   \   000169   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00016C   22           RET
+   \                     ??deal_msg_5:
+   \   00016D   EB           MOV     A,R3
+   \   00016E   6003         JZ      $+5
+   \   000170   02....       LJMP    ??deal_msg_15
+   \   000173   7402         MOV     A,#0x2
+   \   000175   6A           XRL     A,R2
+   \   000176   7003         JNZ     $+5
+   \   000178   02....       LJMP    ??deal_msg_15
+   \   00017B   7402         MOV     A,#0x2
+   \   00017D   90....       MOV     DPTR,#(sys_ctl + 71)
+   \   000180   F0           MOVX    @DPTR,A
+   \   000181   E4           CLR     A
+   \   000182   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000185   F0           MOVX    @DPTR,A
+   \   000186                ; Setup parameters for call to function AudioCodec_Eq_Set
+   \   000186   7902         MOV     R1,#0x2
+   \   000188   80C1         SJMP    ??deal_msg_27
+   \                     ??deal_msg_7:
+   \   00018A   EB           MOV     A,R3
+   \   00018B   6003         JZ      $+5
+   \   00018D   02....       LJMP    ??deal_msg_15
+   \   000190   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   000193   E0           MOVX    A,@DPTR
+   \   000194   7004         JNZ     ??deal_msg_28
+   \   000196   7A01         MOV     R2,#0x1
+   \   000198   8002         SJMP    ??deal_msg_29
+   \                     ??deal_msg_28:
+   \   00019A   7A00         MOV     R2,#0x0
+   \                     ??deal_msg_29:
+   \   00019C   EA           MOV     A,R2
+   \   00019D   F0           MOVX    @DPTR,A
+   \   00019E   6002         JZ      ??deal_msg_30
+   \   0001A0   D2F0         SETB    B.0
+   \                     ??deal_msg_30:
+   \   0001A2                ; Setup parameters for call to function AudioCodec_3d_Set
+   \   0001A2   90....       MOV     DPTR,#(AudioCodec_3d_Set & 0xffff)
+   \   0001A5   74..         MOV     A,#((AudioCodec_3d_Set >> 16) & 0xff)
+   \   0001A7   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001AA                ; Setup parameters for call to function spi_param_write8
+   \   0001AA   90....       MOV     DPTR,#(sys_ctl + 72)
+   \   0001AD   E0           MOVX    A,@DPTR
+   \   0001AE   FB           MOV     R3,A
+   \   0001AF   7A07         MOV     R2,#0x7
+   \   0001B1   7900         MOV     R1,#0x0
+   \   0001B3   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   0001B6   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   0001B8   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001BB                ; Setup parameters for call to function ledseg_ocx_show_3d
+   \   0001BB   90....       MOV     DPTR,#(ledseg_ocx_show_3d & 0xffff)
+   \   0001BE   74..         MOV     A,#((ledseg_ocx_show_3d >> 16) & 0xff)
+   \   0001C0   80A7         SJMP    ??deal_msg_17
+   \                     ??deal_msg_10:
+   \   0001C2   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   0001C5   E0           MOVX    A,@DPTR
+   \   0001C6   C3           CLR     C
+   \   0001C7   9407         SUBB    A,#0x7
+   \   0001C9   5046         JNC     ??deal_msg_15
+   \   0001CB                ; Setup parameters for call to function led_mode_on
+   \   0001CB   90....       MOV     DPTR,#(led_mode_on & 0xffff)
+   \   0001CE   74..         MOV     A,#((led_mode_on >> 16) & 0xff)
+   \   0001D0   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??deal_msg_16:
+   \   0001D3   741B         MOV     A,#0x1b
+   \                     ??deal_msg_18:
+   \   0001D5   90....       MOV     DPTR,#task_ctl
+   \   0001D8   F0           MOVX    @DPTR,A
+   \   0001D9   22           RET
+   \                     ??deal_msg_8:
+   \   0001DA   EB           MOV     A,R3
+   \   0001DB   601A         JZ      ??deal_msg_31
+   \   0001DD                ; Setup parameters for call to function sys_unmute
+   \   0001DD   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   0001E0   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   0001E2   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001E5                ; Setup parameters for call to function ledseg_ocx_clear
+   \   0001E5   90....       MOV     DPTR,#(ledseg_ocx_clear & 0xffff)
+   \   0001E8   74..         MOV     A,#((ledseg_ocx_clear >> 16) & 0xff)
+   \   0001EA   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   0001ED                ; Setup parameters for call to function AudioCodec_MUTE
+   \   0001ED   7900         MOV     R1,#0x0
+   \   0001EF   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   0001F2   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   0001F4   02....       LJMP    ??deal_msg_17
+   \                     ??deal_msg_31:
+   \   0001F7                ; Setup parameters for call to function AudioCodec_MUTE
+   \   0001F7   7901         MOV     R1,#0x1
+   \   0001F9   90....       MOV     DPTR,#(AudioCodec_MUTE & 0xffff)
+   \   0001FC   74..         MOV     A,#((AudioCodec_MUTE >> 16) & 0xff)
+   \   0001FE   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000201                ; Setup parameters for call to function sys_mute
+   \   000201   90....       MOV     DPTR,#(sys_mute & 0xffff)
+   \   000204   74..         MOV     A,#((sys_mute >> 16) & 0xff)
+   \   000206   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000209                ; Setup parameters for call to function ledseg_ocx_show_mute
+   \   000209   90....       MOV     DPTR,#(ledseg_ocx_show_mute & 0xffff)
+   \   00020C   74..         MOV     A,#((ledseg_ocx_show_mute >> 16) & 0xff)
+   \   00020E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \                     ??deal_msg_15:
+   \   000211   22           RET
+     71          
+     72          //清除、还原默认的设置
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     73          void task_clear(void)
+   \                     task_clear:
+     74          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002   C0..         PUSH    ?V0 + 1
+   \   000004   C0..         PUSH    ?V0 + 2
+   \   000006                ; Saved register size: 3
+   \   000006                ; Auto size: 0
+     75              WATCHDOG_CLR();
+   \   000006   43F720       ORL     0xf7,#0x20
+     76              set_lcd_buf(LCD_MINI_MODE);         //设置显存，使用256Byte小缓存
+     77              user_set_volex(0);                  //默认需要3DB数字音量补偿
+   \   000009                ; Setup parameters for call to function user_set_volex
+   \   000009   7900         MOV     R1,#0x0
+   \   00000B   90....       MOV     DPTR,#(user_set_volex & 0xffff)
+   \   00000E   74..         MOV     A,#((user_set_volex >> 16) & 0xff)
+   \   000010   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     78              ocx_init(NULL, NULL);               //清空默认的控件事件及消息
+   \   000013                ; Setup parameters for call to function ocx_init
+   \   000013   75..00       MOV     ?V0 + 0,#0x0
+   \   000016   75..00       MOV     ?V0 + 1,#0x0
+   \   000019   75..00       MOV     ?V0 + 2,#0x0
+   \   00001C   78..         MOV     R0,#?V0 + 0
+   \   00001E   12....       LCALL   ?PUSH_ISTACK_I_THREE
+   \   000021   FA           MOV     R2,A
+   \   000022   FB           MOV     R3,A
+   \   000023   90....       MOV     DPTR,#(ocx_init & 0xffff)
+   \   000026   74..         MOV     A,#((ocx_init >> 16) & 0xff)
+   \   000028   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00002B   D0E0         POP     A
+   \   00002D   D0E0         POP     A
+   \   00002F   D0E0         POP     A
+     79              ocx_clear();
+   \   000031                ; Setup parameters for call to function ledseg_ocx_clear
+   \   000031   90....       MOV     DPTR,#(ledseg_ocx_clear & 0xffff)
+   \   000034   74..         MOV     A,#((ledseg_ocx_clear >> 16) & 0xff)
+   \   000036   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     80              sys_ctl.sleep_cnt = 0xffff;
+   \   000039   90....       MOV     DPTR,#(sys_ctl + 21)
+   \   00003C   74FF         MOV     A,#-0x1
+   \   00003E   F0           MOVX    @DPTR,A
+   \   00003F   A3           INC     DPTR
+   \   000040   F0           MOVX    @DPTR,A
+     81              sys_ctl.disp_bat_val = 0;
+   \   000041   E4           CLR     A
+   \   000042   90....       MOV     DPTR,#(sys_ctl + 20)
+   \   000045   F0           MOVX    @DPTR,A
+     82              sys_ctl.mp3_stop_flag = 0;
+   \   000046   90....       MOV     DPTR,#(sys_ctl + 56)
+   \   000049   F0           MOVX    @DPTR,A
+     83              sys_ctl.mute_flag = 0;//解静音标志
+   \   00004A   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   00004D   F0           MOVX    @DPTR,A
+     84              sys_ctl.bt_Mute_cnt = 0;
+   \   00004E   90....       MOV     DPTR,#(sys_ctl + 73)
+   \   000051   F0           MOVX    @DPTR,A
+     85              sys_ctl.bt_mute_flag =0;
+   \   000052   90....       MOV     DPTR,#(sys_ctl + 74)
+   \   000055   F0           MOVX    @DPTR,A
+     86          #if WARNING_VOL_MAXMIN
+     87              sys_ctl.vol_maxmin_music_flag = 0;
+     88              sys_ctl.vol_maxmin_music_play = 0;
+     89          #endif
+     90              if (!sys_ctl.mute_flag) {
+   \   000056   7008         JNZ     ??task_clear_0
+     91                  sys_unmute();
+   \   000058                ; Setup parameters for call to function sys_unmute
+   \   000058   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   00005B   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   00005D   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     92              }
+     93          
+     94          }
+   \                     ??task_clear_0:
+   \   000060   D0..         POP     ?V0 + 2
+   \   000062   D0..         POP     ?V0 + 1
+   \   000064   D0..         POP     ?V0 + 0
+   \   000066   02....       LJMP    ?BRET
+     95          
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+     96          void task_init(void)
+   \                     task_init:
+     97          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     98              task_ctl.last_work = TASK_NULL;     //上一次任务编号
+   \   000000   E4           CLR     A
+   \   000001   90....       MOV     DPTR,#(task_ctl + 1)
+   \   000004   F0           MOVX    @DPTR,A
+     99              task_ctl.work_sta = TASK_IDLE;
+    100                  
+    101              sys_ctl.bonoff = 0;
+   \   000005   90....       MOV     DPTR,#(sys_ctl + 54)
+   \   000008   F0           MOVX    @DPTR,A
+    102              sys_ctl.mode_switch_flag = 0;
+   \   000009   90....       MOV     DPTR,#(sys_ctl + 61)
+   \   00000C   F0           MOVX    @DPTR,A
+    103          //    task_ctl.last_work = TASK_OPTI;     //上一次任务编号
+    104              //task_ctl.work_sta = TASK_POWEROFF;
+    105          //    task_ctl.work_sta = TASK_OPTI;
+    106              //task_ctl.work_sta = TASK_BT;
+    107          #if MP3BT_DECT_EN
+    108              MP3BT_DECT_INIT();
+    109              delay(1);
+    110              if(MP3BT_DECT_IS_BT()) {
+    111                  task_ctl.work_sta = TASK_BT;
+    112              }else{
+    113                  task_ctl.work_sta = TASK_MUSIC;
+    114              }
+    115              MP3BT_DECT_END();
+    116          #endif
+    117          
+    118          #if POWERON_TO_FM
+    119              if(task_ctl.work_sta == TASK_IDLE && fm_init()) {
+    120                  task_ctl.work_sta = TASK_FM;
+    121              }
+    122          #endif
+    123          #if TASK_BT_EN && !MP3BT_DECT_EN
+    124              if(task_ctl.work_sta == TASK_IDLE) {
+    125                  task_ctl.work_sta = TASK_BT;
+   \   00000D   740D         MOV     A,#0xd
+   \   00000F   90....       MOV     DPTR,#task_ctl
+   \   000012   F0           MOVX    @DPTR,A
+    126              }
+    127          #endif
+    128          
+    129              if(task_ctl.work_sta == TASK_BT) {
+    130                  led_bt_none();
+   \   000013                ; Setup parameters for call to function led_bt_none
+   \   000013   90....       MOV     DPTR,#(led_bt_none & 0xffff)
+   \   000016   74..         MOV     A,#((led_bt_none >> 16) & 0xff)
+   \   000018   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    131              } else {
+    132                  led_idle();
+    133              }
+    134              if (!sys_ctl.mute_flag) {
+   \   00001B   90....       MOV     DPTR,#(sys_ctl + 27)
+   \   00001E   E0           MOVX    A,@DPTR
+   \   00001F   7008         JNZ     ??task_init_0
+    135                  sys_unmute();
+   \   000021                ; Setup parameters for call to function sys_unmute
+   \   000021   90....       MOV     DPTR,#(sys_unmute & 0xffff)
+   \   000024   74..         MOV     A,#((sys_unmute >> 16) & 0xff)
+   \   000026   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    136              }
+    137          #if TASK_SHOWTIME_EN
+    138              task_ctl.work_sta = TASK_SHOW_TIME;
+    139          #endif
+    140          }
+   \                     ??task_init_0:
+   \   000029   02....       LJMP    ?BRET
+    141          
+    142          //执行任务
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    143          void run_task(void)
+   \                     run_task:
+    144          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    145              task_init();
+   \   000000                ; Setup parameters for call to function task_init
+   \   000000   90....       MOV     DPTR,#(task_init & 0xffff)
+   \   000003   74..         MOV     A,#((task_init >> 16) & 0xff)
+   \   000005   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    146          #if 1    
+    147              task_ctl.work_sta = sys_param_read8(PARAM_WORD_STA);
+   \   000008                ; Setup parameters for call to function spi_read8
+   \   000008                ; Setup parameters for call to function spi_param_addr
+   \   000008   7A0D         MOV     R2,#0xd
+   \   00000A   7900         MOV     R1,#0x0
+   \   00000C   12....       LCALL   spi_param_addr & 0xFFFF
+   \   00000F   12....       LCALL   spi_read8 & 0xFFFF
+   \   000012   E9           MOV     A,R1
+   \   000013   90....       MOV     DPTR,#task_ctl
+   \   000016   F0           MOVX    @DPTR,A
+    148              if((task_ctl.work_sta < TASK_AUX)||(task_ctl.work_sta > TASK_BT))task_ctl.work_sta = TASK_AUX;        
+   \   000017   C3           CLR     C
+   \   000018   9402         SUBB    A,#0x2
+   \   00001A   4006         JC      ??run_task_0
+   \   00001C   E0           MOVX    A,@DPTR
+   \   00001D   C3           CLR     C
+   \   00001E   940E         SUBB    A,#0xe
+   \   000020   4003         JC      ??run_task_1
+   \                     ??run_task_0:
+   \   000022   7402         MOV     A,#0x2
+   \   000024   F0           MOVX    @DPTR,A
+    149          #endif    
+    150              comm_event();
+   \                     ??run_task_1:
+   \   000025                ; Setup parameters for call to function comm_event
+   \   000025   90....       MOV     DPTR,#(comm_event & 0xffff)
+   \   000028   74..         MOV     A,#((comm_event >> 16) & 0xff)
+   \   00002A   800B         SJMP    ??run_task_2
+    151              while (1) {
+    152                  task_clear();       
+    153                  //if(task_ctl.work_sta != TASK_POWEROFF)sys_param_write8(PARAM_WORD_STA, task_ctl.work_sta);
+    154                  sys_param_write8(PARAM_WORD_STA, task_ctl.work_sta);
+    155                  switch (task_ctl.work_sta) {
+    156          #if TASK_MENU_EN
+    157                  case TASK_MENU:
+    158                      task_menu();
+    159                      break;
+    160          #endif
+    161          
+    162          #if TASK_SHOWTIME_EN
+    163                  case TASK_SHOW_TIME:
+    164                      task_show_time();
+    165                      break;
+    166          #endif
+    167          
+    168          #if TASK_MUSIC_EN
+    169                  case TASK_MUSIC:
+    170                      task_ctl.last_work = TASK_MUSIC;
+   \                     ??run_task_3:
+   \   00002C   7405         MOV     A,#0x5
+   \   00002E   90....       MOV     DPTR,#(task_ctl + 1)
+   \   000031   F0           MOVX    @DPTR,A
+    171                      task_music();
+   \   000032                ; Setup parameters for call to function task_music
+   \   000032   90....       MOV     DPTR,#(task_music & 0xffff)
+   \   000035   74..         MOV     A,#((task_music >> 16) & 0xff)
+   \                     ??run_task_2:
+   \   000037   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   00003A                ; Setup parameters for call to function task_clear
+   \   00003A   90....       MOV     DPTR,#(task_clear & 0xffff)
+   \   00003D   74..         MOV     A,#((task_clear >> 16) & 0xff)
+   \   00003F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000042                ; Setup parameters for call to function spi_param_write8
+   \   000042   90....       MOV     DPTR,#task_ctl
+   \   000045   E0           MOVX    A,@DPTR
+   \   000046   FB           MOV     R3,A
+   \   000047   7A0D         MOV     R2,#0xd
+   \   000049   7900         MOV     R1,#0x0
+   \   00004B   90....       MOV     DPTR,#(spi_param_write8 & 0xffff)
+   \   00004E   74..         MOV     A,#((spi_param_write8 >> 16) & 0xff)
+   \   000050   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000053   90....       MOV     DPTR,#task_ctl
+   \   000056   E0           MOVX    A,@DPTR
+   \   000057   12....       LCALL   ?UC_SWITCH_SPARSE
+   \                     `?<Jumptable for run_task>_0`:
+   \   00005A   00           DB        0
+   \   00005B   07           DB        7
+   \   00005C   02           DB        2
+   \   00005D   ....         DW        ??run_task_4
+   \   00005F   03           DB        3
+   \   000060   ....         DW        ??run_task_5
+   \   000062   04           DB        4
+   \   000063   ....         DW        ??run_task_6
+   \   000065   05           DB        5
+   \   000066   ....         DW        ??run_task_3
+   \   000068   0D           DB        13
+   \   000069   ....         DW        ??run_task_7
+   \   00006B   15           DB        21
+   \   00006C   ....         DW        ??run_task_8
+   \   00006E   1A           DB        26
+   \   00006F   ....         DW        ??run_task_9
+   \   000071   ....         DW        ??run_task_10
+    172                      break;
+    173          #endif
+    174          
+    175          #if TASK_MIC_EN
+    176                  case TASK_MIC:
+    177                      task_ctl.last_work = TASK_MIC;
+    178                      task_record();
+    179                      break;
+    180          #endif
+    181          
+    182          #if TASK_AUX_EN
+    183                  case TASK_AUX:
+    184                      task_ctl.last_work = TASK_AUX;
+   \                     ??run_task_4:
+   \   000073   7402         MOV     A,#0x2
+   \                     ??run_task_11:
+   \   000075   90....       MOV     DPTR,#(task_ctl + 1)
+   \   000078   F0           MOVX    @DPTR,A
+    185                      task_record();
+   \   000079                ; Setup parameters for call to function task_record
+   \   000079   90....       MOV     DPTR,#(task_record & 0xffff)
+   \   00007C   74..         MOV     A,#((task_record >> 16) & 0xff)
+   \   00007E   80B7         SJMP    ??run_task_2
+    186                      break;
+    187                      
+    188                  case TASK_COAX:
+    189                      task_ctl.last_work = TASK_COAX;
+   \                     ??run_task_5:
+   \   000080   7403         MOV     A,#0x3
+   \   000082   80F1         SJMP    ??run_task_11
+    190                      task_record();
+    191                      break;  
+    192                      
+    193                  case TASK_OPTI:
+    194                      task_ctl.last_work = TASK_OPTI;
+   \                     ??run_task_6:
+   \   000084   7404         MOV     A,#0x4
+   \   000086   80ED         SJMP    ??run_task_11
+    195                      task_record();
+    196                      break;               
+    197          #endif
+    198          
+    199          #if TASK_VOICE_EN
+    200                  case TASK_VOICE:
+    201                      task_ctl.last_work = TASK_VOICE;
+    202                      task_voice();
+    203                      break;
+    204          #endif
+    205          
+    206          #if TASK_FM_EN
+    207                  case TASK_FM:
+    208                      task_ctl.last_work = TASK_FM;
+    209                      task_fm();
+    210                      break;
+    211          #endif
+    212          
+    213          #if TASK_AUX_EQ_EN
+    214                  case TASK_AUX_EQ:
+    215                      task_ctl.last_work = TASK_AUX_EQ;
+    216                      task_aux_eq();
+    217                      break;
+    218          #endif
+    219          
+    220          #if TASK_SPEAKER_EN
+    221                  case TASK_SPEAKER:
+    222                      task_ctl.last_work = TASK_SPEAKER;
+    223                      task_speaker();
+    224                      break;
+    225          #endif
+    226          
+    227          #if TASK_USBDEV_EN
+    228                  case TASK_USBDEV:
+    229                      task_ctl.last_work = TASK_USBDEV;
+    230                      task_usbdev();
+    231                      break;
+    232          #endif
+    233          
+    234          #if TASK_BT_EN
+    235                  case TASK_BT:
+    236                      task_ctl.last_work = TASK_BT;		
+   \                     ??run_task_7:
+   \   000088   740D         MOV     A,#0xd
+   \   00008A   90....       MOV     DPTR,#(task_ctl + 1)
+   \   00008D   F0           MOVX    @DPTR,A
+    237                      task_bt();
+   \   00008E                ; Setup parameters for call to function task_bt
+   \   00008E   90....       MOV     DPTR,#(task_bt & 0xffff)
+   \   000091   74..         MOV     A,#((task_bt >> 16) & 0xff)
+   \   000093   80A2         SJMP    ??run_task_2
+    238                      break;
+    239          #endif
+    240          
+    241          #if TASK_BTHID_EN
+    242                  case TASK_BT_HID:
+    243                      task_ctl.last_work = TASK_BT_HID;		
+    244                      task_bt_hid();
+    245                      break;
+    246          #endif
+    247          
+    248          #if TASK_TOMCAT_EN
+    249                  case TASK_TOMCAT:
+    250                      task_ctl.last_work = TASK_TOMCAT;		
+    251                      task_tomcat();
+    252                      break;
+    253          #endif
+    254          
+    255          #if TASK_RTC_EN
+    256                  case TASK_CLOCK:
+    257                      task_ctl.last_work = TASK_CLOCK;
+    258                      task_clock();
+    259                      break;
+    260          #endif
+    261          
+    262          #if ALARM_EN
+    263                  case TASK_ALARM:
+    264                      task_ctl.last_work = TASK_ALARM;
+    265                      task_alarm();
+    266                      break;
+    267          #endif
+    268          
+    269          #if TASK_POWEROFF_EN
+    270                  case TASK_POWEROFF:
+    271                      task_poweroff();
+   \                     ??run_task_9:
+   \   000095                ; Setup parameters for call to function task_poweroff
+   \   000095   90....       MOV     DPTR,#(task_poweroff & 0xffff)
+   \   000098   74..         MOV     A,#((task_poweroff >> 16) & 0xff)
+   \   00009A   809B         SJMP    ??run_task_2
+    272                      break;
+    273          #endif
+    274          
+    275          #if TASK_IDLE_EN
+    276                  case TASK_IDLE:
+    277                      task_idle();
+    278                      break;
+    279          #endif
+    280          
+    281          #if TASK_UPDATE_FW_EN
+    282                  case TASK_UPDATE_FW:
+    283                      task_update_fw();
+   \                     ??run_task_8:
+   \   00009C                ; Setup parameters for call to function task_update_fw
+   \   00009C   90....       MOV     DPTR,#(task_update_fw & 0xffff)
+   \   00009F   74..         MOV     A,#((task_update_fw >> 16) & 0xff)
+   \   0000A1   8094         SJMP    ??run_task_2
+    284                      break;
+    285          #endif
+    286          
+    287          #if TASK_SETTING_EN
+    288                  case TASK_SETTING:
+    289                      task_ctl.last_work = TASK_SETTING;
+    290                      task_setting();
+    291                      break;
+    292          #endif
+    293          
+    294                  case TASK_EXIT:
+    295                      //task_ctl.work_sta = TASK_IDLE;
+    296                      task_exit();
+   \                     ??run_task_10:
+   \   0000A3                ; Setup parameters for call to function task_exit
+   \   0000A3   90....       MOV     DPTR,#(task_exit & 0xffff)
+   \   0000A6   74..         MOV     A,#((task_exit >> 16) & 0xff)
+   \   0000A8   808D         SJMP    ??run_task_2
+    297                      break;
+    298          
+    299                  default:
+    300                      task_exit();            //退出无效的菜单
+    301                      break;
+    302                  }
+    303              }
+    304          }
+    305          
+    306          //检查，并加载设备
+
+   \                                 In segment NEAR_CODE, align 1, keep-with-next
+    307          __near_func bool device_change(void)
+   \                     device_change:
+    308          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    309              if (!task_ctl.dev_change) {
+   \   000000   90....       MOV     DPTR,#(task_ctl + 3)
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   7002         JNZ     ??device_change_0
+    310                  return DEVICE_IDLE;                //设备正常
+   \   000006   C3           CLR     C
+   \   000007   22           RET
+    311              }
+    312              task_ctl.dev_change = 0;
+   \                     ??device_change_0:
+   \   000008   E4           CLR     A
+   \   000009   F0           MOVX    @DPTR,A
+    313              return device_change_check();
+   \   00000A                ; Setup parameters for call to function device_change_check
+   \   00000A   90....       MOV     DPTR,#(device_change_check & 0xffff)
+   \   00000D   74..         MOV     A,#((device_change_check >> 16) & 0xff)
+   \   00000F   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+   \   000012   22           RET
+    314          }
+    315          
+    316          //定时待机函数
+    317          #pragma inline=forced
+    318          __near_func void task_sleep_check(void)
+    319          {
+    320              bool ie_ea = IE_EA;
+    321              IE_EA = 0;
+    322              if (sys_ctl.sleep_cnt && sys_ctl.sleep_cnt != 0xffff) {
+    323                  sys_ctl.sleep_cnt--;
+    324                  //printf("slpcnt %d\n", sys_ctl.sleep_cnt);
+    325              }
+    326              IE_EA = ie_ea;
+    327          }
+    328          
+    329          #pragma inline=forced
+    330          __near_func void task_poweroff_check(void)
+    331          {
+    332              if (sys_ctl.lowpower_flag) {
+    333                  task_ctl.work_sta = TASK_POWEROFF;
+    334              }
+    335          }
+    336          
+    337          #if IS_LCD_DISPLAY
+    338          //背光时间处理函数
+    339          __near_func void task_backlight_check(void)
+    340          {
+    341              bool ie_ea = IE_EA;
+    342              IE_EA = 0;
+    343              if(sys_ctl.backlightcnt != 0 && sys_ctl.backlightcnt != 0xff){
+    344                  sys_ctl.backlightcnt--;
+    345              }
+    346              set_backlight();
+    347              IE_EA = ie_ea;
+    348          }
+    349          #endif
+    350          
+    351          //退出任务
+    352          #pragma location="TASK_SEG"
+
+   \                                 In segment TASK_SEG, align 1, keep-with-next
+    353          void task_exit(void)
+   \                     task_exit:
+    354          {
+   \   000000   C0..         PUSH    ?V0 + 0
+   \   000002                ; Saved register size: 2
+   \   000002                ; Auto size: 0
+    355          #if TASK_MENU_EN
+    356              //如果有主菜单，则返回主菜单
+    357              task_ctl.work_sta = TASK_MENU;
+    358          #else
+    359              //如果没有主菜单，则切换到下一个任务
+    360              u8 task_num;
+    361              for (task_num=0; task_num!=TASK_TOTAL; task_num++) {
+   \   000002   7A00         MOV     R2,#0x0
+    362                  if (task_ctl.last_work == tbl_task_order[task_num]) {
+   \                     ??task_exit_0:
+   \   000004   90....       MOV     DPTR,#(task_ctl + 1)
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   FB           MOV     R3,A
+   \   000009   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_0:
+   \   00000C   6B           XRL     A,R3
+   \   00000D   6006         JZ      ??task_exit_1
+    363                      break;
+    364                  }
+    365              }
+   \   00000F   0A           INC     R2
+   \   000010   7405         MOV     A,#0x5
+   \   000012   6A           XRL     A,R2
+   \   000013   70EF         JNZ     ??task_exit_0
+    366              task_num++;                                     //切换到下一个任务
+   \                     ??task_exit_1:
+   \   000015   0A           INC     R2
+    367              if (task_num >= TASK_TOTAL) {
+   \   000016   EA           MOV     A,R2
+   \   000017   C3           CLR     C
+   \   000018   9405         SUBB    A,#0x5
+   \   00001A   4002         JC      ??task_exit_2
+    368                  task_num = 0;                               //最后一个循环回第一个
+   \   00001C   7A00         MOV     R2,#0x0
+    369              }
+    370              task_ctl.work_sta = tbl_task_order[task_num];   //新的任务
+   \                     ??task_exit_2:
+   \   00001E   12....       LCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_1:
+   \   000021   90....       MOV     DPTR,#task_ctl
+   \   000024   F0           MOVX    @DPTR,A
+    371              
+    372          #endif
+    373          }
+   \   000025   D0..         POP     ?V0 + 0
+   \   000027   02....       LJMP    ?BRET
+
+   \                                 In segment TASK_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   8A..         MOV     ?V0 + 0,R2
+   \   000002   E5..         MOV     A,?V0 + 0
+   \   000004   24..         ADD     A,#(tbl_task_order & 0xff)
+   \   000006   F582         MOV     DPL,A
+   \   000008   E4           CLR     A
+   \   000009   34..         ADDC    A,#((tbl_task_order >> 8) & 0xff)
+   \   00000B   F583         MOV     DPH,A
+   \   00000D   E4           CLR     A
+   \   00000E   93           MOVC    A,@A+DPTR
+   \   00000F   22           RET
+    374          
+    375          #if FM_TIME_EN
+    376          //定时fm时间检查
+    377          __near_func void task_fm_check(void)
+    378          {
+    379              u8 rtc_buf[5];
+    380              if(sys_ctl.time_fm_on) {
+    381                  irtcc_read_rtc(rtc_buf);
+    382                  if(sys_ctl.fm_hour == rtc_buf[2])
+    383                  {
+    384                      if((sys_ctl.fm_min == rtc_buf[3]))
+    385                      {
+    386                          if(rtc_buf[4]<3)
+    387                          {
+    388                              task_ctl.work_sta = TASK_FM;
+    389                              sys_ctl.time_fm_on |= BIT(2);
+    390                          }
+    391                      }
+    392                  }
+    393              }
+    394          }
+    395          #endif
+    396          
+    397          //所有任务的公共事件处理
+
+   \                                 In segment BANKED_CODE, align 1, keep-with-next
+    398          bool comm_event(void)
+   \                     comm_event:
+    399          {
+   \   000000   C0..         PUSH    ?VB
+   \   000002                ; Saved register size: 1
+   \   000002                ; Auto size: 0
+    400              bool ret = true;
+   \   000002   D2..         SETB    ?VB.0
+    401              WATCHDOG_CLR();
+   \   000004   43F720       ORL     0xf7,#0x20
+    402          #if TASK_BT_EN
+    403              if(task_ctl.work_sta == TASK_NULL)
+   \   000007   90....       MOV     DPTR,#task_ctl
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   7003         JNZ     ??comm_event_0
+    404                  return false;
+   \                     ??comm_event_1:
+   \   00000D   C3           CLR     C
+   \   00000E   8067         SJMP    ??comm_event_2
+    405              if(BT_ALL_TASK || TASK_BT == task_ctl.work_sta || TASK_BT_HID == task_ctl.work_sta) {
+   \                     ??comm_event_0:
+   \   000010   640D         XRL     A,#0xd
+   \   000012   6005         JZ      ??comm_event_3
+   \   000014   E0           MOVX    A,@DPTR
+   \   000015   640E         XRL     A,#0xe
+   \   000017   7029         JNZ     ??comm_event_4
+    406                  user_bt_event();
+   \                     ??comm_event_3:
+   \   000019                ; Setup parameters for call to function user_bt_event
+   \   000019   90....       MOV     DPTR,#(user_bt_event & 0xffff)
+   \   00001C   74..         MOV     A,#((user_bt_event >> 16) & 0xff)
+   \   00001E   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+    407          #if PLAY_DETECT_TO_BT//非蓝牙模式下检测到手机蓝牙播放音乐，则切换到蓝牙
+    408                  if (sys_ctl.bt_sta >= BT_STA_PLAYING) {
+    409          #else
+    410                  if (sys_ctl.bt_sta >= BT_STA_INCOMING) {
+   \   000021   90....       MOV     DPTR,#(sys_ctl + 24)
+   \   000024   E0           MOVX    A,@DPTR
+   \   000025   C3           CLR     C
+   \   000026   9407         SUBB    A,#0x7
+   \   000028   4018         JC      ??comm_event_4
+    411          #endif
+    412                      if (TASK_BT == task_ctl.work_sta) {
+   \   00002A   90....       MOV     DPTR,#task_ctl
+   \   00002D   E0           MOVX    A,@DPTR
+   \   00002E   640D         XRL     A,#0xd
+   \   000030   7003         JNZ     ??comm_event_5
+    413                          return true;                                    //通话过程不做任何切换
+   \   000032   D3           SETB    C
+   \   000033   8042         SJMP    ??comm_event_2
+    414                      }else {
+    415                          work_sta_interrupt = task_ctl.work_sta;
+   \                     ??comm_event_5:
+   \   000035   E0           MOVX    A,@DPTR
+   \   000036   90....       MOV     DPTR,#work_sta_interrupt
+   \   000039   F0           MOVX    @DPTR,A
+    416                          task_ctl.work_sta = TASK_BT;
+   \   00003A   740D         MOV     A,#0xd
+   \   00003C   90....       MOV     DPTR,#task_ctl
+   \   00003F   F0           MOVX    @DPTR,A
+   \   000040   80CB         SJMP    ??comm_event_1
+    417                          return false;
+    418                      }
+    419                  }
+    420              }
+    421          #endif
+    422          #if LINEIN_DETECT_EN
+    423              if (device_need_activate(DEVICE_LINEIN)) {
+    424                  if (device_activate(DEVICE_LINEIN)) {
+    425              #if TASK_AUX_EN
+    426                      task_ctl.work_sta = TASK_AUX;                      //任意状态下，插入LINEIN
+    427              #elif TASK_AUX_EQ_EN
+    428                      task_ctl.work_sta = TASK_AUX_EQ;
+    429              #endif
+    430                      ret = false;
+    431                  }
+    432              }
+    433          #endif
+    434          
+    435          #if MUSIC_MODE_AUTO
+    436          #if MP3BT_DECT_EN
+    437              if(task_ctl.work_sta != TASK_BT)  //MP3BT_DECT_EN时,蓝牙模式插卡不切到MUSIC.
+    438          #else
+    439              if((task_ctl.work_sta != TASK_USBDEV) && (task_ctl.work_sta != TASK_MIC)
+    440          #if FM_RECORD_EN
+    441                  && (task_ctl.work_sta != TASK_FM)
+    442          #endif
+    443          #if AUX_RECORD_EN
+    444                  && (task_ctl.work_sta != TASK_AUX)
+    445          #endif
+    446               )  //USBDEV和录音模式插卡不切到MUSIC.
+   \                     ??comm_event_4:
+   \   000042   90....       MOV     DPTR,#task_ctl
+   \   000045   E0           MOVX    A,@DPTR
+   \   000046   640C         XRL     A,#0xc
+   \   000048   601B         JZ      ??comm_event_6
+   \   00004A   E0           MOVX    A,@DPTR
+   \   00004B   6407         XRL     A,#0x7
+   \   00004D   6016         JZ      ??comm_event_6
+    447          #endif
+    448              {
+    449                  if (device_need_activate(DEVICE_SDMMC) || device_need_activate(DEVICE_UDISK)) {
+   \   00004F                ; Setup parameters for call to function device_need_activate
+   \   00004F   7900         MOV     R1,#0x0
+   \   000051   12....       LCALL   device_need_activate & 0xFFFF
+   \   000054   4007         JC      ??comm_event_7
+   \   000056                ; Setup parameters for call to function device_need_activate
+   \   000056   7901         MOV     R1,#0x1
+   \   000058   12....       LCALL   device_need_activate & 0xFFFF
+   \   00005B   5008         JNC     ??comm_event_6
+    450                      task_ctl.work_sta = TASK_MUSIC;                         //任意状态下，插入设备
+   \                     ??comm_event_7:
+   \   00005D   7405         MOV     A,#0x5
+   \   00005F   90....       MOV     DPTR,#task_ctl
+   \   000062   F0           MOVX    @DPTR,A
+    451                      ret = false;
+   \   000063   C2..         CLR     ?VB.0
+    452                  }
+    453              }
+    454          #endif
+    455          
+    456          #if TASK_USBDEV_EN
+    457              if (device_need_activate(DEVICE_PC)) {
+    458                  if (device_activate(DEVICE_PC)) {
+    459                      task_ctl.work_sta = TASK_USBDEV;
+    460                      ret = false;
+    461                  }
+    462              }
+    463          #endif
+    464          
+    465              /*if (1) {
+    466                  //有几个模式不需要在这里进行扫描
+    467                  u8 f_change = device_change();
+    468                  if (DEVICE_CHANGE == f_change) {
+    469                      task_ctl.work_sta = TASK_MUSIC;                         //任意状态下，插入设备，进入音乐播放模式
+    470                      ret = false;
+    471                  }
+    472              } */
+    473          
+    474              if(sys_ctl.alarm_wakeup_flag)
+   \                     ??comm_event_6:
+   \   000065   90....       MOV     DPTR,#(sys_ctl + 53)
+   \   000068   E0           MOVX    A,@DPTR
+   \   000069   600A         JZ      ??comm_event_8
+    475              {
+    476                  sys_ctl.alarm_wakeup_flag = false;
+   \   00006B   E4           CLR     A
+   \   00006C   F0           MOVX    @DPTR,A
+    477                  task_ctl.work_sta = TASK_ALARM;
+   \   00006D   7416         MOV     A,#0x16
+   \   00006F   90....       MOV     DPTR,#task_ctl
+   \   000072   F0           MOVX    @DPTR,A
+    478                  ret = false;
+   \   000073   C2..         CLR     ?VB.0
+    479              }
+    480              return ret;
+   \                     ??comm_event_8:
+   \   000075   A2..         MOV     C,?VB.0
+   \                     ??comm_event_2:
+   \   000077   D0..         POP     ?VB
+   \   000079   02....       LJMP    ?BRET
+    481          }
+    482          
+    483          //判断utf8有多少个字节
+    484          #pragma location="LRC_SEG"
+
+   \                                 In segment LRC_SEG, align 1, keep-with-next
+    485          u8 utf8_char_size(char code)
+   \                     utf8_char_size:
+    486          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+    487              if (code <= 0x7f)//说明最高位为'0'，这意味着utf8编码只有1个字节！
+   \   000000   E9           MOV     A,R1
+   \   000001   C3           CLR     C
+   \   000002   9480         SUBB    A,#-0x80
+   \   000004   5004         JNC     ??utf8_char_size_0
+    488              {
+    489                  return 1;
+   \   000006   7901         MOV     R1,#0x1
+   \   000008   8018         SJMP    ??utf8_char_size_1
+    490              }
+    491              else if ((code & 0xe0)== 0xc0)//只保留最高三位，看最高三位是不是110，如果是则意味着utf8编码有2个字节！
+   \                     ??utf8_char_size_0:
+   \   00000A   74E0         MOV     A,#-0x20
+   \   00000C   59           ANL     A,R1
+   \   00000D   64C0         XRL     A,#0xc0
+   \   00000F   7004         JNZ     ??utf8_char_size_2
+    492              {
+    493                  return 2;
+   \   000011   7902         MOV     R1,#0x2
+   \   000013   800D         SJMP    ??utf8_char_size_1
+    494              }
+    495              else if ((code & (0xf0))== 0xe0)//只保留最高四位，看最高三位是不是1110，如果是则意味着utf8编码有3个字节！
+   \                     ??utf8_char_size_2:
+   \   000015   74F0         MOV     A,#-0x10
+   \   000017   59           ANL     A,R1
+   \   000018   64E0         XRL     A,#0xe0
+   \   00001A   7004         JNZ     ??utf8_char_size_3
+    496              {
+    497                  return 3;
+   \   00001C   7903         MOV     R1,#0x3
+   \   00001E   8002         SJMP    ??utf8_char_size_1
+    498              }
+    499              else
+    500              {
+    501                  return 0;
+   \                     ??utf8_char_size_3:
+   \   000020   7900         MOV     R1,#0x0
+   \                     ??utf8_char_size_1:
+   \   000022   02....       LJMP    ?BRET
+    502              }
+    503          }
+    504          
+
+   Maximum stack usage in bytes:
+
+     Function                     EXT_STACK PSTACK XSTACK
+     --------                     --------- ------ ------
+     comm_event                          1      0      0
+       -> user_bt_event                  2      0      0
+       -> device_need_activate           2      0      0
+       -> device_need_activate           2      0      0
+     deal_msg                            0      0      0
+       -> ledseg_ocx_show_version        0      0      0
+       -> ledseg_ocx_show_menu           0      0      0
+       -> ledseg_ocx_show_file           0      0      0
+       -> AudioCodec_Volume_Set          0      0      0
+       -> ledseg_ocx_show_vol            0      0      0
+       -> music_file_num_set             0      0      0
+       -> Duty_set                       0      0      0
+       -> ledseg_ocx_show_dim            0      0      0
+       -> AudioCodec_Eq_Set              0      0      0
+       -> spi_param_write8               0      0      0
+       -> ledseg_ocx_show_eq             0      0      0
+       -> AudioCodec_Eq_Set              0      0      0
+       -> spi_param_write8               0      0      0
+       -> ledseg_ocx_show_eq             0      0      0
+       -> AudioCodec_Eq_Set              0      0      0
+       -> spi_param_write8               0      0      0
+       -> ledseg_ocx_show_eq             0      0      0
+       -> AudioCodec_3d_Set              0      0      0
+       -> spi_param_write8               0      0      0
+       -> ledseg_ocx_show_3d             0      0      0
+       -> led_mode_on                    0      0      0
+       -> sys_unmute                     0      0      0
+       -> ledseg_ocx_clear               0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> AudioCodec_MUTE                0      0      0
+       -> sys_mute                       0      0      0
+       -> ledseg_ocx_show_mute           0      0      0
+     device_change                       0      0      0
+       -> device_change_check            0      0      0
+     run_task                            0      0      0
+       -> task_init                      0      0      0
+       -> spi_param_addr                 0      0      0
+       -> spi_read8                      0      0      0
+       -> comm_event                     0      0      0
+       -> task_music                     0      0      0
+       -> task_clear                     0      0      0
+       -> spi_param_write8               0      0      0
+       -> task_record                    0      0      0
+       -> task_record                    0      0      0
+       -> task_record                    0      0      0
+       -> task_bt                        0      0      0
+       -> task_poweroff                  0      0      0
+       -> task_update_fw                 0      0      0
+       -> task_exit                      0      0      0
+     task_clear                          6      0      0
+       -> user_set_volex                 6      0      0
+       -> ocx_init                      12      0      0
+       -> ledseg_ocx_clear               6      0      0
+       -> sys_unmute                     6      0      0
+     task_exit                           2      0      0
+     task_init                           0      0      0
+       -> led_bt_none                    0      0      0
+       -> sys_unmute                     0      0      0
+     utf8_char_size                      0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     WDTCON                1
+     task_ctl              5
+     move_ctl             11
+     work_sta_interrupt    1
+     tbl_task_order        5
+     deal_msg            530
+     task_clear          105
+     task_init            44
+     run_task            170
+     device_change        19
+     task_exit            42
+     ?Subroutine0         16
+     comm_event          124
+     utf8_char_size       37
+
+ 
+ 443 bytes in segment BANKED_CODE
+  37 bytes in segment LRC_SEG
+ 549 bytes in segment NEAR_CODE
+   1 byte  in segment SFR_AN
+   5 bytes in segment TASK_CONST
+  58 bytes in segment TASK_SEG
+  17 bytes in segment XDATA_Z
+ 
+ 1 092 bytes of CODE  memory
+     0 bytes of DATA  memory (+ 1 byte shared)
+    17 bytes of XDATA memory
+
+Errors: none
+Warnings: none

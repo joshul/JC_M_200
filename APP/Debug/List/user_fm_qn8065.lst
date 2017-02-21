@@ -1,0 +1,775 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:00 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_qn8065.c                           #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_fm\user_fm_qn8065.c                           #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_fm_qn8065.lst                           #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_fm_qn8065.r51                            #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_fm\user_fm_qn8065.c
+      1          /*--------------------------------------------------------------------------*/
+      2          /**@file QN8065.C
+      3             @brief FM模块QN8065驱动
+      4             @details FM模块QN8065的驱动函数
+      5             @author NC
+      6             @date 2013-10-23
+      7             @note 通过宏定义来选择驱动方式
+      8          */
+      9          /*----------------------------------------------------------------------------*/
+     10          
+     11          #include "include.h"
+     12          #include "user_fm.h"
+     13          #include "qn8065.h"
+     14          
+     15          #if (FM_TYPE == FM_QN8065)
+     16          
+     17          //if using pilot as CCA algorithm,macro QN8065_PILOT_CCA will be set to 1
+     18          #define QN8065_PILOT_CCA					1
+     19          
+     20          UINT8 QN8065_PreNoiseFloor = 40,QN8065_NoiseFloor = 40;
+     21          extern void delay_5ms(u8 cnt);
+     22          
+     23          #pragma constseg="FM_SEG_QN8065_CONST"
+     24          #if 0
+     25          const u8 volume_8065table[33] = {0,2,4,6,8,10,12,13,14,15,16,17,18,19,20,21,22,
+     26                                           23,24,25,26,27,28,29,30,32,34,36,38,41,43,45,47};  //32级音量
+     27          #else
+     28          const u8 volume_8065table[16] = {0,5,10,15,17,20,25,28,30,33,35,37,40,43,45,47};    //16级音量
+     29          #endif
+     30          #pragma constseg=default
+     31          
+     32          
+     33          #pragma location="FM_SEG_QN8065"
+     34          void QN8065_Delay(u16 n)
+     35          {
+     36              while (n--)
+     37                  asm("nop");
+     38          }
+     39          
+     40          #pragma location="FM_SEG_QN8065_1"
+     41          UINT16 QN8065_FREQ2CHREG(UINT16 freq)
+     42          {
+     43              return 	(freq-6000)/5;
+     44          }
+     45          
+     46          /**********************************************************************
+     47          void QN8065_SetMute(UINT8 On)
+     48          **********************************************************************
+     49          Description: on or off mute chip
+     50          Parameters:
+     51              On: 1:on mute chip;0:off mute chip
+     52          Return Value:
+     53              None
+     54          **********************************************************************/	
+     55          #pragma location="FM_SEG_QN8065_1"
+     56          void QN8065_SetMute(UINT8 On)
+     57          {
+     58          	//mute or unmute by holding DAC
+     59              //and set low voltage regulator output as 0.9v
+     60              QN8065_WriteReg(QN8065_REG_REF, On?0x14:0x10);
+     61          }
+     62          
+     63          /**********************************************************************
+     64          void QN8065_SetCh(UINT16 start,UINT16 stop,UINT8 step)
+     65          **********************************************************************
+     66          Description: set channel frequency
+     67          Parameters:
+     68              freq:  channel frequency to be set,frequency unit is 10KHZ
+     69          Return Value:
+     70              None
+     71          **********************************************************************/	
+     72          #pragma location="FM_SEG_QN8065_1"
+     73          void QN8065_SetCh(UINT16 start,UINT16 stop,UINT8 step)
+     74          {
+     75              UINT8 temp;
+     76              //TRACE("start:%d,stop:%d,step:%d \n",start,stop, step);
+     77              start = QN8065_FREQ2CHREG(start);
+     78              //fored the stop is bigger than start
+     79              stop = QN8065_FREQ2CHREG(stop);
+     80          	//writing higher bits of channel frequency,CCA channel start,
+     81          	//stop and step index at first
+     82          	temp = (UINT8) ((start >> 8) & QN8065_CH_CH);
+     83          	temp |= ((UINT8)(start >> 6) & QN8065_CH_CH_START);
+     84          	temp |= ((UINT8) (stop >> 4) & QN8065_CH_CH_STOP);
+     85          	temp |= (step << 6);
+     86          	QN8065_WriteReg(QN8065_CH_STEP, temp);
+     87          	//writing lower 8 bits of CCA channel start index
+     88          	QN8065_WriteReg(QN8065_CH_START, (UINT8)start);
+     89          	//writing lower 8 bits of CCA channel stop index
+     90          	QN8065_WriteReg(QN8065_CH_STOP, (UINT8)stop);
+     91          	//writing lower 8 bits of channel index
+     92          	QN8065_WriteReg(QN8065_CH, (UINT8)start);
+     93          }
+     94          
+     95          /**********************************************************************
+     96          void QN8065_Init()
+     97          **********************************************************************
+     98          Description: Initialize device to make it ready to have all functionality ready for use.
+     99          Parameters:
+    100              None
+    101          Return Value:
+    102              None
+    103          **********************************************************************/
+    104          #pragma location="FM_SEG_QN8065"
+    105          void QN8065_Init(void)
+    106          {
+    107              QN8065_WriteReg(QN8065_SYSTEM1, 0x81);
+    108              delay_5ms(10);
+    109          
+    110              /*********User sets chip working clock **********/
+    111              //Following is where change the input clock wave type,as sine-wave or square-wave.
+    112          
+    113          #if (FM_CLK_SEL != SHARE_CRYSTAL_32K)
+    114              QN8065_WriteReg(QN8065_CCA,QN8065_DIGITAL_CLOCK);
+    115          #else
+    116              QN8065_WriteReg(QN8065_CCA,QN8065_SINE_WAVE_CLOCK );
+    117          #endif
+    118              //Following is where change the input clock frequency.
+    119          
+    120              QN8065_WriteReg(QN8065_XTAL_DIV0, QN8065_XTAL_DIV0_VAL);
+    121              QN8065_WriteReg(QN8065_XTAL_DIV1, QN8065_XTAL_DIV1_VAL);
+    122              QN8065_WriteReg(QN8065_XTAL_DIV2, QN8065_XTAL_DIV2_VAL);
+    123          
+    124              delay_5ms(10);
+    125          
+    126              /********User sets chip working clock end ********/
+    127              QN8065_WriteReg(QN8065_CCA1, 0x96);
+    128              QN8065_WriteReg(QN8065_CCOND1, 0xb6);
+    129              ///select SNR for SM,SNC,HCC MPX
+    130              QN8065_WriteReg(QN8065_SMSTART,0x80|QN8065_SMSTART_VAL); //set SMSTART
+    131              QN8065_WriteReg(QN8065_SNCSTART,0x80|QN8065_SNCSTART_VAL); //set SNCSTART
+    132              QN8065_WriteReg(QN8065_HCCSTART,0x80|QN8065_HCCSTART_VAL); //set HCCSTART
+    133              //enter receiver mode directly
+    134              QN8065_WriteReg(QN8065_SYSTEM1, 0x11);// 有啪声？待修正
+    135          
+    136              QN8065_SetMute(1);
+    137          }
+    138          
+    139          /**********************************************************************
+    140          void QN8065_TuneToCH(UINT16 ch)
+    141          **********************************************************************
+    142          Description: Tune to the specific channel.
+    143          Parameters:
+    144          	ch:Set the frequency (10kHz) to be tuned,
+    145          eg: 101.30MHz will be set to 10130.
+    146          Return Value:
+    147          	None
+    148          **********************************************************************/
+    149          #pragma location="FM_SEG_QN8065"
+    150          void QN8065_TuneToCH(UINT16 ch)
+    151          {
+    152          	UINT8 sysClk32kFlag = 0;
+    153          	UINT8 stereoFlag = 0;
+    154          	UINT8 reg;
+    155              //ch = ch *10;
+    156              QN8065_SetMute(1);
+    157          	if (QN8065_ReadReg(QN8065_XTAL_DIV0) == 0x01)
+    158          	{
+    159          		sysClk32kFlag = 1;
+    160          		stereoFlag = (QN8065_ReadReg(QN8065_STATUS1) & QN8065_ST_MO_RX) ? 0:1;
+    161          	}
+    162          #if IMPROVING_SNR
+    163          	//improving some special stations snr when working clock is 32768Hz
+    164          	if (ch == 10030 || ch == 10090 || ch == 10100 || ch == 10110
+    165          		|| ch == 10150 || ch == 10160 || ch == 10220)
+    166          	{
+    167          		//frequency is added 50k only system clock is 32K.
+    168          		if (sysClk32kFlag)
+    169          		{
+    170          			QN8065_WriteReg(QN8065_XTAL_DIV2, 0x67);
+    171          			//add 50K
+    172          			ch += 5;
+    173          		}
+    174          	}
+    175          		//restore XTAL_DIV2 right value if the station is not a special station
+    176          	else
+    177          	{
+    178          		QN8065_WriteReg(QN8065_XTAL_DIV2, QN8065_XTAL_DIV2_VAL);
+    179          	}
+    180          #endif
+    181              QN8065_WriteReg(QN8065_REG_FLL,0x84); //enable 2k speed
+    182              //enter idle mode and disable CCA, with user write into frequency
+    183              QN8065_WriteReg(QN8065_SYSTEM1, 0x01);
+    184              //step is 100K.
+    185              QN8065_SetCh(ch, ch, 1);
+    186              //enter rx mode and disable CCA, with user write into frequency
+    187              QN8065_WriteReg(QN8065_SYSTEM1, 0x11);
+    188              QN8065_Delay(QN8065_CH_SETUP_DELAY_TIME);
+    189              QN8065_WriteReg(QN8065_REG_FLL, 0x04);//disable 2k speed
+    190          	if (sysClk32kFlag)
+    191          	{
+    192          		reg = QN8065_ReadReg(QN8065_CCA1);
+    193          		//disable bypass 32k spur rejection filter if is stereo
+    194          		if (stereoFlag)
+    195          		{
+    196          			reg &= ~0x20; 			
+    197          		}
+    198          		//enable bypass 32k spur rejection filter if is mono
+    199          		else
+    200          		{
+    201          			reg |= 0x20;
+    202          		}
+    203          		QN8065_WriteReg(QN8065_CCA1, reg);
+    204          	}	
+    205              QN8065_SetMute(0);
+    206          }
+    207          
+    208          #if QN8065_SCAN_NOISE_FLOOR_CCA
+    209           /***********************************************************************
+    210          Description: scan a noise floor from 87.5M to 108M by step 200K
+    211          Parameters:
+    212          Return Value:
+    213           1: scan a noise floor successfully.
+    214           0: chip would not normally work.
+    215          **********************************************************************/
+    216          #pragma location="FM_SEG_QN8065"
+    217          UINT8 QN8065_ScanNoiseFloor(UINT16 start,UINT16 stop)
+    218          {
+    219              UINT8 regValue;
+    220              UINT8 timeOut = 255; //time out is 2.55S
+    221          
+    222              QN8065_WriteReg(QN8065_CCA_TIME,0x00);
+    223              //config CCS from start frequency to  stop frequency by step 200KHZ	
+    224              QN8065_SetCh(start,stop,2);
+    225              //enable CCS
+    226              QN8065_WriteReg(QN8065_CCA2, 0x95);
+    227              //enter CCA mode,channel index is decided by internal CCA
+    228              QN8065_WriteReg(QN8065_SYSTEM1,0x12);	
+    229              while(1)
+    230              {
+    231                  regValue = QN8065_ReadReg(QN8065_SYSTEM1);
+    232                  //if it seeks a potential channel, the loop will be quited
+    233                  if((regValue & QN8065_CHSC) == 0) break;
+    234                  delay_5ms(10);   //delay 10ms
+    235                  //if it was time out,chip would not normally work.
+    236                  if((timeOut--) == 0)
+    237                  {
+    238                      //disable CCS while exit
+    239                      QN8065_WriteReg(QN8065_CCA2,0x85);
+    240                      return 0;
+    241                  }
+    242              }	
+    243              //disable CCS while exit
+    244              QN8065_WriteReg(QN8065_CCA2,0x85);
+    245              QN8065_NoiseFloor = QN8065_ReadReg(QN8065_CCS_NOISE)&0x7f;	
+    246              if(((QN8065_PreNoiseFloor-QN8065_NoiseFloor) > 2) ||((QN8065_NoiseFloor-QN8065_PreNoiseFloor) > 2))
+    247              {
+    248                  QN8065_PreNoiseFloor = QN8065_NoiseFloor;
+    249              }
+    250              //TRACE("%d-%d noiseFloor:%d,timeElapsed:%dms\n",start,stop,QN8065_NoiseFloor,(255-timeOut)*10);
+    251              return 1;
+    252          }
+    253          #endif
+    254          
+    255          /***********************************************************************
+    256          void QN8065_RXSetTH(void)
+    257          ***********************************************************************
+    258          Description: Setting the threshold value of automatic scan channel
+    259          	
+    260          Return Value:
+    261            	None
+    262          ***********************************************************************/
+    263          #pragma location="FM_SEG_QN8065"
+    264          void QN8065_RXSetTH(void)
+    265          {	
+    266          #if IMPROVING_SNR
+    267              UINT8 rssiTH;
+    268              rssiTH = (QN8065_PreNoiseFloor-28);//(QN8065_PreNoiseFloor-28)+3;
+    269              //restore XTAL_DIV2 right value if the station is not a special station
+    270              QN8065_WriteReg(QN8065_XTAL_DIV2, QN8065_XTAL_DIV2_VAL);
+    271          #endif
+    272              //set IF counter error range value is 256 = 4*64
+    273              QN8065_WriteReg(QN8065_CCA_CNT, 8);//4
+    274              //set CCA time
+    275              QN8065_WriteReg(QN8065_CCA_TIME, QN8065_CCA_NAGC_40MS|QN8065_CCA_NSNR_20MS|QN8065_CCA_NRSSI_10MS);
+    276          #if IMPROVING_SNR
+    277              //set RSSI threshold for CCA
+    278              QN8065_WriteReg(QN8065_CCA, QN8065_ReadReg(QN8065_CCA)&~0x3f|rssiTH);
+    279          #else
+    280              //set RSSI threshold for CCA
+    281              QN8065_WriteReg(QN8065_CCA, QN8065_ReadReg(QN8065_CCA)&~0x3f|1); //rssiTH);
+    282          #endif
+    283              //set QN8065_SNR threshold for CCA	
+    284          #if QN8065_PILOT_CCA
+    285          	QN8065_WriteReg(QN8065_CCA_SNR_TH, QN8065_ReadReg(QN8065_CCA_SNR_TH)&~0x3f|8);  //pilot CCA the QN8065_SNR thershold is 8
+    286          #else
+    287          	QN8065_WriteReg(QN8065_CCA_SNR_TH, QN8065_ReadReg(QN8065_CCA_SNR_TH)&~0x3f|9); 	//normall CCA the QN8065_SNR thereshold is 9
+    288          #endif
+    289          	//TRACE("rssiTH=%d, snrTH=%d\n", rssiTH,snrTH);	
+    290          }
+    291          
+    292          /***********************************************************************
+    293          INT8 QN8065_RXValidCH(UINT16 freq);
+    294          ***********************************************************************
+    295          Description: to validate a ch (frequency)(if it's a valid channel)
+    296          Freq: specific channel frequency, unit: 10Khz
+    297            eg: 108.00MHz will be set to 10800.
+    298          Return Value:
+    299            0: it's not a valid channel
+    300            1: it's a valid channel
+    301           -1: chip does not normally work.
+    302          ***********************************************************************/
+    303          #pragma constseg="FM_SEG_QN8065_CONST"
+    304          IAR_CONST u16 qn8065_start[] =
+    305          {
+    306              8750,  8810,  9010,  9210,
+    307              9410,  9610,  9810,  10010,
+    308              10210, 10410, 10610
+    309          };
+    310          IAR_CONST u16 qn8065_stop[] =
+    311          {
+    312              8800,  9000,  9200,  9400,
+    313              9600,  9800,  10000, 10200,
+    314          	10400, 10600, 10800
+    315          };
+    316          #pragma constseg=default
+    317          
+    318          
+    319          #pragma location="FM_SEG_QN8065"
+    320          #if 1   //以前的驱动程序
+    321          u8 QN8065_RXValidCH(u16 freq)
+    322          {
+    323              UINT8 regValue;
+    324              UINT8 timeOut;
+    325              UINT8 isValidChannelFlag;
+    326          #if QN8065_PILOT_CCA
+    327              UINT8 snr,readCnt,stereoCount=0;
+    328          #endif
+    329          
+    330          #if QN8065_SCAN_NOISE_FLOOR_CCA
+    331          #if 1
+    332              for(u8 i=0; i<21; i++) {
+    333                  if(freq == qn8065_start[i]) {
+    334                      QN8065_ScanNoiseFloor(qn8065_start[i], qn8065_stop[i]);
+    335                      QN8065_RXSetTH();
+    336                      break;
+    337                  }
+    338              }
+    339              QN8065_WriteReg(QN8065_SYSTEM1, 0x01);
+    340          #else
+    341              switch(freq)
+    342              {
+    343              case 8750:
+    344                  QN8065_ScanNoiseFloor(8750,8800);	
+    345                  QN8065_RXSetTH();
+    346                  break;
+    347              case 8810:
+    348                  QN8065_ScanNoiseFloor(8810,9000);	
+    349                  QN8065_RXSetTH();
+    350                  break;
+    351              case 9010:
+    352                  QN8065_ScanNoiseFloor(9010,9200);	
+    353                  QN8065_RXSetTH();
+    354                  break;
+    355              case 9210:
+    356                  QN8065_ScanNoiseFloor(9210,9400);
+    357                  QN8065_RXSetTH();
+    358                  break;
+    359              case 9410:
+    360                  QN8065_ScanNoiseFloor(9410,9600);
+    361                  QN8065_RXSetTH();
+    362                  break;
+    363              case 9610:
+    364                  QN8065_ScanNoiseFloor(9610,9800);
+    365                  QN8065_RXSetTH();
+    366                  break;
+    367              case 9810:
+    368                  QN8065_ScanNoiseFloor(9810,10000);
+    369                  QN8065_RXSetTH();
+    370                  break;	
+    371              case 10010:
+    372                  QN8065_ScanNoiseFloor(10010,10200);
+    373                  QN8065_RXSetTH();
+    374                  break;
+    375              case 10210:
+    376                  QN8065_ScanNoiseFloor(10210,10400);
+    377                  QN8065_RXSetTH();
+    378                  break;
+    379              case 10410:
+    380                  QN8065_ScanNoiseFloor(10410,10600);
+    381                  QN8065_RXSetTH();
+    382                  break;	
+    383              case 10610:
+    384                  QN8065_ScanNoiseFloor(10610,10800);
+    385                  QN8065_RXSetTH();
+    386                  break;		
+    387              default:
+    388                  //delay_5ms(100); //this delay can improve user display effect
+    389                  break;
+    390              }
+    391              //enter idle mode and disable CCA, with user write into frequency
+    392              QN8065_WriteReg(QN8065_SYSTEM1, 0x01);
+    393          #endif
+    394              //only support 100K and 200K step.
+    395              QN8065_SetCh(freq,freq+10,2);
+    396          #else
+    397             // printf("freq=%d;", freq);
+    398              QN8065_RXSetTH();
+    399              //only support 100K and 200K step.
+    400              QN8065_SetCh(freq,freq+5,1);
+    401          #endif
+    402              //entering into RX mode and CCA mode,channels index decide by CCA.
+    403              QN8065_WriteReg(QN8065_SYSTEM1, 0x12);
+    404          #if (FM_CLK_SEL == SHARE_CRYSTAL_32K)
+    405              delay_5ms(10);
+    406          #endif
+    407              timeOut = 60;  // time out is 300ms
+    408              while(1)
+    409              {
+    410                  regValue = QN8065_ReadReg(QN8065_SYSTEM1);
+    411                  //if it seeks a potential channel, the loop will be quited
+    412                  if((regValue & QN8065_CHSC) == 0) break;
+    413                  delay_5ms(5);   //delay 5ms
+    414                  //if it was time out,chip would not normally work.
+    415                  if((timeOut--) == 0) return 0;
+    416              }
+    417              //reading out the rxcca_fail flag of RXCCA status
+    418              isValidChannelFlag = (QN8065_ReadReg(QN8065_STATUS1) & QN8065_RXCCA_FAIL ? 0:1);
+    419              if(isValidChannelFlag)
+    420              {
+    421                  QN8065_SetMute(0);      //搜到真台后不MUTE，程序里让其自动播放一小段时间
+    422          #if QN8065_PILOT_CCA
+    423                  //set pilot threshold as 1/256
+    424                  QN8065_WriteReg(QN8065_CCOND2,0x91);
+    425                  delay_5ms(100);
+    426                  snr = QN8065_ReadReg(QN8065_SNR);
+    427          //#if (FM_CLK_SEL == SHARE_CRYSTAL_32K)
+    428                  if(snr< 25)  //25
+    429          //#else
+    430          //        if(snr< 12)  //25
+    431          //#endif
+    432                  {
+    433                      isValidChannelFlag = 0;
+    434                      for(readCnt=10;readCnt>0;readCnt--)
+    435                      {
+    436                          delay_5ms(2);
+    437                          stereoCount += ((QN8065_ReadReg(QN8065_STATUS1) & QN8065_ST_MO_RX) ? 0:1);
+    438                          if(stereoCount >= 3)
+    439                          {
+    440                              isValidChannelFlag =1;
+    441                              break;
+    442                          }
+    443                      }
+    444                  }
+    445                  //restore pilot threshold as 2/256
+    446                  QN8065_WriteReg(QN8065_CCOND2,0x92);
+    447                  return (isValidChannelFlag);
+    448          #else
+    449                  return 1;
+    450          #endif
+    451              }
+    452              return 0;
+    453          }	
+    454          
+    455          #else
+    456          //new add 的代码 可以解决搜台少的问题  //未测试
+    457          u8 QN8065_RXValidCH(u16 freq)
+    458          {
+    459          	UINT8 regValue;
+    460          	UINT8 timeOut;
+    461          	UINT8 isValidChannelFlag;
+    462              UINT8 CalValue;                     //new add 的代码 可以解决搜台少的问题。
+    463          #if QN8065_PILOT_CCA
+    464          	UINT8 snr,readCnt,stereoCount=0;
+    465          #endif
+    466          	
+    467          #if QN8065_SCAN_NOISE_FLOOR_CCA
+    468          	switch(freq)
+    469          	{
+    470          		case 8750:
+    471          		QN8065_ScanNoiseFloor(8750,8800);	
+    472          		QN8065_RXSetTH();
+    473          		break;
+    474          	case 8810:
+    475              	QN8065_ScanNoiseFloor(8810,9000);	
+    476              	QN8065_RXSetTH();
+    477              	break;
+    478          	case 9010:
+    479          		QN8065_ScanNoiseFloor(9010,9200);	
+    480          		QN8065_RXSetTH();
+    481          		break;
+    482          	case 9210:
+    483          		QN8065_ScanNoiseFloor(9210,9400);
+    484          		QN8065_RXSetTH();
+    485          		break;
+    486          	case 9410:
+    487          		QN8065_ScanNoiseFloor(9410,9600);
+    488          		QN8065_RXSetTH();
+    489          		break;
+    490          	case 9610:
+    491          		QN8065_ScanNoiseFloor(9610,9800);
+    492          		QN8065_RXSetTH();
+    493          		break;
+    494          	case 9810:
+    495          		QN8065_ScanNoiseFloor(9810,10000);
+    496          		QN8065_RXSetTH();
+    497          		break;	
+    498          	case 10010:
+    499          		QN8065_ScanNoiseFloor(10010,10200);
+    500          		QN8065_RXSetTH();
+    501          		break;
+    502          		case 10210:
+    503          		QN8065_ScanNoiseFloor(10210,10400);
+    504          		QN8065_RXSetTH();
+    505          		break;
+    506          	case 10410:
+    507          		QN8065_ScanNoiseFloor(10410,10600);
+    508          		QN8065_RXSetTH();
+    509          		break;	
+    510          	case 10610:
+    511          		QN8065_ScanNoiseFloor(10610,10800);
+    512          		QN8065_RXSetTH();
+    513          		break;		
+    514          	default:
+    515          		//QN8065_Delay(100); //this delay can improve user display effect
+    516          		break;
+    517          	}
+    518          	//enter idle mode and disable CCA, with user write into frequency
+    519              QN8065_WriteReg(QN8065_SYSTEM1, 0x01);
+    520          #endif	
+    521          	QN8065_SetCh(freq,freq+5,2);
+    522              // patch for calibration
+    523              // by laidayu 2014-09-15
+    524              QN8065_WriteReg(0x2D, 0x80);             // new add
+    525              QN8065_WriteReg(0x2D, 0x00);             // new add
+    526              // delay about 700us
+    527              // there is no delay us function, so I delay 1ms here
+    528              QN8065_Delay(1);                                         // new add
+    529              CalValue = QN8065_ReadReg(0x2D);         // new add
+    530              QN8065_WriteReg(0x2D, (CalValue | 0x40));    // new add
+    531          
+    532          	//entering into RX mode and CCA mode,channels index decide by CCA.
+    533          	QN8065_WriteReg(QN8065_SYSTEM1, 0x12);
+    534          	timeOut = 60;  // time out is 300ms
+    535          	while(1)
+    536          	{
+    537          		regValue = QN8065_ReadReg(QN8065_SYSTEM1);
+    538          		//if it seeks a potential channel, the loop will be quited
+    539          		if((regValue & QN8065_CHSC) == 0) break;
+    540          		QN8065_Delay(5);   //delay 5ms
+    541          		//if it was time out,chip would not normally work.
+    542          		if((timeOut--) == 0) return 1;
+    543          	}
+    544          	//reading out the rxcca_fail flag of RXCCA status
+    545          	isValidChannelFlag = (QN8065_ReadReg(QN8065_STATUS1) & QN8065_RXCCA_FAIL ? 0:1);
+    546              // added by laidayu 2014-09-18
+    547              // write disable into 0
+    548              QN8065_WriteReg(0x2D, CalValue);           // new add
+    549          	if(isValidChannelFlag)
+    550          	{
+    551          #if QN8065_PILOT_CCA
+    552          		//set pilot threshold as 1/256
+    553                  QN8065_WriteReg(QN8065_CCOND2,0x91);
+    554          		QN8065_Delay(100);
+    555          		snr = QN8065_ReadReg(QN8065_SNR);
+    556          		if(snr< 25)
+    557          		{
+    558          			isValidChannelFlag = 0;
+    559          			for(readCnt=10;readCnt>0;readCnt--)
+    560          			{
+    561          				QN8065_Delay(2);
+    562          				stereoCount += ((QN8065_ReadReg(QN8065_STATUS1) & QN8065_ST_MO_RX) ? 0:1);
+    563          				if(stereoCount >= 3)
+    564          				{
+    565          					isValidChannelFlag =1;
+    566          					break;
+    567          				}
+    568          			}
+    569          		}
+    570          		//restore pilot threshold as 2/256
+    571              	QN8065_WriteReg(QN8065_CCOND2,0x92);
+    572          		return (isValidChannelFlag);
+    573          #else
+    574          		return 1;
+    575          #endif
+    576          	}
+    577          	return 0;
+    578          }	
+    579          #endif
+    580          
+    581          /************************************************************************
+    582          void QN8065_RXConfigAudio(UINT8 volume )
+    583          *************************************************************************
+    584          Description: config audio
+    585          Parameters:
+    586            volume:control the volume gain,range : 0~47(-47db~0db)
+    587          Return Value:
+    588              None
+    589          **********************************************************************/
+    590          #pragma location="FM_SEG_QN8065"
+    591          void QN8065_RXConfigAudio(UINT8 option)
+    592          {
+    593          	UINT8 regVal;
+    594          	
+    595          	option = option>47 ? 47:option;
+    596          	regVal = QN8065_ReadReg(QN8065_VOL_CTL);
+    597          	regVal = (regVal&0xc0)|(option/6)|((5-option%6)<<3);
+    598          	QN8065_WriteReg(QN8065_VOL_CTL,regVal);
+    599          }
+    600          
+    601          #pragma location="FM_SEG_QN8065"
+    602          void qn8065_set_vol(u8 volume)
+    603          {
+    604              if(volume == 0)
+    605                  QN8065_SetMute(1);
+    606              else
+    607                  QN8065_SetMute(0);
+    608              QN8065_RXConfigAudio(volume_8065table[volume]);
+    609          }
+    610          
+    611          #pragma location="FM_SEG_QN8065"
+    612          void qn8065_off(void)
+    613          {
+    614              QN8065_WriteReg(QN8065_SYSTEM1, 0x20);
+    615              delay_5ms(10);
+    616          }
+    617          
+    618          #pragma location="FM_SEG_QN8065"
+    619          u8 qn8065_seek(u16 freq)
+    620          {
+    621              QN8065_SetMute(1);
+    622              return QN8065_RXValidCH(freq/**10*/);//qn8035 step frequency unit is 10KHZ
+    623          }
+    624          
+    625          ////////////////////////////////////////////
+    626          #pragma location="FM_SEG_QN8065"
+    627          UINT8 QN8065_ReadReg(UINT8 adr)
+    628          {
+    629             	u8  I2CReadResult;
+    630              iic_start();                    //I2C启动
+    631          
+    632              iic_sendbyte(0x20);             //写命令
+    633              iic_getack();
+    634          
+    635              iic_sendbyte(adr);       //写地址
+    636              iic_getack();
+    637          
+    638              iic_start();                    //写转为读命令，需要再次启动I2C
+    639          
+    640              iic_sendbyte(0x21);             //读命令
+    641              iic_getack();
+    642          
+    643              I2CReadResult = iic_getbyte();
+    644              iic_sendnack();                      //发送ack命令
+    645          
+    646              iic_stop();                     //I2C停止
+    647              QN8065_Delay(60);
+    648          
+    649              return  I2CReadResult;
+    650          }
+    651          
+    652          #pragma location="FM_SEG_QN8065"
+    653          void QN8065_WriteReg(UINT8 adr, UINT8 value)
+    654          {
+    655            // to be filled by user API
+    656              iic_start();                //I2C启动
+    657          
+    658              iic_sendbyte(0x20);         //写命令
+    659              iic_getack();
+    660          
+    661              iic_sendbyte(adr);   //写地址
+    662              iic_getack();
+    663          
+    664          
+    665              iic_sendbyte(value);      //写数据
+    666              iic_getack();
+    667          
+    668              iic_stop();                 //I2C停止时序
+    669              QN8065_Delay(60);
+    670          }
+    671          
+    672          
+    673          #pragma location="FM_SEG_QN8065"
+    674          u8 qn8065_online(void)
+    675          {
+    676              u8 temp;
+    677              QN8065_WriteReg(QN8065_SYSTEM1, 0x81);
+    678              for(u8 i=0; i<3; i++){      //IIC与其他引脚复用时 FM ID 改为读三次比较保险
+    679                  temp = QN8065_ReadReg(0x06) & 0xFC;
+    680                  //printf("QN_id=%02x\n",temp);
+    681                  if(temp == 0x8c){
+    682                      QN8065_Init();
+    683                      return 1;
+    684                  }
+    685              }
+    686              return 0;
+    687          }
+    688          
+    689          #pragma location="FM_SEG_QN8065_1"
+    690          u16 GetIFCount(void)
+    691          {
+    692          	UINT8 r_temp;
+    693          	UINT8 IF_CNT1;
+    694          	UINT16 IF_CNT;
+    695              IF_CNT1 = QN8065_ReadReg(0x1D);
+    696          	IF_CNT = QN8065_ReadReg(0x1E);
+    697              IF_CNT = IF_CNT<<8;
+    698              IF_CNT = IF_CNT + IF_CNT1;
+    699          	r_temp = QN8065_ReadReg(0x11);
+    700          	r_temp= r_temp & 0xfd;
+    701          	QN8065_WriteReg(0x11, r_temp);
+    702          	r_temp= r_temp | 0x02;
+    703          	QN8065_WriteReg(0x11, r_temp);
+    704              return IF_CNT;
+    705          }
+    706          
+    707          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,417 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   23/Feb/2016  10:53:43 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\新唐\6687G\APP\task\sub\tasksub_music_menu.c   #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\新唐\6687G\APP\api\ -I                         #
+#                          E:\新唐\6687G\APP\display\ -I                     #
+#                          E:\新唐\6687G\APP\display\lcd\ -I                 #
+#                          E:\新唐\6687G\APP\display\lcdseg\ -I              #
+#                          E:\新唐\6687G\APP\display\led\ -I                 #
+#                          E:\新唐\6687G\APP\display\ledseg\ -I              #
+#                          E:\新唐\6687G\APP\display\no\ -I                  #
+#                          E:\新唐\6687G\APP\config\ -I                      #
+#                          E:\新唐\6687G\APP\common\ -I                      #
+#                          E:\新唐\6687G\APP\task\ -I                        #
+#                          E:\新唐\6687G\APP\user\ -I                        #
+#                          E:\新唐\6687G\APP\user\mp3res\ -I                 #
+#                          E:\新唐\6687G\APP\btstack\ -I                     #
+#                          E:\新唐\6687G\APP\user\user_config\ -I            #
+#                          E:\新唐\6687G\APP\user\user_iis\ -lC              #
+#                          E:\新唐\6687G\APP\Debug\List\ -o                  #
+#                          E:\新唐\6687G\APP\Debug\Obj\ -e -z9 --debug       #
+#                          --core=plain --dptr=16,1 --data_model=large       #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\新唐\6687G\APP\task\sub\tasksub_music_menu.c   #
+#    List file          =  E:\新唐\6687G\APP\Debug\List\tasksub_music_menu.l #
+#                          st                                                #
+#    Object file        =  E:\新唐\6687G\APP\Debug\Obj\tasksub_music_menu.r5 #
+#                          1                                                 #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\新唐\6687G\APP\task\sub\tasksub_music_menu.c
+      1          /*****************************************************************************
+      2           * Module    : TaskSub
+      3           * File      : tasksub_music_menu.c
+      4           * Author    : Hanny
+      5           * Function  : 音乐任务 - 菜单设置任务
+      6           *****************************************************************************/
+      7          #ifdef TASK_SUB
+      8          
+      9          
+     10          #define PLAYMODE_ITEMS_NUM          (MODE_PLAY_NUM + 1)
+     11          #define MUSIC_EQ_ITEM_NUM           (MUSIC_EQ_NUM + 1)
+     12          #define DEVICE_ITEM_NUM             3
+     13          
+     14          
+     15          #pragma constseg="LIST_CONTENT"
+     16          string IAR_CONST tbl_music_menu1[] = {
+     17              STR_MAIN_MUSIC,
+     18          
+     19          #if FILE_NAV_EN
+     20              STR_CARD_DIR,
+     21          #endif
+     22              STR_MENU_EQ, STR_PLAYMODE_SET, STR_DEVICE_SELECT,
+     23          #if AB_REPEAT_EN
+     24              STR_MUSIC_REPEAT,
+     25          #endif
+     26              STR_MENU_DELETE, STR_DELETE_ALL,STR_BACK_MENU, STR_MENU_EXIT
+     27          };
+     28          string IAR_CONST tbl_music_menu2[] = {
+     29              STR_MAIN_MUSIC,
+     30          #if FILE_NAV_EN
+     31              STR_UDISK_DIR,
+     32          #endif
+     33              STR_MENU_EQ, STR_PLAYMODE_SET, STR_DEVICE_SELECT,
+     34          #if AB_REPEAT_EN
+     35              STR_MUSIC_REPEAT,
+     36          #endif
+     37              STR_MENU_DELETE, STR_DELETE_ALL,STR_BACK_MENU, STR_MENU_EXIT
+     38          };
+     39          
+     40          string IAR_CONST tbl_music_select_device[DEVICE_ITEM_NUM] = {
+     41              STR_DEVICE_SELECT, STR_PLAY_SD,STR_PLAY_UDISK
+     42          };
+     43          
+     44          enum {
+     45          #if FILE_NAV_EN
+     46              ITEM_MUSIC_NAV,
+     47          #endif
+     48              ITEM_MUSIC_EQ,
+     49              ITEM_MUSIC_PLAYMODE,
+     50              ITEM_SELECT_DEVICE,
+     51          #if AB_REPEAT_EN
+     52              ITEM_REPEAT,
+     53          #endif
+     54              ITEM_DEL_FILE,
+     55              ITEM_DEL_ALL,
+     56              ITEM_MENU_BACK,
+     57              ITEM_MUSIC_EXIT,
+     58          };
+     59          
+     60          //播放模式选择菜单
+     61          string IAR_CONST tbl_playmode_items[PLAYMODE_ITEMS_NUM] = {
+     62              STR_PLAYMODE_SET,
+     63              STR_PLAYMODE_ALL,
+     64              STR_PLAYMODE_SINGLE,
+     65          
+     66          #if MODE_PLAY_NUM > 2
+     67              STR_PLAYMODE_RE_FOLDER,
+     68          #endif
+     69          
+     70          #if MODE_PLAY_NUM > 3
+     71              STR_PLAYMODE_NORMAL,
+     72          #endif
+     73          
+     74          #if MODE_PLAY_NUM > 4
+     75              STR_PLAYMODE_RAMDOM,
+     76          #endif
+     77          
+     78          #if MODE_PLAY_NUM > 5
+     79              STR_PLAYMODE_BROWSE
+     80          #endif
+     81          };
+     82          
+     83          //EQ选择菜单
+     84          string IAR_CONST tbl_music_eq[MUSIC_EQ_ITEM_NUM] = {
+     85              STR_MENU_EQ, STR_EQ_NORMAL, STR_EQ_POP, STR_EQ_ROCK, STR_EQ_JAZZ, STR_EQ_CLASSIC, STR_EQ_COUNTRY
+     86          };
+     87          
+     88          #pragma constseg=default
+     89          
+     90          //播完本设备自动切换到另一个设备
+     91          #pragma location="TASK_MUSIC_MENU_SEG_1"
+     92          bool task_music_device_autochange(void)
+     93          {
+     94              if (fs_cur_dev() == DEVICE_SDMMC)
+     95              {
+     96                  if (device_is_actived(DEVICE_UDISK))
+     97                  {
+     98                      fs_sel(DEVICE_UDISK);
+     99                      task_music_device_remount();
+    100          
+    101                      return true;
+    102                  }
+    103              }
+    104              else if (fs_cur_dev() == DEVICE_UDISK)
+    105              {
+    106                  if (device_is_actived(DEVICE_SDMMC))
+    107                  {
+    108                      fs_sel(DEVICE_SDMMC);
+    109                      task_music_device_remount();
+    110                      return true;
+    111                  }
+    112              }
+    113              return false;
+    114          }
+    115          
+    116          #pragma location="TASK_MUSIC_MENU_SEG_1"
+    117          bool task_music_get_total(void)
+    118          {
+    119              //获取歌曲的总数
+    120              t_msc.music_total = music_total();
+    121              if (t_msc.music_total == 0) {
+    122                  if(!t_msc.no_file_flag)
+    123                  {
+    124                      t_msc.no_file_flag = 1;
+    125                      if(task_music_device_autochange())
+    126                      {
+    127                          return true;
+    128                      }
+    129                  }
+    130                  task_ctl.work_sta = TASK_EXIT;      //设备无效，返回主菜单
+    131                  if(t_msc.music_voice_flag)
+    132                  {
+    133                      msgbox(STR_NO_VOICE, NULL, MSGBOX_TIME);
+    134                  }
+    135                  else
+    136                  {
+    137                      msgbox(STR_NO_MUSIC, NULL, MSGBOX_TIME);
+    138                  }
+    139                  return false;
+    140              }
+    141              t_msc.no_file_flag = 0;
+    142              return true;
+    143          }
+    144          
+    145          //进入音乐任务对歌曲目的获取
+    146          #pragma location="TASK_MUSIC_MENU_SEG_1"
+    147          u8 task_music_num_get(void)
+    148          {
+    149              //获取歌曲的总数
+    150              if (fs_cur_dev() == DEVICE_UDISK)
+    151              {
+    152                  t_msc.music_num = param_read16(PARAM_MUSIC_NUM_USB);        //打开的文件编号
+    153              }
+    154              else
+    155              {
+    156                  t_msc.music_num = param_read16(PARAM_MUSIC_NUM_SD);        //打开的文件编号
+    157              }
+    158              if (!task_music_get_total()) {
+    159                  return false;
+    160              }
+    161              if (t_msc.music_num == 0 || t_msc.music_num > t_msc.music_total) {
+    162                  t_msc.music_num = 1;
+    163              }
+    164              return true;
+    165          }
+    166          
+    167          #pragma location="TASK_MUSIC_MENU_SEG_1"
+    168          void task_music_device_remount(void)
+    169          {
+    170              music_stop();                           //停止当前音乐
+    171              if (fs_need_mounted()) {
+    172                  fs_init();
+    173              }
+    174              if (!fs_is_mounted()) {
+    175                  task_ctl.work_sta = TASK_EXIT;      //设备无效，返回主菜单
+    176                  return;
+    177              }
+    178              if(!task_music_num_get())
+    179                  return;
+    180              //task_music_get_total();
+    181          
+    182              t_msc.file_change = 1;                  //需要打开一个新文件
+    183          #if BREAK_POINT_EN
+    184              t_msc.break_flag = 1;
+    185          #endif
+    186          }
+    187          
+    188          //切换设备菜单
+    189          #pragma location="TASK_MUSIC_MENU_SEG_1"
+    190          void task_music_device_select(void)
+    191          {
+    192              u8 index = listbox(fs_cur_dev(), DEVICE_ITEM_NUM, NULL, (u16)tbl_music_select_device, LIST_TIME);
+    193              draw_wait();
+    194              if (index == DEVICE_UDISK)
+    195              {
+    196                  if (fs_cur_dev() == DEVICE_SDMMC)
+    197                  {
+    198                      if (device_is_actived(DEVICE_UDISK))
+    199                      {
+    200                          fs_sel(DEVICE_UDISK);
+    201                          task_music_device_remount();
+    202                      }
+    203                  }
+    204              } else if(index == DEVICE_SDMMC) {
+    205                  if (fs_cur_dev() == DEVICE_UDISK)
+    206                  {
+    207                      if (device_is_actived(DEVICE_SDMMC))
+    208                      {
+    209                          fs_sel(DEVICE_SDMMC);
+    210                          task_music_device_remount();
+    211                      }
+    212                  }
+    213              }
+    214          }
+    215          
+    216          //音乐菜单
+    217          #pragma location="TASK_MUSIC_MENU_SEG_1"
+    218          void task_music_menu(void)
+    219          {
+    220              u8 index;
+    221          #if FILE_NAV_EN
+    222              u16 f_index;
+    223              u8 last_work_sta = task_ctl.work_sta;   // 保存工作模式
+    224          #endif
+    225              if(fs_cur_dev() == DEVICE_SDMMC) {
+    226                  index = listbox(0, sizeof(tbl_music_menu1)>>1, NULL, (u16)tbl_music_menu1, LIST_TIME);
+    227              }else {
+    228                  index = listbox(0, sizeof(tbl_music_menu2)>>1, NULL, (u16)tbl_music_menu2, LIST_TIME);
+    229              }
+    230              switch (index) {
+    231          #if FILE_NAV_EN
+    232              case ITEM_MUSIC_NAV:
+    233                  music_stop();   // 音乐停止后再弄，这样不会造成出错
+    234                  f_index = filelist(t_msc.music_num, FL_CDUP);
+    235                  if (f_index == 0) {
+    236                      t_msc.file_change = 1;              // 重新打开
+    237                      t_msc.file_prev_next = 0;           // 清除方向
+    238          #if BREAK_POINT_EN
+    239                      t_msc.break_flag = 1;               // 跳到断点继续播放
+    240          #endif
+    241                      task_ctl.work_sta = last_work_sta;     // 直接break会退出到menu模式
+    242                      music_play();
+    243                      break;
+    244                  }
+    245                  t_msc.music_num = f_index;                //打开播放音乐
+    246                  t_msc.file_change = 1;
+    247                  t_msc.file_prev_next = 0;               //清除方向
+    248                  music_play();
+    249                  break;
+    250          #endif
+    251              case ITEM_MUSIC_EQ:
+    252                  index = listbox(sys_ctl.eq_num, MUSIC_EQ_ITEM_NUM, LB_EQ, (u16)tbl_music_eq, LIST_TIME);
+    253                  user_set_eq(index);
+    254                  music_eq(sys_ctl.eq_num);
+    255                  break;
+    256              case ITEM_MUSIC_PLAYMODE:
+    257                  index = listbox(sys_ctl.mode_play, PLAYMODE_ITEMS_NUM, NULL, (u16)tbl_playmode_items, LIST_TIME);
+    258                  user_set_mode_play(index);
+    259                  break;
+    260              case ITEM_DEL_FILE:
+    261                  if (msgbox(STR_DELETE_CONFIRM, MB_YESNO, 0)) {
+    262                      //确认删除对话框
+    263                      music_stop();
+    264                      if (f_delete(t_msc.music_num)) {
+    265                          t_msc.music_total -=1;
+    266                          if (t_msc.music_num ==0) {
+    267                              t_msc.music_num = t_msc.music_total;
+    268                          } else {
+    269                              t_msc.music_num--;            //最后一项
+    270                          }
+    271                          t_msc.file_change = 1;
+    272                          if (t_msc.music_total == 0) {
+    273                              msgbox(STR_NO_MUSIC, NULL, MSGBOX_TIME);
+    274                              task_ctl.work_sta = TASK_EXIT;
+    275                          }
+    276                      }else {
+    277                          msgbox(STR_DELETE_FAIL, NULL, MSGBOX_TIME);
+    278                      }
+    279                  }
+    280                  break;
+    281              case ITEM_DEL_ALL:
+    282                  if (msgbox(STR_DELETEALL_CONFIRM, MB_YESNO, 0)) {
+    283                      music_stop();
+    284                      while(t_msc.music_total) {
+    285                          if (f_delete(1)) {
+    286                              t_msc.music_total--;
+    287                          }else {
+    288                              msgbox(STR_DELETE_FAIL, NULL, MSGBOX_TIME);
+    289                              break;
+    290                          }
+    291                      }
+    292                      if (t_msc.music_total == 0) {
+    293                          msgbox(STR_NO_MUSIC, NULL, MSGBOX_TIME);
+    294                          task_ctl.work_sta = TASK_EXIT;
+    295                      }
+    296                      WATCHDOG_CLR();
+    297                  }
+    298                  break;
+    299              case ITEM_MENU_BACK:
+    300                  task_ctl.work_sta = TASK_EXIT;      //退出
+    301                  break;
+    302              case ITEM_SELECT_DEVICE:
+    303                  task_music_device_select();
+    304                  break;
+    305          #if AB_REPEAT_EN
+    306              case ITEM_REPEAT:
+    307                  t_msc.repeat_flag = 1;
+    308                  break;
+    309          #endif
+    310              }
+    311              t_msc.disp_flag = 1;
+    312          }
+    313          
+    314          #pragma location="TASK_MUSIC_MENU_SEG"
+    315          void tasksub_music_menu_enter(void)
+    316          {
+    317          
+    318          }
+    319          
+    320          #pragma location="TASK_MUSIC_MENU_SEG"
+    321          void tasksub_music_menu_exit(void)
+    322          {
+    323          
+    324          }
+    325          
+    326          #pragma location="TASK_MUSIC_MENU_SEG"
+    327          void tasksub_music_menu_event(void)
+    328          {
+    329          
+    330          }
+    331          
+    332          #pragma location="TASK_MUSIC_MENU_SEG"
+    333          void task_music_menu_deal_msg(u8 msg)
+    334          {
+    335          
+    336          }
+    337          
+    338          #pragma location="TASK_MUSIC_MENU_SEG"
+    339          void tasksub_music_menu_loop(void)
+    340          {
+    341              task_music_menu();
+    342          }
+    343          
+    344          #pragma location="TASK_MUSIC_MENU_SEG"
+    345          void tasksub_music_menu(void)
+    346          {
+    347             // printf("tasksub_music_menu\n");
+    348              tasksub_music_menu_enter();
+    349              tasksub_music_menu_loop();
+    350              tasksub_music_menu_exit();
+    351              //printf("tasksub_music_menu exit\n");
+    352          }
+    353          
+    354          
+    355          
+    356          #endif
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+
+ 
+ 
+ 0 bytes of memory
+
+Errors: none
+Warnings: none

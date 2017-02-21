@@ -1,0 +1,291 @@
+##############################################################################
+#                                                                            #
+# IAR 8051 C/C++ Compiler V7.20H/W32                   22/Jun/2016  18:28:01 #
+# Copyright 2004-2006 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Core               =  plain                                             #
+#    Code model         =  banked                                            #
+#    Data model         =  large                                             #
+#    Calling convention =  extended stack reentrant                          #
+#    Constant location  =  code                                              #
+#    Extended stack     =  enabled                                           #
+#    Dptr setup         =  1,16                                              #
+#    Source file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_sys.c                                         #
+#    Command line       =  -I "C:\Program Files\IAR Systems\Embedded         #
+#                          Workbench 4.05 Evaluation version\8051\INC\" -I   #
+#                          "C:\Program Files\IAR Systems\Embedded Workbench  #
+#                          4.05 Evaluation version\8051\INC\CLIB\" -I        #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\api\   #
+#                          -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\dis #
+#                          play\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\display\lcd\ -I E:\Juchen\CW6687G\JC_M_328_201 #
+#                          60617_P0\APP\display\lcdseg\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\displa #
+#                          y\led\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\display\ledseg\ -I E:\Juchen\CW6687G\JC_M_328 #
+#                          _20160617_P0\APP\display\no\ -I                   #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\config #
+#                          \ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\c #
+#                          ommon\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\ #
+#                          APP\task\ -I E:\Juchen\CW6687G\JC_M_328_20160617_ #
+#                          P0\APP\user\ -I E:\Juchen\CW6687G\JC_M_328_201606 #
+#                          17_P0\APP\user\mp3res\ -I                         #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\btstac #
+#                          k\ -I E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\ #
+#                          user\user_config\ -I E:\Juchen\CW6687G\JC_M_328_2 #
+#                          0160617_P0\APP\user\user_iis\ -lC                 #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\ -o E:\Juchen\CW6687G\JC_M_328_20160617_P0\A #
+#                          PP\Debug\Obj\ -e -z9 --debug --core=plain         #
+#                          --dptr=16,1 --data_model=large                    #
+#                          --code_model=banked --calling_convention=ext_stac #
+#                          k_reentrant --place_constants=code                #
+#                          --nr_virtual_regs 20 --extended_stack             #
+#                          E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\u #
+#                          ser_sys.c                                         #
+#    List file          =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          List\user_sys.lst                                 #
+#    Object file        =  E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\Debug\ #
+#                          Obj\user_sys.r51                                  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+E:\Juchen\CW6687G\JC_M_328_20160617_P0\APP\user\user_sys.c
+      1          /*****************************************************************************
+      2           * Module    : User
+      3           * File      : user_spi.c
+      4           * Author    : Hanny
+      5           * Function  : 用户的SPI操作，主要用于跟读与磁带复读等功能
+      6           *****************************************************************************/
+      7          #include "include.h"
+      8          #include "task.h"
+      9          
+     10          extern void set_sys_clk_lib(u8 mode);
+     11          
+     12          //SPIFlash是否支持4K Sector擦除
+     13          #pragma location="INIT_SEG"
+
+   \                                 In segment INIT_SEG, align 1, keep-with-next
+     14          bool spi_4k_support(void)
+   \                     spi_4k_support:
+     15          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     16              return SPI_4K_SECTOR_SUPPORT;
+   \   000000   C3           CLR     C
+   \   000001   02....       LJMP    ?BRET
+     17          }
+     18          
+     19          #pragma location="INIT_SEG"
+
+   \                                 In segment INIT_SEG, align 1, keep-with-next
+     20          bool bt_phone_book_support(void)
+   \                     bt_phone_book_support:
+     21          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     22              return BT_PHONE_BOOK_EN;
+   \   000000   C3           CLR     C
+   \   000001   02....       LJMP    ?BRET
+     23          }
+     24          
+     25          //使用多少个参数页，最多支持4个参数页
+     26          #pragma location="INIT_SEG"
+
+   \                                 In segment INIT_SEG, align 1, keep-with-next
+     27          u8 spi_param_page(void)
+   \                     spi_param_page:
+     28          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     29              return PARAM_PAGE;
+   \   000000   7902         MOV     R1,#0x2
+   \   000002   02....       LJMP    ?BRET
+     30          }
+     31          
+     32          #pragma location="INIT_SEG"
+
+   \                                 In segment INIT_SEG, align 1, keep-with-next, root
+     33          __root void set_sys_clk_hook(u8 mode)  //
+   \                     set_sys_clk_hook:
+     34          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     35              //printf("clkhook%d\n",mode);
+     36          }
+   \   000000   02....       LJMP    ?BRET
+     37          
+     38          #pragma location="INIT_SEG"
+
+   \                                 In segment INIT_SEG, align 1, keep-with-next
+     39          void set_sys_clk(u8 mode)
+   \                     set_sys_clk:
+     40          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     41          #if IIS_EN
+     42              if(task_ctl.work_sta != TASK_NULL && task_ctl.work_sta != TASK_BT && task_ctl.work_sta != TASK_BT_HID)
+   \   000000   90....       MOV     DPTR,#task_ctl
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   600B         JZ      ??set_sys_clk_0
+   \   000006   640D         XRL     A,#0xd
+   \   000008   6007         JZ      ??set_sys_clk_0
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   640E         XRL     A,#0xe
+   \   00000D   6002         JZ      ??set_sys_clk_0
+     43                  set_sys_clk_lib(SYS_48M);
+   \   00000F                ; Setup parameters for call to function set_sys_clk_lib
+   \   00000F   7900         MOV     R1,#0x0
+     44              else
+     45          #endif
+     46              set_sys_clk_lib(mode);  //调用以前lib中的clk设置函数
+   \                     ??set_sys_clk_0:
+   \   000011                ; Setup parameters for call to function set_sys_clk_lib
+   \   000011   90....       MOV     DPTR,#(set_sys_clk_lib & 0xffff)
+   \   000014   74..         MOV     A,#((set_sys_clk_lib >> 16) & 0xff)
+   \   000016   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     47              switch (mode) {         //预留外部修改接口
+     48              case SYS_48M:
+     49                  break;
+     50          
+     51              case SYS_24M:
+     52                  break;
+     53          
+     54              case SYS_12M:
+     55                  break;
+     56          
+     57              case SYS_3M:
+     58                  break;
+     59          
+     60              case SYS_OSC_3M:
+     61                  break;
+     62          
+     63              case SYS_RC_4M:
+     64                  break;
+     65              }
+     66          }
+   \   000019   02....       LJMP    ?BRET
+     67          
+     68          //LQFP48/LQFP64 pmu设置，LDO mode的VOUT1V5电压调试1.35V
+     69          #pragma location="POWER_CTL_SEG"
+
+   \                                 In segment POWER_CTL_SEG, align 1, keep-with-next
+     70          void lqfp48_pmu_init(void)
+   \                     lqfp48_pmu_init:
+     71          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     72          #if !BUCK_MODE_EN
+     73              //加大RVDD到最大，改善GFSK，以改善部分芯片通话效果不理想的问题
+     74              PWRCON4 &= ~(BIT(4)|BIT(5));  //set RVDD voltage 00:1.15, 01:1.23, 10:1.28, 11:1.32
+   \   000000   9078E8       MOV     DPTR,#0x78e8
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   54CF         ANL     A,#0xcf
+   \   000006   F0           MOVX    @DPTR,A
+     75              PWRCON4 |= BIT(5);
+   \   000007   E0           MOVX    A,@DPTR
+   \   000008   D2E5         SETB    0xE0 /* A   */.5
+   \   00000A   F0           MOVX    @DPTR,A
+     76              PWRCON4 |= BIT(4);
+   \   00000B   E0           MOVX    A,@DPTR
+   \   00000C   D2E4         SETB    0xE0 /* A   */.4
+   \   00000E   F0           MOVX    @DPTR,A
+     77          
+     78              PWRCON2 &= ~(BIT(3) | BIT(2) | BIT(1));
+   \   00000F   12....       LCALL   ?Subroutine0
+     79              PWRCON1 &= ~(BIT(5) | BIT(4) | BIT(3)); //set LDO mode voltage to 1.35v
+     80              PWRCON1 |= BIT(5);
+     81              PWRCON1 |= BIT(3);
+   \                     ??CrossCallReturnLabel_0:
+   \   000012   D2E3         SETB    0xE0 /* A   */.3
+   \   000014   F0           MOVX    @DPTR,A
+     82          #endif
+     83          }
+   \   000015   02....       LJMP    ?BRET
+
+   \                                 In segment POWER_CTL_SEG, align 1, keep-with-next
+   \                     ?Subroutine0:
+   \   000000   907808       MOV     DPTR,#0x7808
+   \   000003   E0           MOVX    A,@DPTR
+   \   000004   54F1         ANL     A,#0xf1
+   \   000006   F0           MOVX    @DPTR,A
+   \   000007   907807       MOV     DPTR,#0x7807
+   \   00000A   E0           MOVX    A,@DPTR
+   \   00000B   54C7         ANL     A,#0xc7
+   \   00000D   F0           MOVX    @DPTR,A
+   \   00000E   E0           MOVX    A,@DPTR
+   \   00000F   D2E5         SETB    0xE0 /* A   */.5
+   \   000011   F0           MOVX    @DPTR,A
+   \   000012   E0           MOVX    A,@DPTR
+   \   000013   22           RET
+     84          
+     85          //SSOP28 pmu设置，LDO mode的VOUT1V5电压调至1.32V(不能降到1.28V)
+     86          #pragma location="POWER_CTL_SEG"
+
+   \                                 In segment POWER_CTL_SEG, align 1, keep-with-next
+     87          void ssop28_pmu_init(void)
+   \                     ssop28_pmu_init:
+     88          {
+   \   000000                ; Saved register size: 0
+   \   000000                ; Auto size: 0
+     89          #if !BUCK_MODE_EN
+     90              irtcc_write_cfg(WRITE_PWR,0x00);
+   \   000000                ; Setup parameters for call to function irtcc_write_cfg
+   \   000000   7A00         MOV     R2,#0x0
+   \   000002   795A         MOV     R1,#0x5a
+   \   000004   90....       MOV     DPTR,#(irtcc_write_cfg & 0xffff)
+   \   000007   74..         MOV     A,#((irtcc_write_cfg >> 16) & 0xff)
+   \   000009   12....       LCALL   ?BCALL               ; Banked call to: DPTR()
+     91              PWRCON2 &= ~(BIT(3) | BIT(2) | BIT(1));
+   \   00000C   12....       LCALL   ?Subroutine0
+     92              PWRCON1 &= ~(BIT(5) | BIT(4) | BIT(3));  //vout:1.35
+     93              PWRCON1 |=  BIT(5);
+     94              PWRCON1 |=  BIT(4);
+   \                     ??CrossCallReturnLabel_1:
+   \   00000F   D2E4         SETB    0xE0 /* A   */.4
+   \   000011   F0           MOVX    @DPTR,A
+     95          #endif
+     96          }
+   \   000012   02....       LJMP    ?BRET
+     97          
+     98          
+
+   Maximum stack usage in bytes:
+
+     Function              EXT_STACK PSTACK XSTACK
+     --------              --------- ------ ------
+     bt_phone_book_support        0      0      0
+     lqfp48_pmu_init              0      0      0
+     set_sys_clk                  0      0      0
+       -> set_sys_clk_lib         0      0      0
+       -> set_sys_clk_lib         0      0      0
+     set_sys_clk_hook             0      0      0
+     spi_4k_support               0      0      0
+     spi_param_page               0      0      0
+     ssop28_pmu_init              0      0      0
+       -> irtcc_write_cfg         0      0      0
+
+
+   Segment part sizes:
+
+     Function/Label        Bytes
+     --------------        -----
+     spi_4k_support           4
+     bt_phone_book_support    4
+     spi_param_page           5
+     set_sys_clk_hook         3
+     set_sys_clk             28
+     lqfp48_pmu_init         24
+     ?Subroutine0            20
+     ssop28_pmu_init         21
+
+ 
+ 44 bytes in segment INIT_SEG
+ 65 bytes in segment POWER_CTL_SEG
+ 
+ 109 bytes of CODE memory
+
+Errors: none
+Warnings: none
